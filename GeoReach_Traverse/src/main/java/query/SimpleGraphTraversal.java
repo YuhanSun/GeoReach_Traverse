@@ -1,11 +1,14 @@
 package query;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
 import commons.Config;
 import commons.MyRectangle;
@@ -16,6 +19,14 @@ public class SimpleGraphTraversal {
 	public static Config config = new Config();
 	public String lon_name = config.GetLongitudePropertyName();
 	public String lat_name = config.GetLatitudePropertyName();
+	
+	public GraphDatabaseService dbservice;
+	
+	public SimpleGraphTraversal(String db_path)
+	{
+		dbservice = new GraphDatabaseFactory().newEmbeddedDatabase(new File(db_path));
+	}
+	
 	/**
 	 * DFS way of traversal.
 	 * @param node the start node
