@@ -22,6 +22,9 @@ public class SimpleGraphTraversal {
 	
 	public GraphDatabaseService dbservice;
 	
+	//result
+	public ArrayList<LinkedList<Long>> paths;
+	
 	public SimpleGraphTraversal(String db_path)
 	{
 		dbservice = new GraphDatabaseFactory().newEmbeddedDatabase(new File(db_path));
@@ -37,32 +40,45 @@ public class SimpleGraphTraversal {
 	{
 		int curHop = 0;
 		HashSet<Long> visited = new HashSet<Long>();
-		ArrayList<LinkedList<Long>> paths = new ArrayList<LinkedList<Long>>();
+		paths = new ArrayList<LinkedList<Long>>();
 		helper(node, length, curHop, queryRectangle, visited, new LinkedList<Long>(), paths);
 	}
 	
+	/**
+	 * 
+	 * @param node start node
+	 * @param length path length 
+	 * @param curHop 
+	 * @param queryRectangle
+	 * @param visited current visited vertices 
+	 * @param curPath
+	 * @param paths
+	 */
 	public void helper(Node node, int length, int curHop, MyRectangle queryRectangle, 
 			HashSet<Long> visited, LinkedList<Long> curPath, ArrayList<LinkedList<Long>> paths)
 	{
 		long id = node.getId();
 		if (visited.add(id))
 		{
-			if (visited.size() == length)
+			if (curHop == length)
 			{
 				if (node.hasProperty(lon_name))
 				{
 					double lon = (Double) node.getProperty(lon_name);
 					double lat = (Double) node.getProperty(lat_name);
-					if (Util.Location_In_Rect(lat, lat, queryRectangle)) {
+					if (Util.Location_In_Rect(lat, lat, queryRectangle)) 
+					{
 						LinkedList<Long> path = new LinkedList<Long>(curPath);
 						path.add(id);
 						paths.add(path);
 					}
 				}
+				visited.remove(id);
 				return;
 			}
 			
 			curPath.add(id);
+			Util.Print(curPath);
 			Iterable<Relationship> rels = node.getRelationships();
 			for (Relationship relationship : rels)
 			{
@@ -70,7 +86,8 @@ public class SimpleGraphTraversal {
 				helper(neighbor, length, curHop + 1, queryRectangle, 
 						visited, curPath, paths);
 			}
-			visited.remove(node.getId());
+			visited.remove(id);
+			curPath.removeLast();
 		}
 	}
 }

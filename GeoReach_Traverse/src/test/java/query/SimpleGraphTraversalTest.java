@@ -11,6 +11,7 @@ import org.neo4j.graphdb.Result;
 import org.neo4j.graphdb.Transaction;
 
 import commons.Config;
+import commons.MyRectangle;
 import commons.Config.system;
 import commons.Util;
 
@@ -42,23 +43,54 @@ public class SimpleGraphTraversalTest {
 	}
 
 	@Test
-	public void TraversalTest() {
-		SimpleGraphTraversal simpleGraphTraversal = new SimpleGraphTraversal(db_path);
-		long startID = 0;
-		GraphDatabaseService dbservice = simpleGraphTraversal.dbservice;
-		Transaction tx = dbservice.beginTx();
-		Node node = dbservice.getNodeById(startID);
-		String query = "match p = (s)--(a)--(b) return p";
-		Result result = dbservice.execute(query);
-		int count = 0;
-		while (result.hasNext())
-		{
-			Util.Print(result.next());
-			count++;
+	public void Neo4jTraversalTest() {
+		try {
+			Util.Print(db_path);
+			SimpleGraphTraversal simpleGraphTraversal = new SimpleGraphTraversal(db_path);
+			long startID = 768514;
+			GraphDatabaseService dbservice = simpleGraphTraversal.dbservice;
+			Transaction tx = dbservice.beginTx();
+			Node node = dbservice.getNodeById(startID);
+			String query = String.format("match p = (s)--(a)--(b) where id(s) = %d and exists(b.%s) return p", 
+					startID, "lon");
+			Result result = dbservice.execute(query);
+			int count = 0;
+			while (result.hasNext())
+			{
+				Util.Print(result.next());
+				count++;
+			}
+			Util.Print(count);
+			tx.success();
+			tx.close();
+			dbservice.shutdown();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
 		}
-		tx.success();
-		tx.close();
-		dbservice.shutdown();
+		
+	}
+	
+	@Test
+	public void TraversalTest() {
+		try {
+			Util.Print(db_path);
+			SimpleGraphTraversal simpleGraphTraversal = new SimpleGraphTraversal(db_path);
+			long startID = 768514;
+			GraphDatabaseService dbservice = simpleGraphTraversal.dbservice;
+			Transaction tx = dbservice.beginTx();
+			Node node = dbservice.getNodeById(startID);
+			simpleGraphTraversal.traversal(node, 2, new MyRectangle(-180, -90, 180, 90));
+			int count = simpleGraphTraversal.paths.size();
+			Util.Print(count);
+			tx.success();
+			tx.close();
+			dbservice.shutdown();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+		
 	}
 
 }
