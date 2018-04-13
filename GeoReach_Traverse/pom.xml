@@ -14,6 +14,30 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
+	<repositories>
+        <repository>
+            <id>neo4j-contrib-releases</id>
+            <url>https://raw.github.com/neo4j-contrib/m2/master/releases</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>neo4j-contrib-snapshots</id>
+            <url>https://raw.github.com/neo4j-contrib/m2/master/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+
   <dependencies>
     <!-- https://mvnrepository.com/artifact/junit/junit -->
 	<dependency>
@@ -28,5 +52,18 @@
 		<artifactId>neo4j-kernel</artifactId>
 		<version>3.1.1</version>
 	</dependency>
+	
+	<dependency>
+		<groupId>org.neo4j</groupId>
+		<artifactId>neo4j-lucene-index</artifactId>
+		<version>3.1.1</version>
+	</dependency>
+	
+	<dependency>
+    	<groupId>org.neo4j</groupId>
+    	<artifactId>neo4j-cypher</artifactId>
+    	<version>3.1.1</version>
+	</dependency>
+	
   </dependencies>
 </project>
