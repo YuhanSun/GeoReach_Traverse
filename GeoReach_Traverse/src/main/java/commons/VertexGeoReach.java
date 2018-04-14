@@ -26,4 +26,18 @@ public class VertexGeoReach {
 			GeoBs.add(null);
 		}
 	}
+	
+	@Override
+	public String toString()
+	{
+		String string = "";
+		for ( int i = 0; i < ReachGrids.size(); i++)
+		{
+			string += ReachGrids.get(i);
+			string += ";" + RMBRs.get(i);
+			string += ";" + GeoBs.get(i);
+			string += "\n";
+		}
+		return string;
+	}
 }

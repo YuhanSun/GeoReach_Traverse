@@ -28,6 +28,14 @@ public class MyRectangle {
         this.max_y = 0.0;
     }
     
+    public MyRectangle(MyRectangle rectangle)
+    {
+    	min_x = rectangle.min_x;
+    	min_y = rectangle.min_y;
+    	max_x = rectangle.max_x;
+    	max_y = rectangle.max_y;
+    }
+    
     public MyRectangle(String str)
     {
     	str = str.substring(1, str.length() - 1);
