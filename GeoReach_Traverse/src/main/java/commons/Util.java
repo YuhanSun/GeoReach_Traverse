@@ -1,16 +1,63 @@
 package commons;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.TreeSet;
+
+import org.roaringbitmap.RoaringBitmap;
 
 public class Util {
 	
 	public static void Print(Object o) {
         System.out.println(o);
     }
+	
+	public static String Serialize_RoarBitmap_ToString(RoaringBitmap r) {
+        r.runOptimize();
+        ByteBuffer outbb = ByteBuffer.allocate(r.serializedSizeInBytes());
+        try {
+        	r.serialize(new DataOutputStream(new OutputStream(){
+			    ByteBuffer mBB;
+			    OutputStream init(ByteBuffer mbb) {mBB=mbb; return this;}
+			    public void close() {}
+			    public void flush() {}
+			    public void write(int b) {
+			        mBB.put((byte) b);}
+			    public void write(byte[] b) {mBB.put(b);}            
+			    public void write(byte[] b, int off, int l) {mBB.put(b,off,l);}
+			}.init(outbb)));
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        outbb.flip();
+        String serializedstring = Base64.getEncoder().encodeToString(outbb.array());
+        return serializedstring;
+    }
+	
+	public static HashMap<Integer, Integer> histogram(List<Integer> list)
+	{
+		HashMap<Integer, Integer> res = new HashMap<>();
+		for (int element : list)
+		{
+			if (res.containsKey(element))
+				res.put(element, res.get(element) + 1);
+			else
+				res.put(element, 1);
+		}
+		return res;
+	}
 	
 	/**
 	 * Decide whether a location is located within a rectangle
@@ -102,6 +149,12 @@ public class Util {
         return entities;
     }
     
+    /**
+     * Output everything.
+     * Each vertex for each step contains all the ReachGrid and RMBR information
+     * @param index
+     * @param filepath
+     */
     public static void outputGeoReach(ArrayList<VertexGeoReach> index, String filepath)
     {
     	int id = 0;
@@ -125,6 +178,76 @@ public class Util {
     		e.printStackTrace();
     		System.exit(-1);
     	}
-    	
+    }
+    
+    /**
+     * Output index based on type
+     * @param index
+     * @param filepath
+     * @param types
+     * @param format 0 represents list while 1 represents bitmap
+     */
+    public static void outputGeoReach(ArrayList<VertexGeoReach> index, String filepath, 
+    		ArrayList<ArrayList<Integer>> typesList, int format)
+    {
+    	int id = 0;
+    	FileWriter writer = null;
+    	try
+    	{
+    		int nodeCount = index.size();
+    		int MAX_HOP = index.get(0).ReachGrids.size();
+    		writer = new FileWriter(filepath);
+    		writer.write(String.format("%d,%d\n", nodeCount, MAX_HOP));
+    		
+    		Iterator<VertexGeoReach> iterator1 = index.iterator();
+    		Iterator<ArrayList<Integer>> iterator2 = typesList.iterator();
+    		
+    		while (iterator1.hasNext() && iterator2.hasNext())
+        	{
+    			VertexGeoReach vertexGeoReach = iterator1.next();
+    			ArrayList<Integer> types = iterator2.next();
+    			
+    			writer.write(id + "\n");
+    			for ( int i = 0; i < MAX_HOP; i++)
+    			{
+    				int type = types.get(i);
+    				writer.write("" + type + ":");
+    				switch (type) {
+					case 0:
+						TreeSet<Integer> reachgrid = vertexGeoReach.ReachGrids.get(i);
+						if (format == 1)
+						{
+							RoaringBitmap r = new RoaringBitmap();
+							for(int gridID : reachgrid)
+								r.add(gridID);
+							String bitmap_ser = Util.Serialize_RoarBitmap_ToString(r);
+							writer.write(bitmap_ser + "\n");
+						}
+						else {
+							writer.write(reachgrid.toString() + "\n");
+						}
+						break;
+					case 1:
+						writer.write(vertexGeoReach.RMBRs.get(i).toString() + "\n");
+						break;
+					case 2:
+						writer.write(vertexGeoReach.GeoBs.get(i).toString() + "\n");
+						break;
+					default:
+						throw new Exception(String.format("Wrong type %d for vertex %d!", 
+								type, id));
+					}
+    			}
+        		id++;
+        	}
+    		writer.close();
+    	}
+    	catch(Exception e)
+    	{
+    		Util.Print(id);
+    		Util.Print(typesList.get(id));
+    		e.printStackTrace();
+    		System.exit(-1);
+    	}
     }
 }
