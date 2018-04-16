@@ -111,7 +111,7 @@ public class Util {
     		int nodeCount = index.size();
     		int MAX_HOP = index.get(0).ReachGrids.size();
     		writer = new FileWriter(filepath);
-    		writer.write(String.format("%d,%d", nodeCount, MAX_HOP));
+    		writer.write(String.format("%d,%d\n", nodeCount, MAX_HOP));
     		for (VertexGeoReach vertexGeoReach : index)
         	{
         		writer.write(id + "\n");

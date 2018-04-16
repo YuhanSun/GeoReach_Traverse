@@ -29,24 +29,27 @@ public class IndexConstruct {
 	{
 		// TODO Auto-generated method stub
 		IndexConstruct indexConstruct = new IndexConstruct();
+		Util.Print("Read entities from " + entityPath);
 		if (entities == null)
 			entities = Util.ReadEntity(entityPath);
+		Util.Print("entities size: " + entities.size() + "\n");
 
+		Util.Print("Read graph from " + graphPath);
 		if (graph == null)
 			graph = Util.ReadGraph(graphPath);
+		Util.Print("graph size: " + graph.size());
 
-		Util.Print("graph size:  " + graph.size());
 		double minx = -180, miny = -90, maxx = 180, maxy = 90; 
 		int pieces_x = 128, pieces_y = 128, MC = 4;
 		double MG = 0.80, MR = 0.80;
 		String outputPath = String.format("D:\\Ubuntu_shared\\GeoReachHop\\data\\%s\\%d_%d_%d_%d_%d_%d.txt",
-				dataset, pieces_x, pieces_y, MG * 100, MR * 100, MC, MAX_HOPNUM);
+				dataset, pieces_x, pieces_y, (int)(MG * 100), (int)(MR * 100), MC, MAX_HOPNUM);
 		indexConstruct.ConstructIndex(graph, entities, minx, miny, maxx, maxy, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, outputPath);
 	}
 	
 	public static void main(String[] args) {
-		construct();
-//		getReachbleVertices();
+//		construct();
+		getReachbleVertices();
 	}
 	
 	public IndexConstruct()
@@ -125,6 +128,7 @@ public class IndexConstruct {
 		 * Construct the 1-hop GeoReach.
 		 * It will be stored at index 0.
 		 */
+		Util.Print("Construct 1-hop");
 		int id = 0;
 		for (ArrayList<Integer> neighbors : graph)
 		{
@@ -169,6 +173,7 @@ public class IndexConstruct {
 		 */
 		for (int i = 1; i < MAX_HOP; i++)
 		{
+			Util.Print(String.format("Construct %d-hop", i+1));
 			id = 0;
 			for (ArrayList<Integer> neighbors : graph)
 			{
@@ -184,7 +189,7 @@ public class IndexConstruct {
 						if (targetReachGrid == null)
 						{
 							targetReachGrid = new TreeSet<>(reachgrid);
-							vertexGeoReach.ReachGrids.set(i, reachgrid);	
+							vertexGeoReach.ReachGrids.set(i, targetReachGrid);	
 						}
 						else
 							targetReachGrid.addAll(reachgrid);
@@ -196,7 +201,7 @@ public class IndexConstruct {
 						if (targetRMBR == null)
 						{
 							targetRMBR = new MyRectangle(rmbr);
-							vertexGeoReach.RMBRs.set(i, rmbr);
+							vertexGeoReach.RMBRs.set(i, targetRMBR);
 						}
 						else
 							rmbr.MBR(rmbr);
@@ -229,7 +234,7 @@ public class IndexConstruct {
 		double resolution_x = (maxx - minx) / pieces_x;
 		double resolution_y = (maxy - miny) / pieces_y;
 		
-		int startID = 0, hops = 1;
+		int startID = 0, hops = 2;
 		if (graph == null) 
 			graph = Util.ReadGraph(graphPath);
 		if (entities == null)
@@ -239,7 +244,7 @@ public class IndexConstruct {
 		curList.add(startID);
 		for ( int i = 0; i < hops; i++)
 		{
-			Util.Print(i);
+			Util.Print("hop: " + (i+1));
 			for (int id : curList)
 			{
 				ArrayList<Integer> neighbors = graph.get(id);
@@ -247,14 +252,13 @@ public class IndexConstruct {
 					nextList.add(neighborID);
 			}
 			
-			Util.Print("hop: " + i);
-			Util.Print("reachable vertices:\t" + nextList + "\tsize: " + nextList.size());
+			Util.Print(String.format("reachable vertices size:\t%d\t%s", nextList.size(), nextList));
 			
 			TreeSet<Integer> spatialVertices = new TreeSet<>();
 			for (int id : nextList)
 				if (entities.get(id).IsSpatial)
 					spatialVertices.add(id);
-			Util.Print("reachable spatial vertices:\t" + spatialVertices + "\tsize: " + spatialVertices.size());
+			Util.Print(String.format("reachable spatial vertices size:\t%d\t%s", spatialVertices.size(), spatialVertices));
 			
 			TreeSet<Integer> reachgrids = new TreeSet<>();
 			for ( int id : spatialVertices)
@@ -267,7 +271,7 @@ public class IndexConstruct {
 				int gridID = idX * pieces_x + idY;
 				reachgrids.add(gridID);
 			}
-			Util.Print("reachable grids:\t" + reachgrids + "\tsize:\t" + reachgrids.size());
+			Util.Print(String.format("reachable grids size:\t%d\t%s", reachgrids.size(), reachgrids));
 			
 			curList = nextList;
 			nextList = new HashSet<>();
