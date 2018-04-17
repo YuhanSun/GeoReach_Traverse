@@ -45,10 +45,11 @@ public class Loader {
 	{
 		int lineIndex = 0;
 		String line = "";
+		BatchInserter inserter = null;
 		try {
 			Map<String, String> config = new HashMap<String, String>();
 			config.put("dbms.pagecache.memory", "20g");
-			BatchInserter inserter = BatchInserters.inserter(
+			inserter = BatchInserters.inserter(
 					new File(dbPath).getAbsoluteFile(), config);
 			
 			BufferedReader reader = new BufferedReader(
@@ -95,6 +96,8 @@ public class Loader {
 			inserter.shutdown();
 			
 		} catch (Exception e) {
+			if (inserter != null)
+				inserter.shutdown();
 			Util.Print(String.format("line %d: %s", lineIndex, line));
 			e.printStackTrace();
 			System.exit(-1);
