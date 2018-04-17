@@ -72,7 +72,7 @@ public class MG {
 			String indexPath = String.format("%s\\%s\\MG\\%d_%d_%d_%d_%d_%d_%s.txt",
 					dir, dataset, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, suffix);
 			
-			String dbPath = String.format("%s\\Gowalla_10\\MG\\%s_%d_%d_%d_%d_%d_%d"
+			String dbPath = String.format("%s\\%s\\MG\\%s_%d_%d_%d_%d_%d_%d"
 					+ "\\data\\databases\\graph.db", 
 					dir, dataset, neo4j_version, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM);
 			
