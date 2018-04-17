@@ -19,21 +19,29 @@ public class Loader {
 	Config config;
 	String dataset, version;
 	system systemName;
-	int MAX_HOPNUM;
 	double minx, miny, maxx, maxy;
 	
 	ArrayList<ArrayList<Integer>> graph;
 	ArrayList<Entity> entities;
-	String dbPath, entityPath, graph_pos_map_path, graphPath;
+	long[] graph_pos_map_list;
+	String entityPath, graph_pos_map_path, graphPath;
 	
 	String reachGridName, rmbrName, geoBName;
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-
+		load();
 	}
 	
-	public void load(String indexPath, String dbPath, long[] graph_pos_map_list)
+	public static void load()
+	{
+		Loader loader = new Loader(new Config());
+		String indexPath = "D:\\Ubuntu_shared\\GeoReachHop\\data\\Gowalla_10\\128_128_100_100_0_3_bitmap.txt";
+		String dbPath = "D:\\Ubuntu_shared\\GeoReachHop\\data\\Gowalla_10\\neo4j-community-3.1.1_Gowalla_128_128_80_80_0_3\\data\\databases\\graph.db";
+		loader.load(indexPath, dbPath);
+	}
+	
+	public void load(String indexPath, String dbPath)
 	{
 		int lineIndex = 0;
 		String line = "";
@@ -57,7 +65,7 @@ public class Loader {
 				lineIndex++;
 				int id = Integer.parseInt(reader.readLine());
 				long neo4j_ID = graph_pos_map_list[id];
-				for ( int j = 0; j < MAX_HOP; j++)
+				for ( int j = 1; j <= MAX_HOP; j++)
 				{
 					lineIndex++;
 					line = reader.readLine();
@@ -76,6 +84,7 @@ public class Loader {
 						else {
 							inserter.setNodeProperty(neo4j_ID, geoBName+"_"+j, false);
 						}
+						break;
 					default:
 						throw new Exception(String.format("Vertex %d hop %d has type %d!", 
 								id, j, type));
@@ -104,24 +113,26 @@ public class Loader {
 		systemName = config.getSystemName();
 		version = config.GetNeo4jVersion();
 		dataset = config.getDatasetName();
-		MAX_HOPNUM = config.getMaxHopNum();
 		reachGridName = config.getReachGridName();
 		rmbrName = config.getRMBRName();
 		geoBName = config.getGeoBName();
 		switch (systemName) {
 		case Ubuntu:
-			dbPath = String.format("/home/yuhansun/Documents/GeoReachHop/%s_%s/data/databases/graph.db", version, dataset);
 			entityPath = String.format("/mnt/hgfs/Ubuntu_shared/GeoMinHop/data/%s/entity.txt", dataset);
 			graphPath = String.format("/mnt/hgfs/Ubuntu_shared/GeoMinHop/data/%s/graph.txt", dataset);
+			graph_pos_map_path = "/mnt/hgfs/Ubuntu_shared/GeoMinHop/data/" + dataset + "/node_map_RTree.txt";
 			break;
 		case Windows:
-			dbPath = String.format("D:\\Ubuntu_shared\\GeoReachHop\\data\\%s\\%s_%s\\data\\databases\\graph.db", 
-					dataset, version, dataset);
 			entityPath = String.format("D:\\Ubuntu_shared\\GeoMinHop\\data\\%s\\entity.txt", dataset);
 			graphPath = String.format("D:\\Ubuntu_shared\\GeoMinHop\\data\\%s\\graph.txt", dataset);
+			graph_pos_map_path = "D:\\Ubuntu_shared\\GeoMinHop\\data\\" + dataset + "\\node_map_RTree.txt";
 		default:
 			break;
 		}
+		
+		/**
+		 * set whole space range
+		 */
 		if (dataset.contains("Gowalla") || dataset.contains("Yelp")
 				|| dataset.contains("foursquare"))
 		{
@@ -136,6 +147,18 @@ public class Loader {
 			miny = 0;
 			maxx = 1000;
 			maxy = 1000;
+		}
+		
+		/**
+		 * set graph id to neo4j id map
+		 */
+		HashMap<String, String> graph_pos_map = Util.ReadMap(graph_pos_map_path);
+		graph_pos_map_list= new long[graph_pos_map.size()];
+		for ( String key_str : graph_pos_map.keySet())
+		{
+			int key = Integer.parseInt(key_str);
+			int pos_id = Integer.parseInt(graph_pos_map.get(key_str));
+			graph_pos_map_list[key] = pos_id;
 		}
 	}
 

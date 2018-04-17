@@ -2,17 +2,13 @@ package construction;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.TreeSet;
-
-import org.neo4j.graphdb.Node;
 
 import commons.Config;
 import commons.Entity;
 import commons.MyRectangle;
 import commons.Util;
 import commons.VertexGeoReach;
-import commons.Config.Datasets;
 import commons.Config.system;
 
 public class IndexConstruct {
@@ -25,7 +21,7 @@ public class IndexConstruct {
 	
 	ArrayList<ArrayList<Integer>> graph;
 	ArrayList<Entity> entities;
-	String dbPath, entityPath, mapPath, graphPath;
+	String dbPath, entityPath, graphPath;
 	
 	public void construct()
 	{
@@ -43,7 +39,7 @@ public class IndexConstruct {
 		int pieces_x = 128, pieces_y = 128, MC = 0;
 		double MG = 1.0, MR = 1.0;
 		
-		int format = 0;
+		int format = 1;
 		String suffix = "";
 		if (format == 0)
 			suffix = "list";
@@ -111,7 +107,6 @@ public class IndexConstruct {
 			maxx = 1000;
 			maxy = 1000;
 		}
-
 	}
 	
 	/**
@@ -226,7 +221,7 @@ public class IndexConstruct {
 				}
 				id++;
 			}
-			Util.Print(String.format("%d-hop time:\t%d", i + 1, System.currentTimeMillis() - start));
+			Util.Print(String.format("%d-hop time: %d\n", i + 1, System.currentTimeMillis() - start));
 			start = System.currentTimeMillis();
 		}
 		

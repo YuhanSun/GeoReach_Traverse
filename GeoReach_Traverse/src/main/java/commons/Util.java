@@ -23,6 +23,32 @@ public class Util {
         System.out.println(o);
     }
 	
+	/**
+	 * Read map from file
+	 * @param filename
+	 * @return
+	 */
+	public static HashMap<String, String> ReadMap(String filename)
+	{
+		try {
+			HashMap<String, String> map = new HashMap<String, String>();
+			BufferedReader reader = new BufferedReader(new FileReader(new File(filename)));
+			String line = null;
+			while ( (line = reader.readLine()) != null)
+			{
+				String[] liStrings = line.split(",");
+				map.put(liStrings[0], liStrings[1]);
+			}
+			reader.close();
+			return map;
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+		Util.Print("nothing in ReadMap(" + filename + ")");
+		return null;
+	}
+	
 	public static String Serialize_RoarBitmap_ToString(RoaringBitmap r) {
         r.runOptimize();
         ByteBuffer outbb = ByteBuffer.allocate(r.serializedSizeInBytes());
