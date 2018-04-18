@@ -13,6 +13,7 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import commons.Config;
 import commons.MyRectangle;
 import commons.Util;
+import commons.Labels.GraphRel;
 
 public class SimpleGraphTraversal {
 	
@@ -66,7 +67,7 @@ public class SimpleGraphTraversal {
 				{
 					double lon = (Double) node.getProperty(lon_name);
 					double lat = (Double) node.getProperty(lat_name);
-					if (Util.Location_In_Rect(lat, lat, queryRectangle)) 
+					if (Util.Location_In_Rect(lon, lat, queryRectangle)) 
 					{
 						LinkedList<Long> path = new LinkedList<Long>(curPath);
 						path.add(id);
@@ -79,7 +80,7 @@ public class SimpleGraphTraversal {
 			
 			curPath.add(id);
 			Util.Print(curPath);
-			Iterable<Relationship> rels = node.getRelationships();
+			Iterable<Relationship> rels = node.getRelationships(GraphRel.GRAPH_LINK);
 			for (Relationship relationship : rels)
 			{
 				Node neighbor = relationship.getOtherNode(node);

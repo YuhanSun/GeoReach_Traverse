@@ -90,6 +90,7 @@ public class Loader {
 						throw new Exception(String.format("Vertex %d hop %d has type %d!", 
 								id, j, type));
 					}
+					inserter.setNodeProperty(neo4j_ID, "GeoReachType_" + j, type);
 				}
 			}
 			

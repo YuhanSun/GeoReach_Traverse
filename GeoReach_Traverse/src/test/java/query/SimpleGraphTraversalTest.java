@@ -47,11 +47,16 @@ public class SimpleGraphTraversalTest {
 		try {
 			Util.Print(db_path);
 			SimpleGraphTraversal simpleGraphTraversal = new SimpleGraphTraversal(db_path);
-			long startID = 768514;
+//			long startID = 768514;
+			long startID = 1299706;
 			GraphDatabaseService dbservice = simpleGraphTraversal.dbservice;
 			Transaction tx = dbservice.beginTx();
 			Node node = dbservice.getNodeById(startID);
-			String query = String.format("match p = (s)--(a)--(b) where id(s) = %d and exists(b.%s) return p", 
+			Util.Print(node);
+			Util.Print(node.getLabels());
+			Util.Print(node.getAllProperties());
+			String query = String.format("match p = (s)-[:GRAPH_LINK]-(a)-[:GRAPH_LINK]-(b) "
+					+ "where id(s) = %d and exists(b.%s) return p", 
 					startID, "lon");
 			Result result = dbservice.execute(query);
 			int count = 0;
@@ -76,11 +81,11 @@ public class SimpleGraphTraversalTest {
 		try {
 			Util.Print(db_path);
 			SimpleGraphTraversal simpleGraphTraversal = new SimpleGraphTraversal(db_path);
-			long startID = 768514;
+			long startID = 1299706;
 			GraphDatabaseService dbservice = simpleGraphTraversal.dbservice;
 			Transaction tx = dbservice.beginTx();
 			Node node = dbservice.getNodeById(startID);
-			simpleGraphTraversal.traversal(node, 2, new MyRectangle(-180, -90, 180, 90));
+			simpleGraphTraversal.traversal(node, 3, new MyRectangle(-180, -90, 180, 90));
 			int count = simpleGraphTraversal.paths.size();
 			Util.Print(count);
 			tx.success();
@@ -90,7 +95,26 @@ public class SimpleGraphTraversalTest {
 			// TODO: handle exception
 			e.printStackTrace();
 		}
-		
 	}
-
+	
+	@Test
+	public void spaTreversalTest() {
+		try {
+			Util.Print(db_path);
+			SpaTraversal spaTraversal = new SpaTraversal(db_path);
+			long startID = 1299706;
+			GraphDatabaseService dbservice = spaTraversal.dbservice;
+			Transaction tx = dbservice.beginTx();
+			Node node = dbservice.getNodeById(startID);
+			spaTraversal.traversal(node, 3, new MyRectangle(-180, -90, 180, 90));
+			int count = spaTraversal.paths.size();
+			Util.Print(count);
+			tx.success();
+			tx.close();
+			dbservice.shutdown();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+	}
 }

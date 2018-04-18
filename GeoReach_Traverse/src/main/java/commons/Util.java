@@ -25,6 +25,15 @@ public class Util {
         System.out.println(o);
     }
 	
+	public static int GetSpatialEntityCount(ArrayList<Entity> entities)
+    {
+    	int count = 0;
+    	for ( Entity entity : entities)
+    		if(entity.IsSpatial)
+    			count++;
+    	return count;
+    }
+	
 	public static void WriteArray(String filename, ArrayList<String> arrayList)
     {
     	FileWriter fileWriter = null;
@@ -157,8 +166,8 @@ public class Util {
 	
 	/**
 	 * Decide whether a location is located within a rectangle
-	 * @param lat
 	 * @param lon
+	 * @param lat
 	 * @param rect
 	 * @return
 	 */

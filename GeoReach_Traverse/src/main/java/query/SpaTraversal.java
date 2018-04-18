@@ -1,28 +1,36 @@
 package query;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Queue;
 
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
 import commons.Config;
 import commons.MyRectangle;
 import commons.Util;
+import commons.Labels.GraphRel;
 
 public class SpaTraversal {
 	
 	public static Config config = new Config();
 	public String lon_name = config.GetLongitudePropertyName();
 	public String lat_name = config.GetLatitudePropertyName();
+	public int MAX_HOP = config.getMaxHopNum();
 	
 	public GraphDatabaseService dbservice;
 	
 	//result
 	public ArrayList<LinkedList<Long>> paths;
+	
+	public SpaTraversal(String db_path)
+	{
+		dbservice = new GraphDatabaseFactory().newEmbeddedDatabase(new File(db_path));
+	}
 	
 	/**
 	 * DFS way of traversal.
@@ -36,8 +44,8 @@ public class SpaTraversal {
 		int curHop = 0;
 		HashSet<Long> visited = new HashSet<Long>();
 		
-		ArrayList<HashSet<Long>> prunedVertices = new ArrayList<>(length - 1);
-		for ( int i = 0; i < length -1; i++)
+		ArrayList<HashSet<Long>> prunedVertices = new ArrayList<>(MAX_HOP);
+		for ( int i = 0; i < MAX_HOP; i++)
 			prunedVertices.add(new HashSet<>());
 		
 		helper(node, length, curHop, queryRectangle, visited, prunedVertices, new LinkedList<Long>());
@@ -65,7 +73,7 @@ public class SpaTraversal {
 				{
 					double lon = (Double) node.getProperty(lon_name);
 					double lat = (Double) node.getProperty(lat_name);
-					if (Util.Location_In_Rect(lat, lat, queryRectangle)) 
+					if (Util.Location_In_Rect(lon, lat, queryRectangle)) 
 					{
 						LinkedList<Long> path = new LinkedList<Long>(curPath);
 						path.add(id);
@@ -77,7 +85,9 @@ public class SpaTraversal {
 			}
 			
 			// node has been pruned at this query vertex under GeoReach validation
-			if (curHop >= 1 && prunedVertices.get(curHop-1).contains(id))
+			int hop_offset = curHop - (length - MAX_HOP);
+			Util.Print(hop_offset);
+			if (hop_offset >= 0 && prunedVertices.get(hop_offset).contains(id))
 				return;
 			
 			// if cannot satisfy the GeoReach validation
@@ -86,7 +96,7 @@ public class SpaTraversal {
 			
 			curPath.add(id);
 			Util.Print(curPath);
-			Iterable<Relationship> rels = node.getRelationships();
+			Iterable<Relationship> rels = node.getRelationships(GraphRel.GRAPH_LINK);
 			for (Relationship relationship : rels)
 			{
 				Node neighbor = relationship.getOtherNode(node);
