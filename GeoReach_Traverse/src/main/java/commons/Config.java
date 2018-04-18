@@ -55,6 +55,7 @@ public class Config
 	private String Rect_maxx_name = "maxx";
 	private String Rect_maxy_name = "maxy";
 	
+	private String GeoReachTypeName = "GeoReachType";
 	private String reachGridName = "ReachGrid";
 	private String rmbrName = "RMBR";
 	private String geoBName = "GeoB";
@@ -150,5 +151,10 @@ public class Config
 	public String getDataDir()
 	{
 		return dataDir;
+	}
+	
+	public String getGeoReachTypeName()
+	{
+		return GeoReachTypeName;
 	}
 }
