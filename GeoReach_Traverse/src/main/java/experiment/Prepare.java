@@ -12,7 +12,7 @@ public class Prepare {
 	static String[] datasets = new String[] {
 			Datasets.foursquare.toString(), 
 			Datasets.Gowalla_10.toString(), 
-			Datasets.foursquare.toString()
+			Datasets.Yelp.toString()
 			};
 	
 	static Config config = new Config();
