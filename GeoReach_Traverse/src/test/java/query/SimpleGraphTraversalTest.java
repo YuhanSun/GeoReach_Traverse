@@ -55,14 +55,15 @@ public class SimpleGraphTraversalTest {
 			Util.Print(node);
 			Util.Print(node.getLabels());
 			Util.Print(node.getAllProperties());
-			String query = String.format("match p = (s)-[:GRAPH_LINK]-(a)-[:GRAPH_LINK]-(b) "
+			String query = String.format("match p = (s)-[:GRAPH_LINK]-(a)-[:GRAPH_LINK]-(c)-[:GRAPH_LINK]-(b)"
 					+ "where id(s) = %d and exists(b.%s) return p", 
 					startID, "lon");
 			Result result = dbservice.execute(query);
 			int count = 0;
 			while (result.hasNext())
 			{
-				Util.Print(result.next());
+				result.next();
+//				Util.Print(result.next());
 				count++;
 			}
 			Util.Print(count);
@@ -85,7 +86,7 @@ public class SimpleGraphTraversalTest {
 			GraphDatabaseService dbservice = simpleGraphTraversal.dbservice;
 			Transaction tx = dbservice.beginTx();
 			Node node = dbservice.getNodeById(startID);
-			simpleGraphTraversal.traversal(node, 3, new MyRectangle(-180, -90, 180, 90));
+			simpleGraphTraversal.traversal(node, 2, new MyRectangle(-180, -90, 180, 90));
 			int count = simpleGraphTraversal.paths.size();
 			Util.Print(count);
 			tx.success();
@@ -101,7 +102,8 @@ public class SimpleGraphTraversalTest {
 	public void spaTreversalTest() {
 		try {
 			Util.Print(db_path);
-			SpaTraversal spaTraversal = new SpaTraversal(db_path);
+			SpaTraversal spaTraversal = new SpaTraversal(db_path, 
+					new MyRectangle(-180, -90, 180, 90), 128, 128);
 			long startID = 1299706;
 			GraphDatabaseService dbservice = spaTraversal.dbservice;
 			Transaction tx = dbservice.beginTx();

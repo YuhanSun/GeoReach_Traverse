@@ -1,7 +1,9 @@
 package query;
 
 import java.io.File;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.LinkedList;
 
@@ -9,6 +11,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import org.roaringbitmap.buffer.ImmutableRoaringBitmap;
 
 import commons.Config;
 import commons.MyRectangle;
@@ -28,7 +31,9 @@ public class SpaTraversal {
 	static String geoBName = config.getGeoBName();
 	
 	public GraphDatabaseService dbservice;
-	
+	MyRectangle total_range;
+	int pieces_x, pieces_y;
+	double resolution_x, resolution_y;
 	
 	//query related variables
 	int length;
@@ -39,9 +44,14 @@ public class SpaTraversal {
 	LinkedList<Long> curPath;
 	public ArrayList<LinkedList<Long>> paths;
 	
-	public SpaTraversal(String db_path)
+	public SpaTraversal(String db_path, MyRectangle total_range, int pieces_x, int pieces_y)
 	{
 		dbservice = new GraphDatabaseFactory().newEmbeddedDatabase(new File(db_path));
+		this.total_range = total_range;
+		this.pieces_x = pieces_x;
+		this.pieces_y = pieces_y;
+		resolution_x = (total_range.max_x - total_range.min_x) / (double)pieces_x;
+        resolution_y = (total_range.max_y - total_range.min_y) / (double)pieces_y;
 	}
 	
 	/**
@@ -57,6 +67,11 @@ public class SpaTraversal {
 		paths = new ArrayList<LinkedList<Long>>();
 		visited = new HashSet<Long>();
 		curPath = new LinkedList<>();
+		
+		lb_x = (int)((queryRectangle.min_x - this.total_range.min_x) / this.resolution_x);
+        lb_y = (int)((queryRectangle.min_y - this.total_range.min_y) / this.resolution_y);
+        rt_x = (int)((queryRectangle.max_x - this.total_range.min_x) / this.resolution_x);
+        rt_y = (int)((queryRectangle.max_y - this.total_range.min_y) / this.resolution_y);
 		
 		prunedVertices = new ArrayList<>(MAX_HOP);
 		for ( int i = 0; i < MAX_HOP; i++)
@@ -117,31 +132,46 @@ public class SpaTraversal {
 	
 	public boolean validate(Node node, int distance, MyRectangle queryRectangle)
 	{
-//		try {
-//			int type = (int) node.getProperty(GeoReachTypeName + "_" + distance);
-//			switch (type) {
-//			case 0:
-//				
-//				break;
-//			case 1:
-//				MyRectangle rmbr = new MyRectangle(
-//						node.getProperty(rmbrName + "_" + distance).toString());
-//				if (Util.intersect(rmbr, queryRectangle))
-//					return true;
-//				else {
-//					return false;
-//				}
-//			case 2:
-//				boolean geoB = (boolean) node.getProperty(geoBName + "_" + distance);
-//				return geoB;
-//			default:
-//				throw new Exception(String.format("%s for %s is %d", 
-//						GeoReachTypeName + "_" +distance, node, type));
-//			}
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			System.exit(-1);
-//		}
+		try {
+			int type = (int) node.getProperty(GeoReachTypeName + "_" + distance);
+			switch (type) {
+			case 0:
+				String ser = node.getProperty(reachGridName + "_" + distance).toString();
+				ByteBuffer newbb = ByteBuffer.wrap(Base64.getDecoder().decode(ser));
+	            ImmutableRoaringBitmap reachgrid = new ImmutableRoaringBitmap(newbb);
+	            
+	            for (int i = lb_x; i <= rt_x; i++)
+                {
+                    for (int j = lb_y; j < rt_y; j++)
+                    {
+                    	int grid_id = i * pieces_x + j;
+                        if (reachgrid.contains(grid_id)) {
+                            return true;
+                        }
+                    }
+                }
+	            return false;
+			case 1:
+				MyRectangle rmbr = new MyRectangle(
+						node.getProperty(rmbrName + "_" + distance).toString());
+				if (Util.intersect(rmbr, queryRectangle))
+					return true;
+				else {
+					return false;
+				}
+			case 2:
+				boolean geoB = (boolean) node.getProperty(geoBName + "_" + distance);
+				return geoB;
+			default:
+				throw new Exception(String.format("%s for %s is %d", 
+						GeoReachTypeName + "_" +distance, node, type));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
+		Util.Print(String.format("Something wrong happen in validate(%s, %d, %s)", 
+				node, distance, queryRectangle));
 		return true;
 	}
 }
