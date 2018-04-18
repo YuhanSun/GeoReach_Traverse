@@ -38,6 +38,14 @@ public class Config
 	private system operatingSystem = system.Windows;
 	private String dataset = Datasets.Gowalla_10.name();
 	
+	private String projectDir = operatingSystem.equals(system.Windows) ? 
+			"D:\\Google_Drive\\Projects\\GeoReachHop":
+			"/mnt/hgfs/Google_Drive/Projects/GeoReachHop";
+	
+	private String dataDir = operatingSystem.equals(system.Windows) ? 
+			"D:\\Ubuntu_shared\\GeoMinHop\\data":
+			"/mnt/hgfs/Ubuntu_shared/GeoMinHop/data";
+	
 	private int MAX_HOPNUM = 3;
 	private int MAX_HMBR_HOPNUM = 3;
 	private int nonspatial_label_count = 100;
@@ -132,5 +140,15 @@ public class Config
 	public String getGeoBName()
 	{
 		return geoBName;
+	}
+	
+	public String getProjectDir()
+	{
+		return projectDir;
+	}
+	
+	public String getDataDir()
+	{
+		return dataDir;
 	}
 }

@@ -11,8 +11,10 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 import java.util.TreeSet;
 
 import org.roaringbitmap.RoaringBitmap;
@@ -21,6 +23,74 @@ public class Util {
 	
 	public static void Print(Object o) {
         System.out.println(o);
+    }
+	
+	public static void WriteArray(String filename, ArrayList<String> arrayList)
+    {
+    	FileWriter fileWriter = null;
+    	try {
+			fileWriter = new FileWriter(new File(filename));
+			for (String line : arrayList)
+				fileWriter.write(line + "\n");
+			fileWriter.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+    }
+	
+	/**
+	 * Generate a set of random values for a given range.
+	 * @param graph_size [0, graph_size - 1]
+	 * @param node_count the wanted set size
+	 * @return a set of values
+	 */
+	public static HashSet<Long> GenerateRandomInteger(long graph_size, int node_count) {
+        HashSet<Long> ids = new HashSet<Long>();
+        Random random = new Random();
+        while (ids.size() < node_count) {
+            Long id = (long)(random.nextDouble() * (double)graph_size);
+            ids.add(id);
+        }
+        return ids;
+    }
+	
+	/**
+     * Get node count from a graph file.
+     * The graph has to be the correct format.
+     * @param filepath
+     * @return
+     */
+    public static int GetNodeCountGeneral(String filepath) {
+        int node_count = 0;
+        File file = null;
+        BufferedReader reader = null;
+        try {
+            try {
+                file = new File(filepath);
+                reader = new BufferedReader(new FileReader(file));
+                String str = reader.readLine();
+                String[] l = str.split(" ");
+                node_count = Integer.parseInt(l[0]);
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+                try {
+                    reader.close();
+                }
+                catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        }
+        finally {
+            try {
+                reader.close();
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return node_count;
     }
 	
 	/**
