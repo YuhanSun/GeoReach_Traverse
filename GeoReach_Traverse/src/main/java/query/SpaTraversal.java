@@ -29,7 +29,14 @@ public class SpaTraversal {
 	
 	public GraphDatabaseService dbservice;
 	
-	//result
+	
+	//query related variables
+	int length;
+	MyRectangle queryRectangle;
+	int lb_x, lb_y, rt_x, rt_y;
+	HashSet<Long> visited;
+	ArrayList<HashSet<Long>> prunedVertices;
+	LinkedList<Long> curPath;
 	public ArrayList<LinkedList<Long>> paths;
 	
 	public SpaTraversal(String db_path)
@@ -45,29 +52,25 @@ public class SpaTraversal {
 	 */
 	public void traversal(Node node, int length, MyRectangle queryRectangle)
 	{
+		this.length = length;
+		this.queryRectangle = queryRectangle;
 		paths = new ArrayList<LinkedList<Long>>();
-		int curHop = 0;
-		HashSet<Long> visited = new HashSet<Long>();
+		visited = new HashSet<Long>();
+		curPath = new LinkedList<>();
 		
-		ArrayList<HashSet<Long>> prunedVertices = new ArrayList<>(MAX_HOP);
+		prunedVertices = new ArrayList<>(MAX_HOP);
 		for ( int i = 0; i < MAX_HOP; i++)
 			prunedVertices.add(new HashSet<>());
 		
-		helper(node, length, curHop, queryRectangle, visited, prunedVertices, new LinkedList<Long>());
+		helper(node, 0);
 	}
 	
 	/**
 	 * 
 	 * @param node start node
-	 * @param length path length 
 	 * @param curHop 
-	 * @param queryRectangle
-	 * @param visited current visited vertices 
-	 * @param curPath
-	 * @param paths
 	 */
-	public void helper(Node node, int length, int curHop, MyRectangle queryRectangle, 
-			HashSet<Long> visited, ArrayList<HashSet<Long>> prunedVertices, LinkedList<Long> curPath)
+	public void helper(Node node, int curHop)
 	{
 		long id = node.getId();
 		if (visited.add(id))
@@ -105,8 +108,7 @@ public class SpaTraversal {
 			for (Relationship relationship : rels)
 			{
 				Node neighbor = relationship.getOtherNode(node);
-				helper(neighbor, length, curHop + 1, queryRectangle, 
-						visited, prunedVertices, curPath);
+				helper(neighbor, curHop + 1);
 			}
 			visited.remove(id);
 			curPath.removeLast();
@@ -115,31 +117,31 @@ public class SpaTraversal {
 	
 	public boolean validate(Node node, int distance, MyRectangle queryRectangle)
 	{
-		try {
-			int type = (int) node.getProperty(GeoReachTypeName + "_" + distance);
-			switch (type) {
-			case 0:
-				
-				break;
-			case 1:
-				MyRectangle rmbr = new MyRectangle(
-						node.getProperty(rmbrName + "_" + distance).toString());
-				if (Util.intersect(rmbr, queryRectangle))
-					return true;
-				else {
-					return false;
-				}
-			case 2:
-				boolean geoB = (boolean) node.getProperty(geoBName + "_" + distance);
-				return geoB;
-			default:
-				throw new Exception(String.format("%s for %s is %d", 
-						GeoReachTypeName + "_" +distance, node, type));
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.exit(-1);
-		}
+//		try {
+//			int type = (int) node.getProperty(GeoReachTypeName + "_" + distance);
+//			switch (type) {
+//			case 0:
+//				
+//				break;
+//			case 1:
+//				MyRectangle rmbr = new MyRectangle(
+//						node.getProperty(rmbrName + "_" + distance).toString());
+//				if (Util.intersect(rmbr, queryRectangle))
+//					return true;
+//				else {
+//					return false;
+//				}
+//			case 2:
+//				boolean geoB = (boolean) node.getProperty(geoBName + "_" + distance);
+//				return geoB;
+//			default:
+//				throw new Exception(String.format("%s for %s is %d", 
+//						GeoReachTypeName + "_" +distance, node, type));
+//			}
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			System.exit(-1);
+//		}
 		return true;
 	}
 }
