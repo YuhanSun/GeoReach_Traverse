@@ -22,6 +22,11 @@ public class SpaTraversal {
 	public String lat_name = config.GetLatitudePropertyName();
 	public int MAX_HOP = config.getMaxHopNum();
 	
+	static String GeoReachTypeName = config.getGeoReachTypeName();
+	static String reachGridName = config.getReachGridName();
+	static String rmbrName = config.getRMBRName();
+	static String geoBName = config.getGeoBName();
+	
 	public GraphDatabaseService dbservice;
 	
 	//result
@@ -91,7 +96,7 @@ public class SpaTraversal {
 				return;
 			
 			// if cannot satisfy the GeoReach validation
-			if (validate(node, length - curHop) == false)
+			if (validate(node, length - curHop, queryRectangle) == false)
 				return;
 			
 			curPath.add(id);
@@ -108,8 +113,33 @@ public class SpaTraversal {
 		}
 	}
 	
-	public boolean validate(Node node, int distance)
+	public boolean validate(Node node, int distance, MyRectangle queryRectangle)
 	{
+		try {
+			int type = (int) node.getProperty(GeoReachTypeName + "_" + distance);
+			switch (type) {
+			case 0:
+				
+				break;
+			case 1:
+				MyRectangle rmbr = new MyRectangle(
+						node.getProperty(rmbrName + "_" + distance).toString());
+				if (Util.intersect(rmbr, queryRectangle))
+					return true;
+				else {
+					return false;
+				}
+			case 2:
+				boolean geoB = (boolean) node.getProperty(geoBName + "_" + distance);
+				return geoB;
+			default:
+				throw new Exception(String.format("%s for %s is %d", 
+						GeoReachTypeName + "_" +distance, node, type));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
 		return true;
 	}
 }

@@ -26,7 +26,7 @@ public class Loader {
 	long[] graph_pos_map_list;
 	String entityPath, graph_pos_map_path, graphPath;
 	
-	String reachGridName, rmbrName, geoBName;
+	String GeoReachTypeName, reachGridName, rmbrName, geoBName;
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
@@ -90,7 +90,7 @@ public class Loader {
 						throw new Exception(String.format("Vertex %d hop %d has type %d!", 
 								id, j, type));
 					}
-					inserter.setNodeProperty(neo4j_ID, "GeoReachType_" + j, type);
+					inserter.setNodeProperty(neo4j_ID, GeoReachTypeName + "_" + j, type);
 				}
 			}
 			
@@ -117,9 +117,12 @@ public class Loader {
 		systemName = config.getSystemName();
 		version = config.GetNeo4jVersion();
 		dataset = config.getDatasetName();
+		
+		GeoReachTypeName = config.getGeoReachTypeName();
 		reachGridName = config.getReachGridName();
 		rmbrName = config.getRMBRName();
 		geoBName = config.getGeoBName();
+		
 		switch (systemName) {
 		case Ubuntu:
 			entityPath = String.format("/mnt/hgfs/Ubuntu_shared/GeoMinHop/data/%s/entity.txt", dataset);
