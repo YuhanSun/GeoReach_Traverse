@@ -23,7 +23,11 @@ public class SimpleGraphTraversal {
 	
 	public GraphDatabaseService dbservice;
 	
-	//result
+	//query related variables
+	int length;
+	MyRectangle queryRectangle;
+	HashSet<Long> visited;
+	LinkedList<Long> curPath;
 	public ArrayList<LinkedList<Long>> paths;
 	
 	public SimpleGraphTraversal(String db_path)
@@ -39,24 +43,20 @@ public class SimpleGraphTraversal {
 	 */
 	public void traversal(Node node, int length, MyRectangle queryRectangle)
 	{
-		int curHop = 0;
-		HashSet<Long> visited = new HashSet<Long>();
+		this.length = length;
+		this.queryRectangle = queryRectangle;
 		paths = new ArrayList<LinkedList<Long>>();
-		helper(node, length, curHop, queryRectangle, visited, new LinkedList<Long>(), paths);
+		visited = new HashSet<Long>();
+		curPath = new LinkedList<>();
+		helper(node, 0);
 	}
 	
 	/**
 	 * 
 	 * @param node start node
-	 * @param length path length 
 	 * @param curHop 
-	 * @param queryRectangle
-	 * @param visited current visited vertices 
-	 * @param curPath
-	 * @param paths
 	 */
-	public void helper(Node node, int length, int curHop, MyRectangle queryRectangle, 
-			HashSet<Long> visited, LinkedList<Long> curPath, ArrayList<LinkedList<Long>> paths)
+	public void helper(Node node, int curHop)
 	{
 		long id = node.getId();
 		if (visited.add(id))
@@ -84,8 +84,7 @@ public class SimpleGraphTraversal {
 			for (Relationship relationship : rels)
 			{
 				Node neighbor = relationship.getOtherNode(node);
-				helper(neighbor, length, curHop + 1, queryRectangle, 
-						visited, curPath, paths);
+				helper(neighbor, curHop + 1);
 			}
 			visited.remove(id);
 			curPath.removeLast();
