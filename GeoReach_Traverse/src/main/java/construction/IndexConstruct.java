@@ -252,7 +252,7 @@ public class IndexConstruct {
 					idX_max = Math.min(pieces_x - 1, idX_max);
 					idY_max = Math.min(pieces_y - 1, idY_max);
 					
-					if (reachgrid.size() > (idX_max - idX_min + 1) * (idY_max - idX_max + 1) * MG)
+					if (reachgrid.size() > (idX_max - idX_min + 1) * (idY_max - idY_min + 1) * MG)
 					{
 						type = 1;
 						if (rmbr.area() > total_area * MR)
