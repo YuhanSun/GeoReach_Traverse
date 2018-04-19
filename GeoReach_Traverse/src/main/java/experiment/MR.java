@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import commons.Config;
 import commons.Entity;
 import commons.Util;
+import commons.VertexGeoReach;
 import commons.Config.system;
 import construction.IndexConstruct;
 import construction.Loader;
@@ -46,8 +47,16 @@ public class MR {
 			String indexPath = String.format("%s\\%s\\MG\\%d_%d_%d_%d_%d_%d_%s.txt",
 					dir, dataset, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, suffix);
 			Util.Print("Output index to " + indexPath);
-			IndexConstruct.ConstructIndex(graph, entities, minx, miny, maxx, maxy, pieces_x, pieces_y, 
-					MG/100.0, MR/100.0, MC, MAX_HOPNUM, indexPath, format);
+			
+			ArrayList<VertexGeoReach> index = IndexConstruct.ConstructIndex(graph, entities, 
+					minx, miny, maxx, maxy, 
+					pieces_x, pieces_y, MAX_HOPNUM);
+			
+			ArrayList<ArrayList<Integer>> typesList = IndexConstruct.generateTypeList(index, MAX_HOPNUM, 
+					minx, miny, maxx, maxy, 
+					pieces_x, pieces_y, MG/100.0, MR/100.0, MC);
+			
+			Util.outputGeoReach(index, indexPath, typesList, format);
 		}
 	}
 	

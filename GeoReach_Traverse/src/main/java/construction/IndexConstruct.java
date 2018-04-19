@@ -23,6 +23,9 @@ public class IndexConstruct {
 	ArrayList<Entity> entities;
 	String dbPath, entityPath, graphPath;
 	
+	/**
+	 * Example of how to use such class.
+	 */
 	public void construct()
 	{
 		// TODO Auto-generated method stub
@@ -52,8 +55,15 @@ public class IndexConstruct {
 		String outputPath = String.format("D:\\Ubuntu_shared\\GeoReachHop\\data\\%s\\%d_%d_%d_%d_%d_%d_%s.txt",
 				dataset, pieces_x, pieces_y, (int)(MG * 100), (int)(MR * 100), MC, MAX_HOPNUM, suffix);
 		
-		ConstructIndex(graph, entities, minx, miny, maxx, maxy, pieces_x, pieces_y, 
-				MG, MR, MC, MAX_HOPNUM, outputPath, format);
+		ArrayList<VertexGeoReach> index = ConstructIndex(graph, entities, 
+				minx, miny, maxx, maxy, 
+				pieces_x, pieces_y, MAX_HOPNUM);
+		
+		ArrayList<ArrayList<Integer>> typesList = generateTypeList(index, MAX_HOPNUM, 
+				minx, miny, maxx, maxy, 
+				pieces_x, pieces_y, MG, MR, MC);
+		
+		Util.outputGeoReach(index, outputPath, typesList, format);
 	}
 	
 	public static void main(String[] args) {
@@ -118,9 +128,8 @@ public class IndexConstruct {
 	 * @param MC Threshold for merging grid cells.
 	 * @param outputPath
 	 */
-	public static void ConstructIndex(ArrayList<ArrayList<Integer>> graph, ArrayList<Entity> entities, 
-			double minx, double miny, double maxx, double maxy, int pieces_x, int pieces_y,
-			double MG, double MR, int MC, int MAX_HOP, String outputPath, int format) {
+	public static ArrayList<VertexGeoReach> ConstructIndex(ArrayList<ArrayList<Integer>> graph, ArrayList<Entity> entities, 
+			double minx, double miny, double maxx, double maxy, int pieces_x, int pieces_y, int MAX_HOP) {
 		int nodeCount = graph.size();
 		double resolution_x = (maxx - minx) / pieces_x;
 		double resolution_y = (maxy - miny) / pieces_y;
@@ -225,11 +234,21 @@ public class IndexConstruct {
 			start = System.currentTimeMillis();
 		}
 		
-		/**
-		 * Generate index type for each vertex
-		 */
-		id = 0;
+		return index;
+	}
+	
+	//Generate index type for each vertex
+	public static ArrayList<ArrayList<Integer>> generateTypeList(ArrayList<VertexGeoReach> index, 
+			int MAX_HOP, 
+			double minx, double miny, double maxx, double maxy, 
+			int pieces_x, int pieces_y, 
+			double MG, double MR, int MC)
+	{
+		long start = System.currentTimeMillis();
 		double total_area = (maxx - minx) * (maxy - miny);
+		double resolution_x = (maxx - minx) / pieces_x;
+		double resolution_y = (maxy - miny) / pieces_y;
+		
 		ArrayList<ArrayList<Integer>> typesList = new ArrayList<>();
 		for (VertexGeoReach vertexGeoReach : index)
 		{
@@ -291,8 +310,10 @@ public class IndexConstruct {
 		for (ArrayList<Integer> types : statis)
 			Util.Print(Util.histogram(types));
 		
-		Util.outputGeoReach(index, outputPath, typesList, format);
+		return typesList;
 	}
+	
+	
 	
 	/**
 	 * This part is the baseline for correctness proof
