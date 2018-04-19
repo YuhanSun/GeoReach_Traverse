@@ -22,22 +22,23 @@ public class SimpleGraphTraversalTest {
 	static String version = config.GetNeo4jVersion();
 	static system systemName = config.getSystemName();
 
+	static String dbDir = config.getDBDir();
 	static String db_path;
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		switch (systemName) {
 		case Ubuntu:
-			db_path = String.format("/home/yuhansun/Documents/GeoGraphMatchData/%s_%s/data/databases/graph.db", version, dataset);
+//			db_path = String.format("%s/%s_%s/data/databases/graph.db", dbDir, version, dataset);
 			break;
 		case Windows:
-			String dataDirectory = "D:\\Ubuntu_shared\\GeoMinHop\\data";
-			db_path = String.format("%s\\%s\\%s_%s\\data\\databases\\graph.db", dataDirectory, dataset, version, dataset);
+			db_path = String.format("%s\\%s\\neo4j-community-3.1.1_128_128_0_100_0_3\\data\\databases\\graph.db", 
+					dbDir, dataset);
 		default:
 			break;
 		}
 	}
-
+	
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 	}
@@ -86,7 +87,7 @@ public class SimpleGraphTraversalTest {
 			GraphDatabaseService dbservice = simpleGraphTraversal.dbservice;
 			Transaction tx = dbservice.beginTx();
 			Node node = dbservice.getNodeById(startID);
-			simpleGraphTraversal.traversal(node, 2, new MyRectangle(-180, -90, 180, 90));
+			simpleGraphTraversal.traversal(node, 2, new MyRectangle(-120, 30, -60, 40));
 			int count = simpleGraphTraversal.paths.size();
 			Util.Print(count);
 			tx.success();
