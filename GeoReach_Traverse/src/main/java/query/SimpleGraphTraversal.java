@@ -32,7 +32,15 @@ public class SimpleGraphTraversal {
 	
 	public SimpleGraphTraversal(String db_path)
 	{
-		dbservice = new GraphDatabaseFactory().newEmbeddedDatabase(new File(db_path));
+		try {
+			if (Util.pathExist(db_path))
+				dbservice = new GraphDatabaseFactory().newEmbeddedDatabase(new File(db_path));
+			else
+				throw new Exception(db_path + "does not exist!");
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
 	}
 	
 	/**

@@ -46,12 +46,21 @@ public class SpaTraversal {
 	
 	public SpaTraversal(String db_path, MyRectangle total_range, int pieces_x, int pieces_y)
 	{
-		dbservice = new GraphDatabaseFactory().newEmbeddedDatabase(new File(db_path));
-		this.total_range = total_range;
-		this.pieces_x = pieces_x;
-		this.pieces_y = pieces_y;
-		resolution_x = (total_range.max_x - total_range.min_x) / (double)pieces_x;
-        resolution_y = (total_range.max_y - total_range.min_y) / (double)pieces_y;
+		try {
+			if (Util.pathExist(db_path))
+				dbservice = new GraphDatabaseFactory().newEmbeddedDatabase(new File(db_path));
+			else
+				throw new Exception(db_path + "does not exist!");
+			this.total_range = total_range;
+			this.pieces_x = pieces_x;
+			this.pieces_y = pieces_y;
+			resolution_x = (total_range.max_x - total_range.min_x) / (double)pieces_x;
+	        resolution_y = (total_range.max_y - total_range.min_y) / (double)pieces_y;	
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
+		
 	}
 	
 	/**
