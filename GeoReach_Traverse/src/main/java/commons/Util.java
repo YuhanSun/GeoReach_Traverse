@@ -25,6 +25,16 @@ public class Util {
         System.out.println(o);
     }
 	
+	public static boolean pathExist(String path)
+	{
+		File file = new File(path);
+
+		if (file.exists()) 
+			return true;
+		else
+			return false;
+	}
+	
 	public static boolean intersect(MyRectangle rect1, MyRectangle rect2)
     {
     	if(rect1.min_x > rect2.max_x || rect1.min_y > rect2.max_y || rect1.max_x < rect2.min_x || rect1.max_y < rect2.min_y)
