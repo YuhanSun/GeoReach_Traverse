@@ -215,7 +215,7 @@ public class IndexConstruct {
 							vertexGeoReach.RMBRs.set(i, targetRMBR);
 						}
 						else
-							rmbr.MBR(rmbr);
+							targetRMBR.MBR(rmbr);
 						
 					}
 				}
