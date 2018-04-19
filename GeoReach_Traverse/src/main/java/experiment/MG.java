@@ -25,7 +25,7 @@ public class MG {
 		Config config = new Config();
 		MG mg = new MG(config);
 		mg.generateIndex();
-		mg.loadIndex();
+//		mg.loadIndex();
 	}
 	
 	public void generateIndex()
@@ -41,16 +41,15 @@ public class MG {
 			suffix = "bitmap";
 		
 		String dir = "D:\\Ubuntu_shared\\GeoReachHop\\data";
-		for (int MG = 0; MG <= 100; MG += 25) 
+		ArrayList<VertexGeoReach> index = IndexConstruct.ConstructIndex(graph, entities, 
+				minx, miny, maxx, maxy, 
+				pieces_x, pieces_y, MAX_HOPNUM);
+		for (int MG = 1; MG <= 10; MG += 1) 
 		{
 			Util.Print("\nMG: " + MG);
 			String indexPath = String.format("%s\\%s\\MG\\%d_%d_%d_%d_%d_%d_%s.txt",
 					dir, dataset, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, suffix);
 			Util.Print("Output index to " + indexPath);
-			
-			ArrayList<VertexGeoReach> index = IndexConstruct.ConstructIndex(graph, entities, 
-					minx, miny, maxx, maxy, 
-					pieces_x, pieces_y, MAX_HOPNUM);
 			
 			ArrayList<ArrayList<Integer>> typesList = IndexConstruct.generateTypeList(index, MAX_HOPNUM, 
 					minx, miny, maxx, maxy, 
