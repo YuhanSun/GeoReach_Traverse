@@ -2,9 +2,16 @@ package commons;
 
 import static org.junit.Assert.*;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 
 public class UtilTest {
 
@@ -20,6 +27,37 @@ public class UtilTest {
 	public void pathExistTest() {
 		String path = "D:\\Ubuntu_shared\\GeReachHop\\data";
 		Util.Print(Util.pathExist(path));
+	}
+	
+	@Test
+	public void getNodesByIDsTest()
+	{
+		String dbPath = "/home/yuhansun/Documents/GeoReachHop/Gowalla_10/neo4j-community-3.1.1_128_128_100_100_0_3/data/databases/graph.db";
+		GraphDatabaseService databaseService = Util.getDatabaseService(dbPath);
+		Transaction tx = databaseService.beginTx();
+		ArrayList<Long> ids = new ArrayList<>();
+		ids.add((long) 1299706);
+		ArrayList<Node> nodes = Util.getNodesByIDs(databaseService, ids);
+		Util.Print(nodes);
+		for (Node node : nodes)
+		{
+			Util.Print(node);
+			Util.Print(node.getAllProperties());
+		}
+		tx.success();
+		tx.close();
+		
+		tx = databaseService.beginTx();
+		Util.Print(nodes);
+		for (Node node : nodes)
+		{
+			Util.Print(node);
+			Util.Print(node.getAllProperties());
+		}
+		tx.success();
+		tx.close();
+		
+		databaseService.shutdown();
 	}
 
 }

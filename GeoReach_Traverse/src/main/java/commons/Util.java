@@ -24,6 +24,8 @@ import java.util.TreeSet;
 import org.neo4j.graphdb.ExecutionPlanDescription;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.roaringbitmap.RoaringBitmap;
 
 public class Util {
@@ -31,6 +33,18 @@ public class Util {
 	public static void Print(Object o) {
         System.out.println(o);
     }
+	
+	public static GraphDatabaseService getDatabaseService(String dbPath)
+	{
+		if (!Util.pathExist(dbPath))
+		{
+			Util.Print(dbPath + "does not exist!");
+			System.exit(-1);
+		}
+		GraphDatabaseService dbservice = new GraphDatabaseFactory().newEmbeddedDatabase(new File(dbPath));
+		return dbservice;
+	}
+	
 	
 	public static long Average(ArrayList<Long> arraylist)
 	{
@@ -42,6 +56,12 @@ public class Util {
 		return sum / arraylist.size();
 	}
 	
+	/**
+	 * This function has to be used in transaction.
+	 * @param databaseService
+	 * @param ids
+	 * @return
+	 */
 	public static ArrayList<Node> getNodesByIDs(GraphDatabaseService databaseService, ArrayList<Long> ids) 
 	{
 		ArrayList<Node> nodes = new ArrayList<>(); 

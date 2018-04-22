@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
 import commons.Config;
@@ -104,6 +105,7 @@ public class SelectivityNumber {
 //			resultDir = String.format("D:\\Google_Drive\\Experiment_Result\\Riso-Tree\\%s", dataset);
 			break;
 		}
+		Util.Print("entity path: " + entityPath);
 		ArrayList<Entity> entities = Util.ReadEntity(entityPath);
 		spaCount = Util.GetSpatialEntityCount(entities);
 		
@@ -118,37 +120,43 @@ public class SelectivityNumber {
 	}
 	
 	public static void main(String[] args) {
-		Config config = new Config();
-		
-//		ArrayList<String> dataset_a = new ArrayList<String>(Arrays.asList(
-//				Config.Datasets.Gowalla_100.name(), 
-//				Config.Datasets.foursquare_100.name(),
-//				Config.Datasets.Patents_100_random_80.name(), 
-//				Config.Datasets.go_uniprot_100_random_80.name()));
-		
-		config.setDatasetName(Config.Datasets.Gowalla_10.name());
-		SelectivityNumber selectivityNumber = new SelectivityNumber(config);
-		
-		//Read start ids
-		String startIDPath = String.format("%s/startID.txt", selectivityNumber.queryDir);
-		Util.Print("start id path: " + startIDPath);
-		ArrayList<Integer> startIDs = Util.readIntegerArray(startIDPath);
-		Util.Print(startIDs);
-		
-		int experimentCount = 500;
-		int repeatTime = 10;
-		ArrayList<ArrayList<Long>> startIDsList = new ArrayList<>();
-		for ( int i = 0; i < repeatTime; i++)
-			startIDsList.add(new ArrayList<>());
-		
-		for ( int i = 0; i < experimentCount; i++)
-		{
-			int id = startIDs.get(i);
-			int index = i % repeatTime;
-			startIDsList.get(index).add(selectivityNumber.graph_pos_map_list[id]);
+		try {
+			Config config = new Config();
+			
+//			ArrayList<String> dataset_a = new ArrayList<String>(Arrays.asList(
+//					Config.Datasets.Gowalla_100.name(), 
+//					Config.Datasets.foursquare_100.name(),
+//					Config.Datasets.Patents_100_random_80.name(), 
+//					Config.Datasets.go_uniprot_100_random_80.name()));
+			
+			config.setDatasetName(Config.Datasets.Gowalla_10.name());
+			SelectivityNumber selectivityNumber = new SelectivityNumber(config);
+			
+			//Read start ids
+			String startIDPath = String.format("%s/startID.txt", selectivityNumber.queryDir);
+			Util.Print("start id path: " + startIDPath);
+			ArrayList<Integer> startIDs = Util.readIntegerArray(startIDPath);
+			Util.Print(startIDs);
+			
+			int experimentCount = 500;
+			int repeatTime = 10;
+			ArrayList<ArrayList<Long>> startIDsList = new ArrayList<>();
+			for ( int i = 0; i < repeatTime; i++)
+				startIDsList.add(new ArrayList<>());
+			
+			for ( int i = 0; i < experimentCount; i++)
+			{
+				int id = startIDs.get(i);
+				int index = i % repeatTime;
+				startIDsList.get(index).add(selectivityNumber.graph_pos_map_list[id]);
+			}
+			
+			selectivityNumber.simpleTraversal(startIDsList);
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.exit(-1);
 		}
-		
-		selectivityNumber.simpleTraversal(startIDsList);
 	}
 	
 	public void simpleTraversal(ArrayList<ArrayList<Long>> startIDsList)
@@ -212,7 +220,8 @@ public class SelectivityNumber {
 				for ( int i = 0; i < startIDsList.size(); i++)
 				{
 					ArrayList<Long> startIDs = startIDsList.get(i);
-					Util.Print("");
+					Util.Print("start ids: " + startIDs);
+					Transaction tx = simpleGraphTraversal.dbservice.beginTx();
 					ArrayList<Node> startNodes = Util.getNodesByIDs(simpleGraphTraversal.dbservice, startIDs); 
 					
 					MyRectangle rectangle = queryrect.get(i);
