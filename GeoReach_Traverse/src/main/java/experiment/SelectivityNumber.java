@@ -151,7 +151,7 @@ public class SelectivityNumber {
 			Util.Print(startIDs);
 			
 			int experimentCount = 500;
-			int repeatTime = 10;
+			int repeatTime = 1;
 			ArrayList<ArrayList<Long>> startIDsList = new ArrayList<>();
 			for ( int i = 0; i < repeatTime; i++)
 				startIDsList.add(new ArrayList<>());
@@ -163,7 +163,7 @@ public class SelectivityNumber {
 				startIDsList.get(index).add(selectivityNumber.graph_pos_map_list[id]);
 			}
 			
-//			selectivityNumber.simpleTraversal(startIDsList);
+			selectivityNumber.simpleTraversal(startIDsList);
 			selectivityNumber.spaTraversal(startIDsList);
 		} catch (Exception e) {
 			// TODO: handle exception
@@ -197,7 +197,7 @@ public class SelectivityNumber {
 				Util.WriteFile(result_avg_path, true, write_line);
 			}
 
-			String head_line = "time\tvisited_count\tresult_count\n";
+			String head_line = "time\tvisited_count\tGeoReachPruned\tHistoryPrunedresult_count\n";
 			if(!TEST_FORMAT)
 				Util.WriteFile(result_avg_path, true, "selectivity\t" + head_line);
 
@@ -229,6 +229,8 @@ public class SelectivityNumber {
 				ArrayList<Long> total_time = new ArrayList<Long>();
 				ArrayList<Long> visitedcount = new ArrayList<Long>();
 				ArrayList<Long> resultCount = new ArrayList<Long>();
+				ArrayList<Long> GeoReachPrunedCount = new ArrayList<Long>();
+				ArrayList<Long> HistoryPrunedCount = new ArrayList<Long>();
 
 				for ( int i = 0; i < startIDsList.size(); i++)
 				{
@@ -258,9 +260,14 @@ public class SelectivityNumber {
 						total_time.add(time);
 						visitedcount.add(spaTraversal.visitedCount);
 						resultCount.add(spaTraversal.resultCount);
+						GeoReachPrunedCount.add(spaTraversal.GeoReachPruneCount);
+						HistoryPrunedCount.add(spaTraversal.PrunedVerticesWorkCount);
+
 
 						write_line = String.format("%d\t%d\t", total_time.get(i), visitedcount.get(i));
-						write_line += String.format("%d\n", resultCount.get(i));
+						write_line += String.format("%d\t%d\t", GeoReachPrunedCount.get(i), HistoryPrunedCount.get(i));
+						write_line += String.format("%d\t%d\t%d\n", Util.Average(GeoReachPrunedCount), 
+								Util.Average(HistoryPrunedCount), Util.Average(resultCount));
 						if(!TEST_FORMAT)
 							Util.WriteFile(result_detail_path, true, write_line);
 					}
