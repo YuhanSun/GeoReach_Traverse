@@ -28,7 +28,10 @@ public class SimpleGraphTraversal {
 	MyRectangle queryRectangle;
 	HashSet<Long> visited;
 	LinkedList<Long> curPath;
-	public ArrayList<LinkedList<Long>> paths;
+//	public ArrayList<LinkedList<Long>> paths;
+	
+	//tracking variables
+	long resultCount, visitedCount;
 	
 	public SimpleGraphTraversal(String db_path)
 	{
@@ -51,11 +54,17 @@ public class SimpleGraphTraversal {
 	 */
 	public void traversal(Node node, int length, MyRectangle queryRectangle)
 	{
+		//query variables initialization
 		this.length = length;
 		this.queryRectangle = queryRectangle;
-		paths = new ArrayList<LinkedList<Long>>();
+//		paths = new ArrayList<LinkedList<Long>>();
 		visited = new HashSet<Long>();
 		curPath = new LinkedList<>();
+		
+		//tracking variables initialization
+		resultCount = 0;
+		visitedCount = 0;
+		
 		helper(node, 0);
 	}
 	
@@ -79,7 +88,8 @@ public class SimpleGraphTraversal {
 					{
 						LinkedList<Long> path = new LinkedList<Long>(curPath);
 						path.add(id);
-						paths.add(path);
+//						paths.add(path);
+						resultCount++;
 					}
 				}
 				visited.remove(id);
@@ -87,11 +97,12 @@ public class SimpleGraphTraversal {
 			}
 			
 			curPath.add(id);
-			Util.Print(curPath);
+//			Util.Print(curPath);
 			Iterable<Relationship> rels = node.getRelationships(GraphRel.GRAPH_LINK);
 			for (Relationship relationship : rels)
 			{
 				Node neighbor = relationship.getOtherNode(node);
+				visitedCount++;
 				helper(neighbor, curHop + 1);
 			}
 			visited.remove(id);
