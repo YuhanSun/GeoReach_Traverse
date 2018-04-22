@@ -35,7 +35,7 @@ public class Prepare {
 			
 			Util.Print("Get graph node count from " + graphPath);
 			int nodeCount = Util.GetNodeCountGeneral(graphPath);
-			HashSet<Long> idSet = Util.GenerateRandomInteger(nodeCount, 1000);
+			HashSet<Long> idSet = Util.GenerateRandomInteger(nodeCount, 10000);
 			ArrayList<String> idStrings = new ArrayList<>(idSet.size());
 			for (Long id : idSet)
 				idStrings.add(String.valueOf(id));

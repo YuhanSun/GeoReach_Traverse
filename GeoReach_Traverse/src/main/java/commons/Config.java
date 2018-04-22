@@ -52,7 +52,7 @@ public class Config
 			"D:\\Ubuntu_shared\\GeoReachHop\\data":
 			"/mnt/hgfs/Ubuntu_shared/GeoReachHop/data";
 	
-	private int MAX_HOPNUM = 3;
+	private int MAX_HOPNUM = 0;
 	private int MAX_HMBR_HOPNUM = 3;
 	private int nonspatial_label_count = 100;
 
