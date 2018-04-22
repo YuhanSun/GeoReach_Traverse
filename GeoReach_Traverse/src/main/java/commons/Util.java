@@ -13,16 +13,94 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Random;
+import java.util.Set;
 import java.util.TreeSet;
 
+import org.neo4j.graphdb.ExecutionPlanDescription;
 import org.roaringbitmap.RoaringBitmap;
 
 public class Util {
 	
 	public static void Print(Object o) {
         System.out.println(o);
+    }
+	
+	/**
+	 * read integer arraylist
+	 * @param path
+	 * @return
+	 */
+	public static ArrayList<Integer> readIntegerArray(String path)
+	{
+		String line = null;
+		ArrayList<Integer> arrayList = new ArrayList<Integer>();
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader(new File(path)));
+			while ( (line = reader.readLine()) != null )
+			{
+				int x = Integer.parseInt(line);
+				arrayList.add(x);
+			}
+			reader.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+		return arrayList;
+	}
+	
+	/**
+	 * Get db hits. 
+	 * Directly use getDBHits will just get the hits of the final step.
+	 * It is not feasible.
+	 * @param plan
+	 * @return
+	 */
+	public static long GetTotalDBHits(ExecutionPlanDescription plan)
+    {
+    	long dbhits = 0;
+    	Queue<ExecutionPlanDescription> queue = new LinkedList<ExecutionPlanDescription>();
+    	if(plan.hasProfilerStatistics())
+    		queue.add(plan);
+    	while(queue.isEmpty() == false)
+    	{
+    		ExecutionPlanDescription planDescription = queue.poll();
+    		dbhits += planDescription.getProfilerStatistics().getDbHits();
+    		for ( ExecutionPlanDescription planDescription2 : planDescription.getChildren())
+    			queue.add(planDescription2);
+    	}
+    	return dbhits;
+    }
+	
+	public static void WriteFile(String filename, boolean app, List<String> lines) {
+        try {
+            FileWriter fw = new FileWriter(filename, app);
+            int i = 0;
+            while (i < lines.size()) {
+                fw.write(String.valueOf(lines.get(i)) + "\n");
+                ++i;
+            }
+            fw.close();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+	
+	public static void WriteFile(String filename, boolean app, Set<String> lines) {
+        try {
+            FileWriter fw = new FileWriter(filename, app);
+            for (String line : lines)
+            	fw.write(line + "\n");
+            fw.close();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 	
 	public static boolean pathExist(String path)
