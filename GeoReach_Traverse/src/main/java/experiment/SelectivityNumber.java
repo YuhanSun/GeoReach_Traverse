@@ -163,7 +163,7 @@ public class SelectivityNumber {
 				startIDsList.get(index).add(selectivityNumber.graph_pos_map_list[id]);
 			}
 			
-			selectivityNumber.simpleTraversal(startIDsList);
+//			selectivityNumber.simpleTraversal(startIDsList);
 			selectivityNumber.spaTraversal(startIDsList);
 		} catch (Exception e) {
 			// TODO: handle exception
@@ -197,7 +197,7 @@ public class SelectivityNumber {
 				Util.WriteFile(result_avg_path, true, write_line);
 			}
 
-			String head_line = "time\tvisited_count\tGeoReachPruned\tHistoryPrunedresult_count\n";
+			String head_line = "time\tvisited_count\tGeoReachPruned\tHistoryPruned\tresult_count\n";
 			if(!TEST_FORMAT)
 				Util.WriteFile(result_avg_path, true, "selectivity\t" + head_line);
 
@@ -266,8 +266,7 @@ public class SelectivityNumber {
 
 						write_line = String.format("%d\t%d\t", total_time.get(i), visitedcount.get(i));
 						write_line += String.format("%d\t%d\t", GeoReachPrunedCount.get(i), HistoryPrunedCount.get(i));
-						write_line += String.format("%d\t%d\t%d\n", Util.Average(GeoReachPrunedCount), 
-								Util.Average(HistoryPrunedCount), Util.Average(resultCount));
+						write_line += String.format("%d\n", resultCount.get(i));
 						if(!TEST_FORMAT)
 							Util.WriteFile(result_detail_path, true, write_line);
 					}
@@ -285,7 +284,8 @@ public class SelectivityNumber {
 
 				write_line = String.valueOf(selectivity) + "\t";
 				write_line += String.format("%d\t%d\t", Util.Average(total_time), Util.Average(visitedcount));
-				write_line += String.format("%d\n", Util.Average(resultCount));
+				write_line += String.format("%d\t%d\t%d\n", Util.Average(GeoReachPrunedCount), 
+						Util.Average(HistoryPrunedCount), Util.Average(resultCount));
 				if(!TEST_FORMAT)
 					Util.WriteFile(result_avg_path, true, write_line);
 
