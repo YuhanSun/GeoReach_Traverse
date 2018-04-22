@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
 import commons.Config;
@@ -65,8 +66,11 @@ public class SimpleGraphTraversal {
 		resultCount = 0;
 		visitedCount = 0;
 
+		Transaction tx = dbservice.beginTx();
 		for ( Node node : startNodes)
 			helper(node, 0);
+		tx.success();
+		tx.close();
 	}
 	
 	/**

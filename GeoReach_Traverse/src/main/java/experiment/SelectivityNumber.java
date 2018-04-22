@@ -163,7 +163,8 @@ public class SelectivityNumber {
 				startIDsList.get(index).add(selectivityNumber.graph_pos_map_list[id]);
 			}
 			
-			selectivityNumber.simpleTraversal(startIDsList);
+//			selectivityNumber.simpleTraversal(startIDsList);
+			selectivityNumber.spaTraversal(startIDsList);
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
@@ -181,7 +182,7 @@ public class SelectivityNumber {
 			switch (systemName) {
 			case Ubuntu:
 				result_detail_path = String.format("%s/%s_spaTraversal_detail.txt", resultDir, dataset);
-				result_avg_path = String.format("%s/spaTraversal_avg.txt", resultDir, dataset);
+				result_avg_path = String.format("%s/%s_spaTraversal_avg.txt", resultDir, dataset);
 				break;
 			case Windows:
 //				result_detail_path = String.format("%s\\risotree_PN_%d_%d.txt", resultDir, nodeCount, query_id);
@@ -232,8 +233,10 @@ public class SelectivityNumber {
 				for ( int i = 0; i < startIDsList.size(); i++)
 				{
 					ArrayList<Long> startIDs = startIDsList.get(i);
-					Util.Print("");
+					Transaction tx = spaTraversal.dbservice.beginTx();
 					ArrayList<Node> startNodes = Util.getNodesByIDs(spaTraversal.dbservice, startIDs); 
+					tx.success();
+					tx.close();
 					
 					MyRectangle rectangle = queryrect.get(i);
 					if ( rectangle.area() == 0.0)
@@ -299,7 +302,7 @@ public class SelectivityNumber {
 			switch (systemName) {
 			case Ubuntu:
 				result_detail_path = String.format("%s/%s_simpleTraversal_detail.txt", resultDir, dataset);
-				result_avg_path = String.format("%s/simpleTraversal_avg.txt", resultDir, dataset);
+				result_avg_path = String.format("%s/%s_simpleTraversal_avg.txt", resultDir, dataset);
 				break;
 			case Windows:
 //				result_detail_path = String.format("%s\\risotree_PN_%d_%d.txt", resultDir, nodeCount, query_id);
@@ -352,7 +355,9 @@ public class SelectivityNumber {
 					ArrayList<Long> startIDs = startIDsList.get(i);
 					Util.Print("start ids: " + startIDs);
 					Transaction tx = simpleGraphTraversal.dbservice.beginTx();
-					ArrayList<Node> startNodes = Util.getNodesByIDs(simpleGraphTraversal.dbservice, startIDs); 
+					ArrayList<Node> startNodes = Util.getNodesByIDs(simpleGraphTraversal.dbservice, startIDs);
+					tx.success();
+					tx.close();
 					
 					MyRectangle rectangle = queryrect.get(i);
 					if ( rectangle.area() == 0.0)
