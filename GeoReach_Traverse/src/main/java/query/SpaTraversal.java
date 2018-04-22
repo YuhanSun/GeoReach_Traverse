@@ -1,5 +1,6 @@
 package query;
 
+import java.awt.List;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -23,13 +24,13 @@ public class SpaTraversal {
 	public static Config config = new Config();
 	public String lon_name = config.GetLongitudePropertyName();
 	public String lat_name = config.GetLatitudePropertyName();
-	public int MAX_HOP = config.getMaxHopNum();
 	
 	static String GeoReachTypeName = config.getGeoReachTypeName();
 	static String reachGridName = config.getReachGridName();
 	static String rmbrName = config.getRMBRName();
 	static String geoBName = config.getGeoBName();
 	
+	public int MAX_HOP;
 	public GraphDatabaseService dbservice;
 	MyRectangle total_range;
 	int pieces_x, pieces_y;
@@ -42,15 +43,20 @@ public class SpaTraversal {
 	HashSet<Long> visited;
 	ArrayList<HashSet<Long>> prunedVertices;
 	LinkedList<Long> curPath;
-	public ArrayList<LinkedList<Long>> paths;
+//	public ArrayList<LinkedList<Long>> paths;
 	
-	public SpaTraversal(String db_path, MyRectangle total_range, int pieces_x, int pieces_y)
+	//tracking variables
+	long resultCount, visitedCount, GeoReachPruneCount, PrunedVerticesWorkCount;
+	
+	public SpaTraversal(String db_path, int MAX_HOP, MyRectangle total_range, int pieces_x, int pieces_y)
 	{
 		try {
 			if (Util.pathExist(db_path))
 				dbservice = new GraphDatabaseFactory().newEmbeddedDatabase(new File(db_path));
 			else
 				throw new Exception(db_path + "does not exist!");
+			
+			this.MAX_HOP = MAX_HOP;
 			this.total_range = total_range;
 			this.pieces_x = pieces_x;
 			this.pieces_y = pieces_y;
@@ -63,17 +69,11 @@ public class SpaTraversal {
 		
 	}
 	
-	/**
-	 * DFS way of traversal.
-	 * @param node the start node
-	 * @param hops number of hops
-	 * @param queryRectangle the range predicate on the end node
-	 */
-	public void traversal(Node node, int length, MyRectangle queryRectangle)
+	public void traversal(LinkedList<Node> startNodes, int length, MyRectangle queryRectangle)
 	{
 		this.length = length;
 		this.queryRectangle = queryRectangle;
-		paths = new ArrayList<LinkedList<Long>>();
+//		paths = new ArrayList<LinkedList<Long>>();
 		visited = new HashSet<Long>();
 		curPath = new LinkedList<>();
 		
@@ -86,7 +86,14 @@ public class SpaTraversal {
 		for ( int i = 0; i < MAX_HOP; i++)
 			prunedVertices.add(new HashSet<>());
 		
-		helper(node, 0);
+		//tracking variables
+		resultCount = 0;
+		visitedCount = 0;
+		GeoReachPruneCount = 0;
+		PrunedVerticesWorkCount = 0;
+		
+		for (Node node : startNodes)
+			helper(node, 0);
 	}
 	
 	/**
@@ -97,7 +104,11 @@ public class SpaTraversal {
 	public void helper(Node node, int curHop)
 	{
 		long id = node.getId();
-		if (visited.add(id))
+//		if (id == 1299743 && curHop ==1)
+//		{
+//			Util.Print("here");
+//		}
+		if (visited.contains(id) == false)
 		{
 			if (curHop == length)
 			{
@@ -109,29 +120,49 @@ public class SpaTraversal {
 					{
 						LinkedList<Long> path = new LinkedList<Long>(curPath);
 						path.add(id);
-						paths.add(path);
+//						paths.add(path);
+						resultCount++;
 					}
 				}
-				visited.remove(id);
 				return;
 			}
 			
-			// node has been pruned at this query vertex under GeoReach validation
-			int hop_offset = curHop - (length - MAX_HOP);
-			Util.Print(hop_offset);
-			if (hop_offset >= 0 && prunedVertices.get(hop_offset).contains(id))
-				return;
+			
 			
 			// if cannot satisfy the GeoReach validation
-			if (validate(node, length - curHop, queryRectangle) == false)
-				return;
+//			if (node.getId() ==  1299743 && curHop == 1)
+//			{
+//				Util.Print("here");
+//			}
+			
+			int distance = length - curHop;
+			// node has been pruned at this query vertex under GeoReach validation
+//			Util.Print(hop_offset);
+			if (distance <= MAX_HOP)
+			{
+				if (prunedVertices.get(distance - 1).contains(id))
+				{
+					PrunedVerticesWorkCount++;
+					return;
+				}
+				
+				if (validate(node, distance, queryRectangle) == false)
+				{
+					prunedVertices.get(distance-1).add(id);
+					GeoReachPruneCount++;
+					return;
+				}
+			}
+			
 			
 			curPath.add(id);
-			Util.Print(curPath);
+			visited.add(id);
+//			Util.Print(curPath);
 			Iterable<Relationship> rels = node.getRelationships(GraphRel.GRAPH_LINK);
 			for (Relationship relationship : rels)
 			{
 				Node neighbor = relationship.getOtherNode(node);
+				visitedCount++;
 				helper(neighbor, curHop + 1);
 			}
 			visited.remove(id);
@@ -151,7 +182,7 @@ public class SpaTraversal {
 	            
 	            for (int i = lb_x; i <= rt_x; i++)
                 {
-                    for (int j = lb_y; j < rt_y; j++)
+                    for (int j = lb_y; j <= rt_y; j++)
                     {
                     	int grid_id = i * pieces_x + j;
                         if (reachgrid.contains(grid_id)) {
