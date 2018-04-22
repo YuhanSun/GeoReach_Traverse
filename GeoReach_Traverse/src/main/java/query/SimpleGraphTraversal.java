@@ -31,7 +31,7 @@ public class SimpleGraphTraversal {
 //	public ArrayList<LinkedList<Long>> paths;
 	
 	//tracking variables
-	long resultCount, visitedCount;
+	public long resultCount, visitedCount;
 	
 	public SimpleGraphTraversal(String db_path)
 	{
@@ -48,24 +48,25 @@ public class SimpleGraphTraversal {
 	
 	/**
 	 * DFS way of traversal.
-	 * @param node the start node
-	 * @param hops number of hops
-	 * @param queryRectangle the range predicate on the end node
+	 * @param startNodes
+	 * @param length
+	 * @param queryRectangle
 	 */
-	public void traversal(Node node, int length, MyRectangle queryRectangle)
+	public void traverse(ArrayList<Node> startNodes, int length, MyRectangle queryRectangle)
 	{
 		//query variables initialization
 		this.length = length;
 		this.queryRectangle = queryRectangle;
-//		paths = new ArrayList<LinkedList<Long>>();
+		//				paths = new ArrayList<LinkedList<Long>>();
 		visited = new HashSet<Long>();
 		curPath = new LinkedList<>();
-		
+
 		//tracking variables initialization
 		resultCount = 0;
 		visitedCount = 0;
-		
-		helper(node, 0);
+
+		for ( Node node : startNodes)
+			helper(node, 0);
 	}
 	
 	/**

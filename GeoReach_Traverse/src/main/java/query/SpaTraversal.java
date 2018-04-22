@@ -46,7 +46,7 @@ public class SpaTraversal {
 //	public ArrayList<LinkedList<Long>> paths;
 	
 	//tracking variables
-	long resultCount, visitedCount, GeoReachPruneCount, PrunedVerticesWorkCount;
+	public long resultCount, visitedCount, GeoReachPruneCount, PrunedVerticesWorkCount;
 	
 	public SpaTraversal(String db_path, int MAX_HOP, MyRectangle total_range, int pieces_x, int pieces_y)
 	{
@@ -69,7 +69,7 @@ public class SpaTraversal {
 		
 	}
 	
-	public void traversal(LinkedList<Node> startNodes, int length, MyRectangle queryRectangle)
+	public void traverse(ArrayList<Node> startNodes, int length, MyRectangle queryRectangle)
 	{
 		this.length = length;
 		this.queryRectangle = queryRectangle;
@@ -126,8 +126,6 @@ public class SpaTraversal {
 				}
 				return;
 			}
-			
-			
 			
 			// if cannot satisfy the GeoReach validation
 //			if (node.getId() ==  1299743 && curHop == 1)

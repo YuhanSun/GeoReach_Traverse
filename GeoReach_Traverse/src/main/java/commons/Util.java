@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -21,12 +22,97 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.neo4j.graphdb.ExecutionPlanDescription;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
 import org.roaringbitmap.RoaringBitmap;
 
 public class Util {
 	
 	public static void Print(Object o) {
         System.out.println(o);
+    }
+	
+	public static long Average(ArrayList<Long> arraylist)
+	{
+		if ( arraylist .size() == 0)
+			return -1;
+		long sum = 0;
+		for ( long element : arraylist)
+			sum += element;
+		return sum / arraylist.size();
+	}
+	
+	public static ArrayList<Node> getNodesByIDs(GraphDatabaseService databaseService, ArrayList<Long> ids) 
+	{
+		ArrayList<Node> nodes = new ArrayList<>(); 
+		for ( long id : ids)
+			nodes.add(databaseService.getNodeById(id));
+		return nodes;
+	}
+	
+	public static String ClearCache(String password) {
+        String[] cmd = new String[]{"/bin/bash", "-c", "echo " + password + " | sudo -S sh -c \"sync; echo 3 > /proc/sys/vm/drop_caches\""};
+        String result = null;
+        try {
+            String line;
+            Process process = Runtime.getRuntime().exec(cmd);
+            process.waitFor();
+            BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            StringBuffer sb = new StringBuffer();
+            while ((line = br.readLine()) != null) {
+                sb.append(line).append("\n");
+            }
+            result = sb.toString();
+            result = String.valueOf(result) + "\n";
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+	
+	public static ArrayList<MyRectangle> ReadQueryRectangle(String filepath) {
+		ArrayList<MyRectangle> queryrectangles;
+		queryrectangles = new ArrayList<MyRectangle>();
+		BufferedReader reader = null;
+		File file = null;
+			try {
+				file = new File(filepath);
+				reader = new BufferedReader(new FileReader(file));
+				String temp = null;
+				while ((temp = reader.readLine()) != null) {
+					if ( temp.contains("%"))
+						continue;
+					String[] line_list = temp.split("\t");
+					MyRectangle rect = new MyRectangle(Double.parseDouble(line_list[0]), Double.parseDouble(line_list[1]), Double.parseDouble(line_list[2]), Double.parseDouble(line_list[3]));
+					queryrectangles.add(rect);
+				}
+				reader.close();
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+		}
+		finally {
+			if (reader != null)
+				try {
+					reader.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		}
+		return queryrectangles;
+	}
+	
+	public static void WriteFile(String filename, boolean app, String str) {
+        try {
+            FileWriter fw = new FileWriter(filename, app);
+            fw.write(str);
+            fw.close();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 	
 	/**

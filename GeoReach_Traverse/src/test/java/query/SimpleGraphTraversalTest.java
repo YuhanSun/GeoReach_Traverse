@@ -105,11 +105,11 @@ public class SimpleGraphTraversalTest {
 			SimpleGraphTraversal simpleGraphTraversal = new SimpleGraphTraversal(db_path);
 			GraphDatabaseService dbservice = simpleGraphTraversal.dbservice;
 			Transaction tx = dbservice.beginTx();
-			Node node = dbservice.getNodeById(startID);
-//			simpleGraphTraversal.traversal(node, 2, new MyRectangle(-120, 30, -60, 40));
-			simpleGraphTraversal.traversal(node, Length, queryRectangle);
+			ArrayList<Node> startNodes = new ArrayList<>();
+			for (long id : startIDs)
+				startNodes.add(dbservice.getNodeById(id));
+			simpleGraphTraversal.traverse(startNodes, Length, queryRectangle);
 			
-//			int count = simpleGraphTraversal.paths.size();
 			long count = simpleGraphTraversal.resultCount;
 			Util.Print(count);
 			
@@ -120,18 +120,18 @@ public class SimpleGraphTraversalTest {
 			tx.close();
 			dbservice.shutdown();
 		} catch (Exception e) {
-			// TODO: handle exception
 			e.printStackTrace();
 		}
 	}
 	
 	//The test query
-	public static long startID = 1299708;
+	public static long startID = 1299706;
 	ArrayList<Long> startIDs = new ArrayList<Long>(Arrays.asList(
 			startID
 			));
-	public static int Length = 3;
-	public static MyRectangle queryRectangle = new MyRectangle(-70, 30, -60, 40);
+	public static int Length = 2;
+//	public static MyRectangle queryRectangle = new MyRectangle(-70, 30, -60, 40);
+	public static MyRectangle queryRectangle = new MyRectangle(-90, 30, -60, 40);
 	
 	@Test
 	public void spaTreversalTest() {
@@ -145,11 +145,11 @@ public class SimpleGraphTraversalTest {
 //			spaTraversal.traversal(node, 2, new MyRectangle(-120, 30, -60, 40));
 			
 //			startIDs.add((long) 1299708);
-			LinkedList<Node> startNodes = new LinkedList<>();
+			ArrayList<Node> startNodes = new ArrayList<>();
 			for (long id : startIDs)
 				startNodes.add(dbservice.getNodeById(id));
 			
-			spaTraversal.traversal(startNodes, Length, queryRectangle);
+			spaTraversal.traverse(startNodes, Length, queryRectangle);
 			
 			Util.Print(spaTraversal.resultCount);
 			Util.Print("Visited Count: " + spaTraversal.visitedCount);
