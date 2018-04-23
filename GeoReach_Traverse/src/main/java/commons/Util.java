@@ -551,8 +551,8 @@ public class Util {
     	}
     	catch(Exception e)
     	{
-    		Util.Print(id);
-    		Util.Print(typesList.get(id));
+    		Util.Print("Error happens when output index for vertex " + id);
+    		Util.Print("Type List: " + typesList.get(id));
     		e.printStackTrace();
     		System.exit(-1);
     	}

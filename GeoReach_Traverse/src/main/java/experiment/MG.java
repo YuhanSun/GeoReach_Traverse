@@ -24,8 +24,8 @@ public class MG {
 	public static void main(String[] args) {
 		Config config = new Config();
 		MG mg = new MG(config);
-		mg.generateIndex();
-//		mg.loadIndex();
+//		mg.generateIndex();
+		mg.loadIndex();
 	}
 	
 	public void generateIndex()
@@ -44,7 +44,7 @@ public class MG {
 		ArrayList<VertexGeoReach> index = IndexConstruct.ConstructIndex(graph, entities, 
 				minx, miny, maxx, maxy, 
 				pieces_x, pieces_y, MAX_HOPNUM);
-		for (int MG = 1; MG <= 10; MG += 1) 
+		for (int MG = 0; MG <= 0; MG += 10) 
 		{
 			Util.Print("\nMG: " + MG);
 			String indexPath = String.format("%s\\%s\\MG\\%d_%d_%d_%d_%d_%d_%s.txt",
@@ -57,6 +57,20 @@ public class MG {
 			
 			Util.outputGeoReach(index, indexPath, typesList, format);
 		}
+		
+//		for (int MG = 1; MG <= 9; MG += 1) 
+//		{
+//			Util.Print("\nMG: " + MG);
+//			String indexPath = String.format("%s\\%s\\MG\\%d_%d_%d_%d_%d_%d_%s.txt",
+//					dir, dataset, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, suffix);
+//			Util.Print("Output index to " + indexPath);
+//			
+//			ArrayList<ArrayList<Integer>> typesList = IndexConstruct.generateTypeList(index, MAX_HOPNUM, 
+//					minx, miny, maxx, maxy, 
+//					pieces_x, pieces_y, MG/100.0, MR/100.0, MC);
+//			
+//			Util.outputGeoReach(index, indexPath, typesList, format);
+//		}
 	}
 	
 	public void loadIndex()
@@ -72,7 +86,7 @@ public class MG {
 			suffix = "bitmap";
 		
 		String dir = "D:\\Ubuntu_shared\\GeoReachHop\\data";
-		for (int MG = 0; MG <= 100; MG += 25) 
+		for (int MG = 0; MG <= 3; MG += 1) 
 		{
 			Util.Print("\nMG: " + MG);
 			Loader loader = new Loader(new Config());
@@ -87,6 +101,23 @@ public class MG {
 			Util.Print(String.format("Load from %s\nto %s", indexPath, dbPath));
 			loader.load(indexPath, dbPath);
 		}
+		
+		for (int MG = 100; MG <= 100; MG += 1) 
+		{
+			Util.Print("\nMG: " + MG);
+			Loader loader = new Loader(new Config());
+			
+			String indexPath = String.format("%s\\%s\\MG\\%d_%d_%d_%d_%d_%d_%s.txt",
+					dir, dataset, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, suffix);
+			
+			String dbPath = String.format("%s\\%s\\MG\\%s_%d_%d_%d_%d_%d_%d"
+					+ "\\data\\databases\\graph.db", 
+					dir, dataset, neo4j_version, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM);
+			
+			Util.Print(String.format("Load from %s\nto %s", indexPath, dbPath));
+			loader.load(indexPath, dbPath);
+		}
+		
 	}
 	
 	public MG(Config config)
