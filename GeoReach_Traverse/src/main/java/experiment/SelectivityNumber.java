@@ -229,9 +229,11 @@ public class SelectivityNumber {
 				if(!TEST_FORMAT)
 					Util.WriteFile(result_detail_path, true, write_line);
 
+				Util.Print("queryrect path: " + queryrect_path);
 				ArrayList<MyRectangle> queryrect = Util.ReadQueryRectangle(queryrect_path);
 				
-				spaTraversal = new SpaTraversal(db_path, MAX_HOPNUM, totalRange, 128, 128);
+				Util.Print("db path: " + db_path);
+				spaTraversal = new SpaTraversal(db_path, MAX_HOPNUM, totalRange, pieces_x, pieces_y);
 
 				ArrayList<Long> total_time = new ArrayList<Long>();
 				ArrayList<Long> visitedcount = new ArrayList<Long>();
