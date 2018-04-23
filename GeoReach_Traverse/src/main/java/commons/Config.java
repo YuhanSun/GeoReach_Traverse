@@ -36,7 +36,7 @@ public class Config
 	//attention here, these settings change a lot
 	private String neo4j_version = "neo4j-community-3.1.1";
 	private system operatingSystem = system.Windows;
-	private String dataset = Datasets.Gowalla_10.name();
+	private String dataset = Datasets.Yelp.name();
 	
 	//Project dir: experiment query and result
 	private String projectDir = operatingSystem.equals(system.Windows) ? 
@@ -50,9 +50,9 @@ public class Config
 	
 	private String dbDir = operatingSystem.equals(system.Windows) ? 
 			"D:\\Ubuntu_shared\\GeoReachHop\\data":
-			"/mnt/hgfs/Ubuntu_shared/GeoReachHop/data";
+			"/home/yuhansun/Documents/GeoReachHop";
 	
-	private int MAX_HOPNUM = 0;
+	private int MAX_HOPNUM = 3;
 	private int MAX_HMBR_HOPNUM = 3;
 	private int nonspatial_label_count = 100;
 
