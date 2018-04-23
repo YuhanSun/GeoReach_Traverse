@@ -31,7 +31,7 @@ public class MR {
 	public void generateIndex()
 	{
 		int pieces_x = 128, pieces_y = 128, MC = 0;
-		int MR = 100;
+		int MG = 0;
 		
 		int format = 1;
 		String suffix = "";
@@ -41,10 +41,10 @@ public class MR {
 			suffix = "bitmap";
 		
 		String dir = "D:\\Ubuntu_shared\\GeoReachHop\\data";
-		for (int MG = 0; MG <= 100; MG += 25) 
+		for (int MR = 0; MR <= 100; MR += 25) 
 		{
-			Util.Print("\nMG: " + MG);
-			String indexPath = String.format("%s\\%s\\MG\\%d_%d_%d_%d_%d_%d_%s.txt",
+			Util.Print("\nMR: " + MR);
+			String indexPath = String.format("%s\\%s\\MR\\%d_%d_%d_%d_%d_%d_%s.txt",
 					dir, dataset, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, suffix);
 			Util.Print("Output index to " + indexPath);
 			
@@ -63,7 +63,7 @@ public class MR {
 	public void loadIndex()
 	{
 		int pieces_x = 128, pieces_y = 128, MC = 0;
-		int MR = 100;
+		int MG = 0;
 		
 		int format = 1;
 		String suffix = "";
@@ -73,15 +73,15 @@ public class MR {
 			suffix = "bitmap";
 		
 		String dir = "D:\\Ubuntu_shared\\GeoReachHop\\data";
-		for (int MG = 0; MG <= 100; MG += 25) 
+		for (int MR = 0; MR <= 100; MR += 25) 
 		{
-			Util.Print("\nMG: " + MG);
+			Util.Print("\nMR: " + MR);
 			Loader loader = new Loader(new Config());
 			
-			String indexPath = String.format("%s\\%s\\MG\\%d_%d_%d_%d_%d_%d_%s.txt",
+			String indexPath = String.format("%s\\%s\\MR\\%d_%d_%d_%d_%d_%d_%s.txt",
 					dir, dataset, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, suffix);
 			
-			String dbPath = String.format("%s\\%s\\MG\\%s_%d_%d_%d_%d_%d_%d"
+			String dbPath = String.format("%s\\%s\\MR\\%s_%d_%d_%d_%d_%d_%d"
 					+ "\\data\\databases\\graph.db", 
 					dir, dataset, neo4j_version, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM);
 			
