@@ -74,7 +74,7 @@ public class SelectivityNumber {
 		initializeParameters();
 	}
 
-	public static int pieces_x = 256, pieces_y = 256;
+	public static int pieces_x = 1024, pieces_y = 1024;
 	public static double MG = 1.0, MR = 1.0;
 	public static int MC = 0;
 	public static int length = 3;
@@ -146,7 +146,7 @@ public class SelectivityNumber {
 //					Config.Datasets.Patents_100_random_80.name(), 
 //					Config.Datasets.go_uniprot_100_random_80.name()));
 			
-			config.setDatasetName(Config.Datasets.Gowalla_10.name());
+			config.setDatasetName(Config.Datasets.Yelp.name());
 			SelectivityNumber selectivityNumber = new SelectivityNumber(config);
 			
 			//Read start ids
@@ -169,8 +169,8 @@ public class SelectivityNumber {
 			}
 			
 //			selectivityNumber.simpleTraversal(startIDsList);
-//			selectivityNumber.spaTraversal(startIDsList);
-			selectivityNumber.neo4jCypherTraveral(startIDsList);
+			selectivityNumber.spaTraversal(startIDsList);
+//			selectivityNumber.neo4jCypherTraveral(startIDsList);
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
@@ -180,6 +180,7 @@ public class SelectivityNumber {
 	
 	public void spaTraversal(ArrayList<ArrayList<Long>> startIDsList)
 	{
+		SpaTraversal spaTraversal = null;
 		try {
 			long start;
 			long time;
@@ -230,7 +231,7 @@ public class SelectivityNumber {
 
 				ArrayList<MyRectangle> queryrect = Util.ReadQueryRectangle(queryrect_path);
 				
-				SpaTraversal spaTraversal = new SpaTraversal(db_path, MAX_HOPNUM, totalRange, 128, 128);
+				spaTraversal = new SpaTraversal(db_path, MAX_HOPNUM, totalRange, 128, 128);
 
 				ArrayList<Long> total_time = new ArrayList<Long>();
 				ArrayList<Long> visitedcount = new ArrayList<Long>();
@@ -301,6 +302,8 @@ public class SelectivityNumber {
 			Util.WriteFile(result_avg_path, true, "\n");
 		} catch (Exception e) {
 			e.printStackTrace();
+			if (spaTraversal.dbservice != null)
+				spaTraversal.dbservice.shutdown();
 			System.exit(-1);
 		}
 	}
