@@ -48,7 +48,11 @@ public class SelectivityNumber {
 //	double endSelectivity = 0.2;
 	
 	//foursquare_100
-	public double startSelectivity = 0.000001;
+//	public double startSelectivity = 0.000001;
+//	public double endSelectivity = 0.2;
+	
+	//Yelp
+	public double startSelectivity = 0.0001;
 	public double endSelectivity = 0.2;
 	
 	//Patents
