@@ -46,6 +46,7 @@ public class Loader {
 		int lineIndex = 0;
 		String line = "";
 		BatchInserter inserter = null;
+		int id;
 		try {
 			Map<String, String> config = new HashMap<String, String>();
 			config.put("dbms.pagecache.memory", "20g");
@@ -66,7 +67,7 @@ public class Loader {
 			for ( int i = 0; i < nodeCount; i++)
 			{
 				lineIndex++;
-				int id = Integer.parseInt(reader.readLine());
+				id = Integer.parseInt(reader.readLine());
 				long neo4j_ID = graph_pos_map_list[id];
 				for ( int j = 1; j <= MAX_HOP; j++)
 				{
