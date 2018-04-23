@@ -42,7 +42,7 @@ public class MG {
 	
 	public static void main(String[] args) {
 		Config config = new Config();
-		config.setDatasetName(Datasets.Yelp.name());
+		config.setDatasetName(Datasets.Gowalla_10.name());
 		MG mg = new MG(config);
 //		mg.generateIndex();
 		mg.loadIndex();
@@ -101,7 +101,23 @@ public class MG {
 		
 		String dir = "D:\\Ubuntu_shared\\GeoReachHop\\data";
 		
-//		for (int MG = 0; MG <= 3; MG += 1) 
+		for (int MG = 0; MG <= 6; MG += 2) 
+		{
+			Util.Print("\nMG: " + MG);
+			Loader loader = new Loader(config);
+			
+			String indexPath = String.format("%s\\%s\\MG\\%d_%d_%d_%d_%d_%d_%s.txt",
+					dir, dataset, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, suffix);
+			
+			String dbPath = String.format("%s\\%s\\MG\\%s_%d_%d_%d_%d_%d_%d"
+					+ "\\data\\databases\\graph.db", 
+					dir, dataset, neo4j_version, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM);
+			
+			Util.Print(String.format("Load from %s\nto %s", indexPath, dbPath));
+			loader.load(indexPath, dbPath);
+		}
+		
+//		int MG = 100;
 //		{
 //			Util.Print("\nMG: " + MG);
 //			Loader loader = new Loader(new Config());
@@ -116,22 +132,6 @@ public class MG {
 //			Util.Print(String.format("Load from %s\nto %s", indexPath, dbPath));
 //			loader.load(indexPath, dbPath);
 //		}
-		
-		int MG = 100;
-		{
-			Util.Print("\nMG: " + MG);
-			Loader loader = new Loader(new Config());
-			
-			String indexPath = String.format("%s\\%s\\MG\\%d_%d_%d_%d_%d_%d_%s.txt",
-					dir, dataset, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, suffix);
-			
-			String dbPath = String.format("%s\\%s\\MG\\%s_%d_%d_%d_%d_%d_%d"
-					+ "\\data\\databases\\graph.db", 
-					dir, dataset, neo4j_version, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM);
-			
-			Util.Print(String.format("Load from %s\nto %s", indexPath, dbPath));
-			loader.load(indexPath, dbPath);
-		}
 	}
 	
 	public void query()
@@ -347,5 +347,6 @@ public class MG {
 			int pos_id = Integer.parseInt(graph_pos_map.get(key_str));
 			graph_pos_map_list[key] = pos_id;
 		}
+		Util.Print("graph_pos_map_list size: " + graph_pos_map_list.length);
 	}
 }

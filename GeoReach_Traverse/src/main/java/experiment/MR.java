@@ -47,7 +47,7 @@ public class MR {
 				minx, miny, maxx, maxy, 
 				pieces_x, pieces_y, MAX_HOPNUM);
 		
-		for (int MR = 0; MR <= 10; MR += 2) 
+		for (int MR = 5; MR <= 20; MR += 5) 
 		{
 			Util.Print("\nMR: " + MR);
 			
@@ -84,7 +84,7 @@ public class MR {
 		for (int MR = 0; MR <= 100; MR += 25) 
 		{
 			Util.Print("\nMR: " + MR);
-			Loader loader = new Loader(new Config());
+			Loader loader = new Loader(config);
 			
 			String indexPath = String.format("%s\\%s\\MR\\%d_%d_%d_%d_%d_%d_%s.txt",
 					dir, dataset, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, suffix);
