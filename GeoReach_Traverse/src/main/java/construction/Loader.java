@@ -36,8 +36,8 @@ public class Loader {
 	public static void load()
 	{
 		Loader loader = new Loader(new Config());
-		String indexPath = "D:\\Ubuntu_shared\\GeoReachHop\\data\\Gowalla_10\\128_128_100_100_0_3_bitmap.txt";
-		String dbPath = "D:\\Ubuntu_shared\\GeoReachHop\\data\\Gowalla_10\\neo4j-community-3.1.1_Gowalla_128_128_80_80_0_3\\data\\databases\\graph.db";
+		String indexPath = "D:\\Ubuntu_shared\\GeoReachHop\\data\\Yelp\\1024_1024_100_100_0_3_bitmap.txt";
+		String dbPath = "D:\\Ubuntu_shared\\GeoReachHop\\data\\Yelp\\neo4j-community-3.1.1_1024_1024_100_100_0_3\\data\\databases\\graph.db";
 		loader.load(indexPath, dbPath);
 	}
 	
@@ -49,6 +49,8 @@ public class Loader {
 		try {
 			Map<String, String> config = new HashMap<String, String>();
 			config.put("dbms.pagecache.memory", "20g");
+			if (Util.pathExist(dbPath) == false)
+				throw new Exception(dbPath + " does not exist!");
 			inserter = BatchInserters.inserter(
 					new File(dbPath).getAbsoluteFile(), config);
 			
