@@ -12,6 +12,7 @@ import commons.Config;
 import commons.Entity;
 import commons.MyRectangle;
 import commons.Util;
+import query.Neo4jCypherTraversal;
 import query.SimpleGraphTraversal;
 import query.SpaTraversal;
 import commons.Config.system;
@@ -48,7 +49,7 @@ public class SelectivityNumber {
 	
 	//foursquare_100
 	public double startSelectivity = 0.000001;
-	public double endSelectivity = 0.002;
+	public double endSelectivity = 0.2;
 	
 	//Patents
 //	double startSelectivity = 0.00001;
@@ -164,7 +165,8 @@ public class SelectivityNumber {
 			}
 			
 //			selectivityNumber.simpleTraversal(startIDsList);
-			selectivityNumber.spaTraversal(startIDsList);
+//			selectivityNumber.spaTraversal(startIDsList);
+			selectivityNumber.neo4jCypherTraveral(startIDsList);
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
@@ -420,4 +422,123 @@ public class SelectivityNumber {
 		}
 	}
 
+	public void neo4jCypherTraveral(ArrayList<ArrayList<Long>> startIDsList)
+	{
+		try {
+			long start;
+			long time;
+
+			String result_detail_path = null, result_avg_path = null;
+			switch (systemName) {
+			case Ubuntu:
+				result_detail_path = String.format("%s/%s_neo4jCypher_detail.txt", resultDir, dataset);
+				result_avg_path = String.format("%s/%s_neo4jCypher_avg.txt", resultDir, dataset);
+				break;
+			case Windows:
+//				result_detail_path = String.format("%s\\risotree_PN_%d_%d.txt", resultDir, nodeCount, query_id);
+//				result_avg_path = String.format("%s\\risotree_PN_%d_%d_avg.txt.txt", resultDir, nodeCount, query_id);
+				break;
+			}
+
+			String write_line = String.format("%s\t%d\n", dataset, length);
+			if(!TEST_FORMAT)
+			{
+				Util.WriteFile(result_detail_path, true, write_line);
+				Util.WriteFile(result_avg_path, true, write_line);
+			}
+
+			String head_line = "time\tpage_access\tresult_count\n";
+			if(!TEST_FORMAT)
+				Util.WriteFile(result_avg_path, true, "selectivity\t" + head_line);
+
+			double selectivity = startSelectivity;
+			int times = 10;
+			while ( selectivity <= endSelectivity)
+			{
+				int name_suffix = (int) (selectivity * spaCount);
+
+				String queryrect_path = null;
+				switch (systemName) {
+				case Ubuntu:
+					queryrect_path = String.format("%s/queryrect_%d.txt", queryDir, name_suffix);
+					break;
+				case Windows:
+					queryrect_path = String.format("%s\\queryrect_%d.txt", queryDir, name_suffix);
+					break;
+				}
+				Util.Print("query rectangle path: " + queryrect_path);
+
+				write_line = selectivity + "\n" + head_line;
+				if(!TEST_FORMAT)
+					Util.WriteFile(result_detail_path, true, write_line);
+
+				ArrayList<MyRectangle> queryrect = Util.ReadQueryRectangle(queryrect_path);
+				
+				Neo4jCypherTraversal neo4jCypherTraversal = new Neo4jCypherTraversal(db_path);
+
+				ArrayList<Long> total_time = new ArrayList<Long>();
+				ArrayList<Long> pageAccessCount = new ArrayList<Long>();
+				ArrayList<Long> resultCount = new ArrayList<Long>();
+
+				for ( int i = 0; i < startIDsList.size(); i++)
+				{
+					ArrayList<Long> startIDs = startIDsList.get(i);
+					Util.Print("start ids: " + startIDs);
+					Transaction tx = neo4jCypherTraversal.dbservice.beginTx();
+					tx.success();
+					tx.close();
+					
+					MyRectangle rectangle = queryrect.get(i);
+					if ( rectangle.area() == 0.0)
+					{
+						double delta = Math.pow(0.1, 10);
+						rectangle = new MyRectangle(rectangle.min_x - delta, rectangle.min_y - delta,
+								rectangle.max_x + delta, rectangle.max_y + delta);
+					}
+
+					if(!TEST_FORMAT)
+					{
+						Util.Print(String.format("%d : %s", i, rectangle.toString()));
+						Util.Print(startIDs);
+
+						start = System.currentTimeMillis();
+						neo4jCypherTraversal.traverse(startIDs, length, rectangle);
+						time = System.currentTimeMillis() - start;
+
+						total_time.add(time);
+						pageAccessCount.add(neo4jCypherTraversal.pageAccessCount);
+						resultCount.add(neo4jCypherTraversal.resultCount);
+
+						write_line = String.format("%d\t%d\t", total_time.get(i), pageAccessCount.get(i));
+						write_line += String.format("%d\n", resultCount.get(i));
+						if(!TEST_FORMAT)
+							Util.WriteFile(result_detail_path, true, write_line);
+					}
+
+					neo4jCypherTraversal.dbservice.shutdown();
+
+					Util.ClearCache(password);
+					Thread.currentThread();
+					Thread.sleep(5000);
+
+					neo4jCypherTraversal.dbservice = new GraphDatabaseFactory().newEmbeddedDatabase(new File(db_path));
+
+				}
+				neo4jCypherTraversal.dbservice.shutdown();
+
+				write_line = String.valueOf(selectivity) + "\t";
+				write_line += String.format("%d\t%d\t", Util.Average(total_time), Util.Average(pageAccessCount));
+				write_line += String.format("%d\n", Util.Average(resultCount));
+				if(!TEST_FORMAT)
+					Util.WriteFile(result_avg_path, true, write_line);
+
+				selectivity *= times;
+			}
+			Util.WriteFile(result_detail_path, true, "\n");
+			Util.WriteFile(result_avg_path, true, "\n");
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
+	}
 }

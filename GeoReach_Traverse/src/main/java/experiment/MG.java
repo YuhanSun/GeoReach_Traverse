@@ -86,23 +86,24 @@ public class MG {
 			suffix = "bitmap";
 		
 		String dir = "D:\\Ubuntu_shared\\GeoReachHop\\data";
-		for (int MG = 0; MG <= 3; MG += 1) 
-		{
-			Util.Print("\nMG: " + MG);
-			Loader loader = new Loader(new Config());
-			
-			String indexPath = String.format("%s\\%s\\MG\\%d_%d_%d_%d_%d_%d_%s.txt",
-					dir, dataset, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, suffix);
-			
-			String dbPath = String.format("%s\\%s\\MG\\%s_%d_%d_%d_%d_%d_%d"
-					+ "\\data\\databases\\graph.db", 
-					dir, dataset, neo4j_version, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM);
-			
-			Util.Print(String.format("Load from %s\nto %s", indexPath, dbPath));
-			loader.load(indexPath, dbPath);
-		}
 		
-		for (int MG = 100; MG <= 100; MG += 1) 
+//		for (int MG = 0; MG <= 3; MG += 1) 
+//		{
+//			Util.Print("\nMG: " + MG);
+//			Loader loader = new Loader(new Config());
+//			
+//			String indexPath = String.format("%s\\%s\\MG\\%d_%d_%d_%d_%d_%d_%s.txt",
+//					dir, dataset, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, suffix);
+//			
+//			String dbPath = String.format("%s\\%s\\MG\\%s_%d_%d_%d_%d_%d_%d"
+//					+ "\\data\\databases\\graph.db", 
+//					dir, dataset, neo4j_version, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM);
+//			
+//			Util.Print(String.format("Load from %s\nto %s", indexPath, dbPath));
+//			loader.load(indexPath, dbPath);
+//		}
+		
+		int MG = 4;
 		{
 			Util.Print("\nMG: " + MG);
 			Loader loader = new Loader(new Config());

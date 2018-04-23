@@ -21,6 +21,7 @@ import org.neo4j.graphdb.Transaction;
 import commons.Config;
 import commons.MyRectangle;
 import commons.Config.system;
+import scala.reflect.internal.Trees.New;
 import commons.Util;
 
 public class SimpleGraphTraversalTest {
@@ -54,7 +55,7 @@ public class SimpleGraphTraversalTest {
 	}
 
 	@Test
-	public void Neo4jTraversalTest() {
+	public void Neo4jTraversalHardCodeTest() {
 		try {
 			Util.Print(db_path);
 			SimpleGraphTraversal simpleGraphTraversal = new SimpleGraphTraversal(db_path);
@@ -96,6 +97,31 @@ public class SimpleGraphTraversalTest {
 			e.printStackTrace();
 		}
 		
+	}
+	
+	@Test
+	public void Neo4jTraversalTest()
+	{
+		try {
+			Util.Print(db_path);
+			Neo4jCypherTraversal neo4jCypherTraversal = new Neo4jCypherTraversal(db_path);
+			GraphDatabaseService dbservice = neo4jCypherTraversal.dbservice;
+			Transaction tx = dbservice.beginTx();
+			Util.Print("start ids: " + startID);
+			neo4jCypherTraversal.traverse(startIDs, Length, queryRectangle);
+			
+			long count = neo4jCypherTraversal.resultCount;
+			Util.Print("result count: " + count);
+			
+			long pageAccess = neo4jCypherTraversal.pageAccessCount;
+			Util.Print("Page access: " + pageAccess);
+			
+			tx.success();
+			tx.close();
+			dbservice.shutdown();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	@Test
