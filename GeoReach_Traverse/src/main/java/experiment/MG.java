@@ -266,7 +266,7 @@ public class MG {
 						spaTraversal.dbservice.shutdown();
 					}
 
-					write_line = String.valueOf(selectivity) + "\t";
+					write_line = String.valueOf(MG) + "\t";
 					write_line += String.format("%d\t%d\t%d\t%d\t", Util.Average(total_time), Util.Average(dbTime),
 							Util.Average(checkTime), Util.Average(visitedcount));
 					write_line += String.format("%d\t%d\t%d\n", Util.Average(GeoReachPrunedCount), 
