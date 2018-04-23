@@ -13,6 +13,7 @@ import commons.Entity;
 import commons.MyRectangle;
 import commons.Util;
 import commons.VertexGeoReach;
+import commons.Config.Datasets;
 import commons.Config.system;
 import construction.IndexConstruct;
 import construction.Loader;
@@ -38,6 +39,7 @@ public class MG {
 	
 	public static void main(String[] args) {
 		Config config = new Config();
+		config.setDatasetName(Datasets.Yelp.name());
 		MG mg = new MG(config);
 //		mg.generateIndex();
 		mg.loadIndex();
@@ -90,7 +92,7 @@ public class MG {
 	
 	public void loadIndex()
 	{
-		int pieces_x = 128, pieces_y = 128, MC = 0;
+		int pieces_x = 256, pieces_y = 256, MC = 0;
 		int MR = 100;
 		
 		int format = 1;
@@ -118,7 +120,7 @@ public class MG {
 //			loader.load(indexPath, dbPath);
 //		}
 		
-		int MG = 4;
+		int MG = 100;
 		{
 			Util.Print("\nMG: " + MG);
 			Loader loader = new Loader(new Config());
@@ -313,6 +315,7 @@ public class MG {
 					dataset, neo4j_version, dataset);
 			entityPath = String.format("D:\\Ubuntu_shared\\GeoMinHop\\data\\%s\\entity.txt", dataset);
 			graphPath = String.format("D:\\Ubuntu_shared\\GeoMinHop\\data\\%s\\graph.txt", dataset);
+			graph_pos_map_path = "D:\\Ubuntu_shared\\GeoMinHop\\data\\" + dataset + "\\node_map_RTree.txt";
 		default:
 			break;
 		}
