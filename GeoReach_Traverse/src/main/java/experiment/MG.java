@@ -37,6 +37,9 @@ public class MG {
 	private String graph_pos_map_path;
 	private String dataDir;
 	
+	int pieces_x = 128, pieces_y = 128, MC = 0;
+	int MR = 100;
+	
 	public static void main(String[] args) {
 		Config config = new Config();
 		config.setDatasetName(Datasets.Yelp.name());
@@ -47,9 +50,6 @@ public class MG {
 	
 	public void generateIndex()
 	{
-		int pieces_x = 128, pieces_y = 128, MC = 0;
-		int MR = 100;
-		
 		int format = 1;
 		String suffix = "";
 		if (format == 0)
@@ -92,9 +92,6 @@ public class MG {
 	
 	public void loadIndex()
 	{
-		int pieces_x = 256, pieces_y = 256, MC = 0;
-		int MR = 100;
-		
 		int format = 1;
 		String suffix = "";
 		if (format == 0)
@@ -141,8 +138,6 @@ public class MG {
 	{
 		try
 		{
-			int pieces_x = 128, pieces_y = 128, MC = 0;
-			int MR = 100;
 			double selectivity = 0.01;
 			int length = 3;
 			MyRectangle total_range = new MyRectangle(minx, miny, maxx, maxy);

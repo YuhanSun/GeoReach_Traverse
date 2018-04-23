@@ -6,6 +6,7 @@ import commons.Config;
 import commons.Entity;
 import commons.Util;
 import commons.VertexGeoReach;
+import commons.Config.Datasets;
 import commons.Config.system;
 import construction.IndexConstruct;
 import construction.Loader;
@@ -21,18 +22,18 @@ public class MR {
 	ArrayList<Entity> entities;
 	String dbPath, entityPath, mapPath, graphPath;
 	
+	int pieces_x = 128, pieces_y = 128, MG = 0, MC = 0;
+	
 	public static void main(String[] args) {
 		Config config = new Config();
+		config.setDatasetName(Datasets.Gowalla_10.name());
 		MR mr = new MR(config);
-//		mg.generateIndex();
-		mr.loadIndex();
+		mr.generateIndex();
+//		mr.loadIndex();
 	}
 	
 	public void generateIndex()
 	{
-		int pieces_x = 128, pieces_y = 128, MC = 0;
-		int MG = 0;
-		
 		int format = 1;
 		String suffix = "";
 		if (format == 0)
@@ -41,30 +42,34 @@ public class MR {
 			suffix = "bitmap";
 		
 		String dir = "D:\\Ubuntu_shared\\GeoReachHop\\data";
+		
+		ArrayList<VertexGeoReach> index = IndexConstruct.ConstructIndex(graph, entities, 
+				minx, miny, maxx, maxy, 
+				pieces_x, pieces_y, MAX_HOPNUM);
+		
 		for (int MR = 0; MR <= 100; MR += 25) 
 		{
 			Util.Print("\nMR: " + MR);
-			String indexPath = String.format("%s\\%s\\MR\\%d_%d_%d_%d_%d_%d_%s.txt",
-					dir, dataset, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, suffix);
-			Util.Print("Output index to " + indexPath);
-			
-			ArrayList<VertexGeoReach> index = IndexConstruct.ConstructIndex(graph, entities, 
-					minx, miny, maxx, maxy, 
-					pieces_x, pieces_y, MAX_HOPNUM);
 			
 			ArrayList<ArrayList<Integer>> typesList = IndexConstruct.generateTypeList(index, MAX_HOPNUM, 
 					minx, miny, maxx, maxy, 
 					pieces_x, pieces_y, MG/100.0, MR/100.0, MC);
 			
+			String indexPath = String.format("%s\\%s\\MR\\%d_%d_%d_%d_%d_%d_%s.txt",
+					dir, dataset, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, suffix);
+			Util.Print("Output index to " + indexPath);
+			Util.outputGeoReach(index, indexPath, typesList, format);
+			
+			format = 0;
+			indexPath = String.format("%s\\%s\\MR\\%d_%d_%d_%d_%d_%d_%s.txt",
+					dir, dataset, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, suffix);
+			Util.Print("Output index to " + indexPath);
 			Util.outputGeoReach(index, indexPath, typesList, format);
 		}
 	}
 	
 	public void loadIndex()
 	{
-		int pieces_x = 128, pieces_y = 128, MC = 0;
-		int MG = 0;
-		
 		int format = 1;
 		String suffix = "";
 		if (format == 0)
