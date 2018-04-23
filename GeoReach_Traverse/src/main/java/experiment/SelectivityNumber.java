@@ -484,9 +484,6 @@ public class SelectivityNumber {
 				{
 					ArrayList<Long> startIDs = startIDsList.get(i);
 					Util.Print("start ids: " + startIDs);
-					Transaction tx = neo4jCypherTraversal.dbservice.beginTx();
-					tx.success();
-					tx.close();
 					
 					MyRectangle rectangle = queryrect.get(i);
 					if ( rectangle.area() == 0.0)
