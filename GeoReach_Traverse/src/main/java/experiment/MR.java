@@ -34,12 +34,12 @@ public class MR {
 	
 	public void generateIndex()
 	{
-		int format = 1;
-		String suffix = "";
-		if (format == 0)
-			suffix = "list";
-		else 
-			suffix = "bitmap";
+//		int format = 1;
+//		String suffix = "";
+//		if (format == 0)
+//			suffix = "list";
+//		else 
+//			suffix = "bitmap";
 		
 		String dir = "D:\\Ubuntu_shared\\GeoReachHop\\data";
 		
@@ -47,7 +47,7 @@ public class MR {
 				minx, miny, maxx, maxy, 
 				pieces_x, pieces_y, MAX_HOPNUM);
 		
-		for (int MR = 0; MR <= 100; MR += 25) 
+		for (int MR = 0; MR <= 10; MR += 2) 
 		{
 			Util.Print("\nMR: " + MR);
 			
@@ -55,12 +55,15 @@ public class MR {
 					minx, miny, maxx, maxy, 
 					pieces_x, pieces_y, MG/100.0, MR/100.0, MC);
 			
+			int format = 1;
+			String suffix = "bitmap";
 			String indexPath = String.format("%s\\%s\\MR\\%d_%d_%d_%d_%d_%d_%s.txt",
 					dir, dataset, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, suffix);
 			Util.Print("Output index to " + indexPath);
 			Util.outputGeoReach(index, indexPath, typesList, format);
 			
 			format = 0;
+			suffix = "list";
 			indexPath = String.format("%s\\%s\\MR\\%d_%d_%d_%d_%d_%d_%s.txt",
 					dir, dataset, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, suffix);
 			Util.Print("Output index to " + indexPath);
