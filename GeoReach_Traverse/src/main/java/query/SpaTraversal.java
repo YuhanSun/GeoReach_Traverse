@@ -48,6 +48,7 @@ public class SpaTraversal {
 	
 	//tracking variables
 	public long resultCount, visitedCount, GeoReachPruneCount, PrunedVerticesWorkCount;
+	public long dbTime, checkTime;
 	
 	public SpaTraversal(String db_path, int MAX_HOP, MyRectangle total_range, int pieces_x, int pieces_y)
 	{
@@ -93,6 +94,9 @@ public class SpaTraversal {
 		GeoReachPruneCount = 0;
 		PrunedVerticesWorkCount = 0;
 		
+		dbTime = 0;
+		checkTime = 0;
+		
 		Transaction tx = dbservice.beginTx();
 		for (Node node : startNodes)
 			helper(node, 0);
@@ -107,7 +111,9 @@ public class SpaTraversal {
 	 */
 	public void helper(Node node, int curHop)
 	{
+		long start = System.currentTimeMillis();
 		long id = node.getId();
+		dbTime += System.currentTimeMillis() - start;
 //		if (id == 1299743 && curHop ==1)
 //		{
 //			Util.Print("here");
@@ -160,10 +166,15 @@ public class SpaTraversal {
 			curPath.add(id);
 			visited.add(id);
 //			Util.Print(curPath);
+			start = System.currentTimeMillis();
 			Iterable<Relationship> rels = node.getRelationships(GraphRel.GRAPH_LINK);
+			dbTime += System.currentTimeMillis() - start;
+			
 			for (Relationship relationship : rels)
 			{
+				start = System.currentTimeMillis();
 				Node neighbor = relationship.getOtherNode(node);
+				dbTime += System.currentTimeMillis() - start;
 				visitedCount++;
 				helper(neighbor, curHop + 1);
 			}
@@ -175,10 +186,15 @@ public class SpaTraversal {
 	public boolean validate(Node node, int distance, MyRectangle queryRectangle)
 	{
 		try {
+			long start = System.currentTimeMillis();
 			int type = (int) node.getProperty(GeoReachTypeName + "_" + distance);
+			
 			switch (type) {
 			case 0:
 				String ser = node.getProperty(reachGridName + "_" + distance).toString();
+				dbTime += System.currentTimeMillis() - start;
+				
+				start = System.currentTimeMillis();
 				ByteBuffer newbb = ByteBuffer.wrap(Base64.getDecoder().decode(ser));
 	            ImmutableRoaringBitmap reachgrid = new ImmutableRoaringBitmap(newbb);
 	            
@@ -192,17 +208,25 @@ public class SpaTraversal {
                         }
                     }
                 }
+	            checkTime += System.currentTimeMillis() - start;
+	            
 	            return false;
 			case 1:
 				MyRectangle rmbr = new MyRectangle(
 						node.getProperty(rmbrName + "_" + distance).toString());
+				dbTime += System.currentTimeMillis() - start;
 				if (Util.intersect(rmbr, queryRectangle))
+				{
+					checkTime += System.currentTimeMillis() - start;
 					return true;
+				}
 				else {
+					checkTime += System.currentTimeMillis() - start;
 					return false;
 				}
 			case 2:
 				boolean geoB = (boolean) node.getProperty(geoBName + "_" + distance);
+				dbTime += System.currentTimeMillis() - start;
 				return geoB;
 			default:
 				throw new Exception(String.format("%s for %s is %d", 
