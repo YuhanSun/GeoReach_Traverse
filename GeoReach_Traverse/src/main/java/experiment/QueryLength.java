@@ -47,7 +47,7 @@ public class QueryLength {
 		initializeParameters();
 	}
 
-	public static int pieces_x = 1024, pieces_y = 1024;
+	public static int pieces_x = 128, pieces_y = 128;
 	public static double MG = 1.0, MR = 1.0;
 	public static int MC = 0;
 	public static double selectivity = 0.0001;
@@ -170,7 +170,7 @@ public class QueryLength {
 				break;
 			}
 
-			String write_line = String.format("%s\t%d\n", dataset, selectivity);
+			String write_line = String.format("%s\t%s\n", dataset, String.valueOf(selectivity));
 			if(!TEST_FORMAT)
 			{
 				Util.WriteFile(result_detail_path, true, write_line);
@@ -295,7 +295,7 @@ public class QueryLength {
 				break;
 			}
 
-			String write_line = String.format("%s\t%d\n", dataset, selectivity);
+			String write_line = String.format("%s\t%s\n", dataset, String.valueOf(selectivity));
 			if(!TEST_FORMAT)
 			{
 				Util.WriteFile(result_detail_path, true, write_line);

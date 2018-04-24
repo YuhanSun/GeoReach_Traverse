@@ -43,7 +43,7 @@ public class MR {
 		Config config = new Config();
 		config.setDatasetName(Datasets.Gowalla_10.name());
 		MR mr = new MR(config);
-		mr.testMAXHOP = 3;
+		mr.testMAXHOP = 2;
 //		mr.generateIndex();
 //		mr.loadIndex();
 		mr.query();
@@ -117,7 +117,7 @@ public class MR {
 		try
 		{
 			double selectivity = 0.0001;
-			int length = 3;
+			int length = 2;
 			MyRectangle total_range = new MyRectangle(minx, miny, maxx, maxy);
 			
 			String startIDPath = String.format("%s/startID.txt", queryDir);
