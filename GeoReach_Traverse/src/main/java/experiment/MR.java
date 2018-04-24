@@ -15,11 +15,15 @@ public class MR {
 	Config config;
 	String dataset, neo4j_version;
 	system systemName;
+	private String password ;
 	int MAX_HOPNUM;
+	Integer testMAXHOP = null;
 	double minx, miny, maxx, maxy;
 	
 	ArrayList<ArrayList<Integer>> graph;
 	ArrayList<Entity> entities;
+	
+	String dbDir, projectDir, dataDir, indexDir;
 	String dbPath, entityPath, mapPath, graphPath;
 	
 	int pieces_x = 128, pieces_y = 128, MG = 0, MC = 0;
@@ -28,8 +32,9 @@ public class MR {
 		Config config = new Config();
 		config.setDatasetName(Datasets.Gowalla_10.name());
 		MR mr = new MR(config);
-		mr.generateIndex();
-//		mr.loadIndex();
+		mr.testMAXHOP = 3;
+//		mr.generateIndex();
+		mr.loadIndex();
 	}
 	
 	public void generateIndex()
@@ -41,13 +46,11 @@ public class MR {
 //		else 
 //			suffix = "bitmap";
 		
-		String dir = "D:\\Ubuntu_shared\\GeoReachHop\\data";
-		
 		ArrayList<VertexGeoReach> index = IndexConstruct.ConstructIndex(graph, entities, 
 				minx, miny, maxx, maxy, 
 				pieces_x, pieces_y, MAX_HOPNUM);
 		
-		for (int MR = 5; MR <= 20; MR += 5) 
+		for (int MR = 0; MR <= 60; MR += 20) 
 		{
 			Util.Print("\nMR: " + MR);
 			
@@ -58,14 +61,14 @@ public class MR {
 			int format = 1;
 			String suffix = "bitmap";
 			String indexPath = String.format("%s\\%s\\MR\\%d_%d_%d_%d_%d_%d_%s.txt",
-					dir, dataset, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, suffix);
+					dbDir, dataset, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, suffix);
 			Util.Print("Output index to " + indexPath);
 			Util.outputGeoReach(index, indexPath, typesList, format);
 			
 			format = 0;
 			suffix = "list";
 			indexPath = String.format("%s\\%s\\MR\\%d_%d_%d_%d_%d_%d_%s.txt",
-					dir, dataset, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, suffix);
+					dbDir, dataset, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, suffix);
 			Util.Print("Output index to " + indexPath);
 			Util.outputGeoReach(index, indexPath, typesList, format);
 		}
@@ -80,18 +83,17 @@ public class MR {
 		else 
 			suffix = "bitmap";
 		
-		String dir = "D:\\Ubuntu_shared\\GeoReachHop\\data";
-		for (int MR = 0; MR <= 100; MR += 25) 
+		for (int MR = 0; MR <= 60; MR += 20) 
 		{
 			Util.Print("\nMR: " + MR);
 			Loader loader = new Loader(config);
 			
 			String indexPath = String.format("%s\\%s\\MR\\%d_%d_%d_%d_%d_%d_%s.txt",
-					dir, dataset, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, suffix);
+					dbDir, dataset, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, suffix);
 			
 			String dbPath = String.format("%s\\%s\\MR\\%s_%d_%d_%d_%d_%d_%d"
 					+ "\\data\\databases\\graph.db", 
-					dir, dataset, neo4j_version, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM);
+					dbDir, dataset, neo4j_version, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM);
 			
 			Util.Print(String.format("Load from %s\nto %s", indexPath, dbPath));
 			loader.load(indexPath, dbPath);
@@ -110,15 +112,18 @@ public class MR {
 		neo4j_version = config.GetNeo4jVersion();
 		dataset = config.getDatasetName();
 		MAX_HOPNUM = config.getMaxHopNum();
+		password = config.getPassword();
+		
+		dbDir = config.getDBDir();
+		dataDir = config.getDataDir();
+		projectDir = config.getProjectDir();
+		
 		switch (systemName) {
 		case Ubuntu:
-			dbPath = String.format("/home/yuhansun/Documents/GeoGraphMatchData/%s_%s/data/databases/graph.db", neo4j_version, dataset);
 			entityPath = String.format("/mnt/hgfs/Ubuntu_shared/GeoMinHop/data/%s/entity.txt", dataset);
 			graphPath = String.format("/mnt/hgfs/Ubuntu_shared/GeoMinHop/data/%s/graph.txt", dataset);
 			break;
 		case Windows:
-			dbPath = String.format("D:\\Ubuntu_shared\\GeoMinHop\\data\\%s\\%s_%s\\data\\databases\\graph.db", 
-					dataset, neo4j_version, dataset);
 			entityPath = String.format("D:\\Ubuntu_shared\\GeoMinHop\\data\\%s\\entity.txt", dataset);
 			graphPath = String.format("D:\\Ubuntu_shared\\GeoMinHop\\data\\%s\\graph.txt", dataset);
 		default:
