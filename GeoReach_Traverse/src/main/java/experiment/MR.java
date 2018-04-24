@@ -45,7 +45,8 @@ public class MR {
 		MR mr = new MR(config);
 		mr.testMAXHOP = 3;
 //		mr.generateIndex();
-		mr.loadIndex();
+//		mr.loadIndex();
+		mr.query();
 	}
 	
 	public void generateIndex()
