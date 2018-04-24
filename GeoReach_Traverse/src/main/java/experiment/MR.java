@@ -116,8 +116,6 @@ public class MR {
 	{
 		try
 		{
-			int pieces_x = 128, pieces_y = 128, MC = 0;
-			double MG = 1.0;
 			double selectivity = 0.0001;
 			int length = 3;
 			MyRectangle total_range = new MyRectangle(minx, miny, maxx, maxy);
