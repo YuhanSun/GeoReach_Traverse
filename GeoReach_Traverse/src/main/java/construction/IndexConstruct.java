@@ -9,6 +9,7 @@ import commons.Entity;
 import commons.MyRectangle;
 import commons.Util;
 import commons.VertexGeoReach;
+import commons.Config.Datasets;
 import commons.Config.system;
 
 public class IndexConstruct {
@@ -42,12 +43,8 @@ public class IndexConstruct {
 		int pieces_x = 128, pieces_y = 128, MC = 0;
 		double MG = 1.0, MR = 1.0;
 		
-		int format = 1;
-		String suffix = "";
-		if (format == 0)
-			suffix = "list";
-		else 
-			suffix = "bitmap";
+		int format = 0;
+		String suffix = "bitmap";
 			
 		String outputPath = String.format("D:\\Ubuntu_shared\\GeoReachHop\\data\\%s\\%d_%d_%d_%d_%d_%d_%s.txt",
 				dataset, pieces_x, pieces_y, (int)(MG * 100), (int)(MR * 100), MC, MAX_HOPNUM, suffix);
@@ -61,10 +58,21 @@ public class IndexConstruct {
 				pieces_x, pieces_y, MG, MR, MC);
 		
 		Util.outputGeoReach(index, outputPath, typesList, format);
+		
+		format = 1;
+		suffix = "list";
+		outputPath = String.format("D:\\Ubuntu_shared\\GeoReachHop\\data\\%s\\%d_%d_%d_%d_%d_%d_%s.txt",
+				dataset, pieces_x, pieces_y, (int)(MG * 100), (int)(MR * 100), MC, MAX_HOPNUM, suffix);
+		Util.outputGeoReach(index, outputPath, typesList, format);
+		
 	}
 	
 	public static void main(String[] args) {
 		Config config = new Config();
+//		config.setDatasetName("Patents_2_random_80");
+		config.setDatasetName(Datasets.go_uniprot_100_random_80.name());
+		
+		config.setMAXHOPNUM(3);
 		IndexConstruct indexConstruct = new IndexConstruct(config);
 		indexConstruct.construct();
 //		indexConstruct.getReachbleVertices();
@@ -195,6 +203,10 @@ public class IndexConstruct {
 			for (ArrayList<Integer> neighbors : graph)
 			{
 				VertexGeoReach vertexGeoReach = index.get(id);
+				
+				if (i == MAX_HOP - 1)
+					Util.Print(id);
+				
 				TreeSet<Integer> targetReachGrid = vertexGeoReach.ReachGrids.get(i);
 				MyRectangle targetRMBR = vertexGeoReach.RMBRs.get(i);
 				for (int neighborID : neighbors)
