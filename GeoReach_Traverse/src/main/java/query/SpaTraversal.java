@@ -233,6 +233,8 @@ public class SpaTraversal {
 						GeoReachTypeName + "_" +distance, node, type));
 			}
 		} catch (Exception e) {
+			Util.Print(String.format("Something wrong happen in validate(%s, %d, %s)", 
+					node, distance, queryRectangle));
 			e.printStackTrace();
 			System.exit(-1);
 		}
