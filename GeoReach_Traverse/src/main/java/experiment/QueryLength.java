@@ -304,7 +304,7 @@ public class QueryLength {
 
 			String head_line = "time\tvisited_count\tresult_count\n";
 			if(!TEST_FORMAT)
-				Util.WriteFile(result_avg_path, true, "selectivity\t" + head_line);
+				Util.WriteFile(result_avg_path, true, "length\t" + head_line);
 
 			for (int length = 1; length <= 4; length++)
 			{
