@@ -52,7 +52,8 @@ public class QueryLength {
 	public static int pieces_x = 128, pieces_y = 128;
 	public static double MG = 1.0, MR = 1.0;
 	public static int MC = 0;
-	public static double selectivity = 0.00001;
+//	public static double selectivity = 0.00001;	//Gowalla and foursquare
+	public static double selectivity = 0.0001;	//Yelp	
 	
 	public void initializeParameters()
 	{	
@@ -144,10 +145,8 @@ public class QueryLength {
 				startIDsList.get(index).add(queryLength.graph_pos_map_list[id]);
 			}
 			
-			Util.Print(startIDsList.size());
-			Util.Print(startIDsList.get(0).size());
-//			queryLength.spaTraversal(startIDsList);
-//			queryLength.simpleTraversal(startIDsList);
+			queryLength.spaTraversal(startIDsList);
+			queryLength.simpleTraversal(startIDsList);
 //			selectivityNumber.neo4jCypherTraveral(startIDsList);
 		} catch (Exception e) {
 			// TODO: handle exception
