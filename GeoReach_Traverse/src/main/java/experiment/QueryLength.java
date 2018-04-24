@@ -143,7 +143,7 @@ public class QueryLength {
 				startIDsList.get(index).add(queryLength.graph_pos_map_list[id]);
 			}
 			
-//			queryLength.spaTraversal(startIDsList);
+			queryLength.spaTraversal(startIDsList);
 			queryLength.simpleTraversal(startIDsList);
 //			selectivityNumber.neo4jCypherTraveral(startIDsList);
 		} catch (Exception e) {
