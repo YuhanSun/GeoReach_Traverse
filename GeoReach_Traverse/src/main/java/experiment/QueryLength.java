@@ -52,7 +52,7 @@ public class QueryLength {
 	public static int pieces_x = 128, pieces_y = 128;
 	public static double MG = 1.0, MR = 1.0;
 	public static int MC = 0;
-	public static double selectivity = 0.0001;
+	public static double selectivity = 0.00001;
 	
 	public void initializeParameters()
 	{	
