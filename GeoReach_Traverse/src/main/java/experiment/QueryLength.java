@@ -136,15 +136,18 @@ public class QueryLength {
 			for ( int i = 0; i < repeatTime; i++)
 				startIDsList.add(new ArrayList<>());
 			
-			for ( int i = 0; i < experimentCount; i++)
+			int offset = 500;
+			for ( int i = offset; i < offset + experimentCount * repeatTime; i++)
 			{
 				int id = startIDs.get(i);
 				int index = i % repeatTime;
 				startIDsList.get(index).add(queryLength.graph_pos_map_list[id]);
 			}
 			
-			queryLength.spaTraversal(startIDsList);
-			queryLength.simpleTraversal(startIDsList);
+			Util.Print(startIDsList.size());
+			Util.Print(startIDsList.get(0).size());
+//			queryLength.spaTraversal(startIDsList);
+//			queryLength.simpleTraversal(startIDsList);
 //			selectivityNumber.neo4jCypherTraveral(startIDsList);
 		} catch (Exception e) {
 			// TODO: handle exception
