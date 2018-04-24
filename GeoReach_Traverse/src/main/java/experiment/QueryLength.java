@@ -40,6 +40,8 @@ public class QueryLength {
 	public boolean TEST_FORMAT;
 	
 	public int spaCount;
+	private int startLength = 1;
+	private int endLength = 3;
 
 	public QueryLength(Config config)
 	{
@@ -141,7 +143,7 @@ public class QueryLength {
 				startIDsList.get(index).add(queryLength.graph_pos_map_list[id]);
 			}
 			
-			queryLength.spaTraversal(startIDsList);
+//			queryLength.spaTraversal(startIDsList);
 			queryLength.simpleTraversal(startIDsList);
 //			selectivityNumber.neo4jCypherTraveral(startIDsList);
 		} catch (Exception e) {
@@ -196,7 +198,7 @@ public class QueryLength {
 				Util.WriteFile(result_avg_path, true, "length\t" + head_line);
 			
 			
-			for (int length = 1; length <= 4; length++)
+			for (int length = startLength; length <= endLength; length++)
 			{
 				write_line = length + "\n" + head_line;
 				if(!TEST_FORMAT)
@@ -306,7 +308,7 @@ public class QueryLength {
 			if(!TEST_FORMAT)
 				Util.WriteFile(result_avg_path, true, "length\t" + head_line);
 
-			for (int length = 1; length <= 4; length++)
+			for (int length = startLength; length <= endLength; length++)
 			{
 				int name_suffix = (int) (selectivity * spaCount);
 
