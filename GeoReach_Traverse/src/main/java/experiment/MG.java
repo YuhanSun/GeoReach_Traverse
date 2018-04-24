@@ -42,9 +42,12 @@ public class MG {
 		Config config = new Config();
 		config.setDatasetName(Datasets.Gowalla_10.name());
 		MG mg = new MG(config);
-		mg.testMAXHOP = 2;
+		mg.testMAXHOP = 1;
 //		mg.generateIndex();
 //		mg.loadIndex();
+		mg.query();
+		
+		mg.testMAXHOP = 3;
 		mg.query();
 	}
 	
@@ -146,7 +149,7 @@ public class MG {
 		{
 			int pieces_x = 128, pieces_y = 128, MC = 0;
 			double MR = 1.0;
-			double selectivity = 0.01;
+			double selectivity = 0.0001;
 			int length = 3;
 			MyRectangle total_range = new MyRectangle(minx, miny, maxx, maxy);
 			
@@ -186,7 +189,8 @@ public class MG {
 			Util.WriteFile(result_detail_path, true, write_line);
 			Util.WriteFile(result_avg_path, true, write_line);
 
-			String head_line = "time\tvisited_count\tGeoReachPruned\tHistoryPruned\tresult_count\n";
+			String head_line = "time\tdbTime\tcheckTime\t"
+					+ "visited_count\tGeoReachPruned\tHistoryPruned\tresult_count\n";
 			Util.WriteFile(result_avg_path, true, "MG\t" + head_line);
 			
 			for ( double MG = 0; MG < 0.07; MG += 0.02) //Gowalla
@@ -275,10 +279,10 @@ public class MG {
 							Util.Average(HistoryPrunedCount), Util.Average(resultCount));
 					Util.WriteFile(result_avg_path, true, write_line);
 
-					Util.WriteFile(result_detail_path, true, "\n");
-					Util.WriteFile(result_avg_path, true, "\n");
 				}
 			}
+			Util.WriteFile(result_detail_path, true, "\n");
+			Util.WriteFile(result_avg_path, true, "\n");
 		}
 		catch(Exception e)
 		{
