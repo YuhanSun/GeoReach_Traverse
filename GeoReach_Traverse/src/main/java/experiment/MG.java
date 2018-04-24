@@ -36,20 +36,23 @@ public class MG {
 	private long[] graph_pos_map_list;
 	private String graph_pos_map_path;
 	private String dataDir;
-	
-	int pieces_x = 128, pieces_y = 128, MC = 0;
-	int MR = 100;
+	Integer testMAXHOP = null;
 	
 	public static void main(String[] args) {
 		Config config = new Config();
 		config.setDatasetName(Datasets.Gowalla_10.name());
 		MG mg = new MG(config);
+		mg.testMAXHOP = 2;
 //		mg.generateIndex();
-		mg.loadIndex();
+//		mg.loadIndex();
+		mg.query();
 	}
 	
 	public void generateIndex()
 	{
+		int pieces_x = 128, pieces_y = 128, MC = 0;
+		int MR = 100;
+		
 		int format = 1;
 		String suffix = "";
 		if (format == 0)
@@ -92,6 +95,9 @@ public class MG {
 	
 	public void loadIndex()
 	{
+		int pieces_x = 256, pieces_y = 256, MC = 0;
+		int MR = 100;
+		
 		int format = 1;
 		String suffix = "";
 		if (format == 0)
@@ -101,23 +107,7 @@ public class MG {
 		
 		String dir = "D:\\Ubuntu_shared\\GeoReachHop\\data";
 		
-		for (int MG = 0; MG <= 6; MG += 2) 
-		{
-			Util.Print("\nMG: " + MG);
-			Loader loader = new Loader(config);
-			
-			String indexPath = String.format("%s\\%s\\MG\\%d_%d_%d_%d_%d_%d_%s.txt",
-					dir, dataset, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, suffix);
-			
-			String dbPath = String.format("%s\\%s\\MG\\%s_%d_%d_%d_%d_%d_%d"
-					+ "\\data\\databases\\graph.db", 
-					dir, dataset, neo4j_version, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM);
-			
-			Util.Print(String.format("Load from %s\nto %s", indexPath, dbPath));
-			loader.load(indexPath, dbPath);
-		}
-		
-//		int MG = 100;
+//		for (int MG = 0; MG <= 3; MG += 1) 
 //		{
 //			Util.Print("\nMG: " + MG);
 //			Loader loader = new Loader(new Config());
@@ -132,12 +122,30 @@ public class MG {
 //			Util.Print(String.format("Load from %s\nto %s", indexPath, dbPath));
 //			loader.load(indexPath, dbPath);
 //		}
+		
+		int MG = 100;
+		{
+			Util.Print("\nMG: " + MG);
+			Loader loader = new Loader(new Config());
+			
+			String indexPath = String.format("%s\\%s\\MG\\%d_%d_%d_%d_%d_%d_%s.txt",
+					dir, dataset, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, suffix);
+			
+			String dbPath = String.format("%s\\%s\\MG\\%s_%d_%d_%d_%d_%d_%d"
+					+ "\\data\\databases\\graph.db", 
+					dir, dataset, neo4j_version, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM);
+			
+			Util.Print(String.format("Load from %s\nto %s", indexPath, dbPath));
+			loader.load(indexPath, dbPath);
+		}
 	}
 	
 	public void query()
 	{
 		try
 		{
+			int pieces_x = 128, pieces_y = 128, MC = 0;
+			double MR = 1.0;
 			double selectivity = 0.01;
 			int length = 3;
 			MyRectangle total_range = new MyRectangle(minx, miny, maxx, maxy);
@@ -145,7 +153,7 @@ public class MG {
 			String startIDPath = String.format("%s/startID.txt", queryDir);
 			Util.Print("start id path: " + startIDPath);
 			ArrayList<Integer> ids = Util.readIntegerArray(startIDPath);
-			Util.Print(ids);
+//			Util.Print(ids);
 			
 			int experimentCount = 500;
 			int repeatTime = 1;
@@ -162,6 +170,25 @@ public class MG {
 			
 			long start, time;
 			
+			String result_detail_path = null, result_avg_path = null;
+			switch (systemName) {
+			case Ubuntu:
+				result_detail_path = String.format("%s/%s_spaTraversal_%d_detail.txt", resultDir, dataset, testMAXHOP);
+				result_avg_path = String.format("%s/%s_spaTraversal_%d_avg.txt", resultDir, dataset, testMAXHOP);
+				break;
+			case Windows:
+				//					result_detail_path = String.format("%s\\risotree_PN_%d_%d.txt", resultDir, nodeCount, query_id);
+				//					result_avg_path = String.format("%s\\risotree_PN_%d_%d_avg.txt.txt", resultDir, nodeCount, query_id);
+				break;
+			}
+			
+			String write_line = String.format("%s\t%d\n", dataset, length);
+			Util.WriteFile(result_detail_path, true, write_line);
+			Util.WriteFile(result_avg_path, true, write_line);
+
+			String head_line = "time\tvisited_count\tGeoReachPruned\tHistoryPruned\tresult_count\n";
+			Util.WriteFile(result_avg_path, true, "MG\t" + head_line);
+			
 			for ( double MG = 0; MG < 0.07; MG += 0.02) //Gowalla
 			{
 				String dbRootFolder = String.format("%s_%d_%d_%d_%d_%d_%d", 
@@ -169,25 +196,6 @@ public class MG {
 				dbPath = String.format("%s/%s/MG/%s/data/databases/graph.db", dbDir, dataset, dbRootFolder);
 				
 				{
-					String result_detail_path = null, result_avg_path = null;
-					switch (systemName) {
-					case Ubuntu:
-						result_detail_path = String.format("%s/%s_spaTraversal_detail.txt", resultDir, dataset);
-						result_avg_path = String.format("%s/%s_spaTraversal_avg.txt", resultDir, dataset);
-						break;
-					case Windows:
-						//					result_detail_path = String.format("%s\\risotree_PN_%d_%d.txt", resultDir, nodeCount, query_id);
-						//					result_avg_path = String.format("%s\\risotree_PN_%d_%d_avg.txt.txt", resultDir, nodeCount, query_id);
-						break;
-					}
-
-					String write_line = String.format("%s\t%d\n", dataset, length);
-					Util.WriteFile(result_detail_path, true, write_line);
-					Util.WriteFile(result_avg_path, true, write_line);
-
-					String head_line = "time\tvisited_count\tGeoReachPruned\tHistoryPruned\tresult_count\n";
-					Util.WriteFile(result_avg_path, true, "MG\t" + head_line);
-
 					int name_suffix = (int) (selectivity * spaCount);
 
 					String queryrect_path = null;
@@ -216,13 +224,13 @@ public class MG {
 
 					for ( int i = 0; i < startIDsList.size(); i++)
 					{
-						SpaTraversal spaTraversal = new SpaTraversal(dbPath, MAX_HOPNUM, total_range, pieces_x, pieces_y);
+						Util.Print(dbPath);
+						SpaTraversal spaTraversal = new SpaTraversal(dbPath, testMAXHOP, total_range, pieces_x, pieces_y);
 						ArrayList<Long> startIDs = startIDsList.get(i);
 						Transaction tx = spaTraversal.dbservice.beginTx();
 						ArrayList<Node> startNodes = Util.getNodesByIDs(spaTraversal.dbservice, startIDs); 
 						tx.success();
 						tx.close();
-						spaTraversal.dbservice.shutdown();
 
 						MyRectangle rectangle = queryrect.get(i);
 						if ( rectangle.area() == 0.0)
@@ -233,12 +241,11 @@ public class MG {
 						}
 
 						Util.Print(String.format("%d : %s", i, rectangle.toString()));
-						Util.Print(ids);
+//						Util.Print(ids);
 
 						Util.ClearCache(password);
 						Thread.currentThread();
 						Thread.sleep(5000);
-						spaTraversal = new SpaTraversal(dbPath, MAX_HOPNUM, total_range, pieces_x, pieces_y);
 						
 						start = System.currentTimeMillis();
 						spaTraversal.traverse(startNodes, length, rectangle);
@@ -295,6 +302,7 @@ public class MG {
 		
 		dataDir = config.getDataDir();
 		dbDir = config.getDBDir();
+		projectDir = config.getProjectDir();
 		
 		switch (systemName) {
 		case Ubuntu:
@@ -302,6 +310,7 @@ public class MG {
 			entityPath = String.format("/mnt/hgfs/Ubuntu_shared/GeoMinHop/data/%s/entity.txt", dataset);
 			graphPath = String.format("/mnt/hgfs/Ubuntu_shared/GeoMinHop/data/%s/graph.txt", dataset);
 			graph_pos_map_path = dataDir + "/" + dataset + "/node_map_RTree.txt";
+			
 			resultDir = String.format("%s/MG", projectDir);
 			queryDir = String.format("%s/query/%s", projectDir, dataset);
 			break;
@@ -347,6 +356,5 @@ public class MG {
 			int pos_id = Integer.parseInt(graph_pos_map.get(key_str));
 			graph_pos_map_list[key] = pos_id;
 		}
-		Util.Print("graph_pos_map_list size: " + graph_pos_map_list.length);
 	}
 }
