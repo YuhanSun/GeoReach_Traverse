@@ -70,7 +70,19 @@ public class Util {
 		return nodes;
 	}
 	
-	public static String ClearCache(String password) {
+	public static String clearAndSleep(String password, int sleepTime)
+	{
+		String res = clearCache(password);
+		Thread.currentThread();
+		try {
+			Thread.sleep(sleepTime);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		return res;
+	}
+	
+	public static String clearCache(String password) {
         String[] cmd = new String[]{"/bin/bash", "-c", "echo " + password + " | sudo -S sh -c \"sync; echo 3 > /proc/sys/vm/drop_caches\""};
         String result = null;
         try {
