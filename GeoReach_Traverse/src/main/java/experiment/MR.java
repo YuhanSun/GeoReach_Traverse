@@ -44,9 +44,9 @@ public class MR {
 		config.setDatasetName(Datasets.Gowalla_10.name());
 		MR mr = new MR(config);
 		mr.testMAXHOP = 2;
-//		mr.generateIndex();
+		mr.generateIndex();
 //		mr.loadIndex();
-		mr.query();
+//		mr.query();
 	}
 	
 	public void generateIndex()
@@ -214,9 +214,7 @@ public class MR {
 						Util.Print(String.format("%d : %s", i, rectangle.toString()));
 //						Util.Print(ids);
 
-						Util.ClearCache(password);
-						Thread.currentThread();
-						Thread.sleep(5000);
+						Util.clearAndSleep(password, 5000);
 						
 						start = System.currentTimeMillis();
 						spaTraversal.traverse(startNodes, length, rectangle);
@@ -253,6 +251,8 @@ public class MR {
 		}
 		catch(Exception e)
 		{
+			e.printStackTrace();
+			System.exit(-1);
 		}
 		
 	}

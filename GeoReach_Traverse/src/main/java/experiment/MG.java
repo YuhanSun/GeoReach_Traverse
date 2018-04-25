@@ -247,9 +247,7 @@ public class MG {
 						Util.Print(String.format("%d : %s", i, rectangle.toString()));
 //						Util.Print(ids);
 
-						Util.ClearCache(password);
-						Thread.currentThread();
-						Thread.sleep(5000);
+						Util.clearAndSleep(password, 5000);
 						
 						start = System.currentTimeMillis();
 						spaTraversal.traverse(startNodes, length, rectangle);

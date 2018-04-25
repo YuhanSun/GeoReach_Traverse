@@ -282,9 +282,7 @@ public class SelectivityNumber {
 
 					spaTraversal.dbservice.shutdown();
 
-					Util.ClearCache(password);
-					Thread.currentThread();
-					Thread.sleep(5000);
+					Util.clearAndSleep(password, 5000);
 
 					spaTraversal.dbservice = new GraphDatabaseFactory().newEmbeddedDatabase(new File(db_path));
 
@@ -406,9 +404,7 @@ public class SelectivityNumber {
 
 					simpleGraphTraversal.dbservice.shutdown();
 
-					Util.ClearCache(password);
-					Thread.currentThread();
-					Thread.sleep(5000);
+					Util.clearAndSleep(password, 5000);
 
 					simpleGraphTraversal.dbservice = new GraphDatabaseFactory().newEmbeddedDatabase(new File(db_path));
 
@@ -523,9 +519,7 @@ public class SelectivityNumber {
 
 					neo4jCypherTraversal.dbservice.shutdown();
 
-					Util.ClearCache(password);
-					Thread.currentThread();
-					Thread.sleep(5000);
+					Util.clearAndSleep(password, 5000);
 
 					neo4jCypherTraversal.dbservice = new GraphDatabaseFactory().newEmbeddedDatabase(new File(db_path));
 

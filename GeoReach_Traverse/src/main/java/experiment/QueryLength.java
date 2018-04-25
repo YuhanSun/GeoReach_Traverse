@@ -255,9 +255,7 @@ public class QueryLength {
 
 					spaTraversal.dbservice.shutdown();
 
-					Util.ClearCache(password);
-					Thread.currentThread();
-					Thread.sleep(5000);
+					Util.clearAndSleep(password, 5000);
 
 					spaTraversal.dbservice = new GraphDatabaseFactory().newEmbeddedDatabase(new File(db_path));
 
@@ -375,9 +373,7 @@ public class QueryLength {
 
 					simpleGraphTraversal.dbservice.shutdown();
 
-					Util.ClearCache(password);
-					Thread.currentThread();
-					Thread.sleep(5000);
+					Util.clearAndSleep(password, 5000);
 
 					simpleGraphTraversal.dbservice = new GraphDatabaseFactory().newEmbeddedDatabase(new File(db_path));
 
