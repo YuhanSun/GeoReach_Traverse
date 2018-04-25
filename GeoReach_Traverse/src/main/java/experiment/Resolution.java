@@ -52,8 +52,8 @@ public class Resolution {
 		config.setMAXHOPNUM(3);
 		Resolution resolution = new Resolution(config);
 //		resolution.generateIndex();
-		resolution.loadIndex();
-//		resolution.query();
+//		resolution.loadIndex();
+		resolution.query();
 	}
 	
 	public void generateIndex()
@@ -155,8 +155,8 @@ public class Resolution {
 			String result_detail_path = null, result_avg_path = null;
 			switch (systemName) {
 			case Ubuntu:
-				result_detail_path = String.format("%s/%s_%d_detail.txt", resultDir, dataset);
-				result_avg_path = String.format("%s/%s_%d_avg.txt", resultDir, dataset);
+				result_detail_path = String.format("%s/%s_detail.txt", resultDir, dataset);
+				result_avg_path = String.format("%s/%s_avg.txt", resultDir, dataset);
 				break;
 			case Windows:
 //				result_detail_path = String.format("%s\\risotree_PN_%d_%d.txt", resultDir, nodeCount, query_id);
