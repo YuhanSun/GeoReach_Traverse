@@ -53,7 +53,8 @@ public class QueryLength {
 	public static double MG = 1.0, MR = 1.0;
 	public static int MC = 0;
 //	public static double selectivity = 0.00001;	//Gowalla and foursquare
-	public static double selectivity = 0.0001;	//Yelp	
+	public static double selectivity = 0.000001;	//Gowalla and foursquare
+//	public static double selectivity = 0.0001;	//Yelp	
 	
 	public void initializeParameters()
 	{	
@@ -137,7 +138,7 @@ public class QueryLength {
 			for ( int i = 0; i < repeatTime; i++)
 				startIDsList.add(new ArrayList<>());
 			
-			int offset = 500;
+			int offset = 0;
 			for ( int i = offset; i < offset + experimentCount * repeatTime; i++)
 			{
 				int id = startIDs.get(i);
@@ -253,11 +254,9 @@ public class QueryLength {
 							Util.WriteFile(result_detail_path, true, write_line);
 					}
 
-					spaTraversal.dbservice.shutdown();
-
-					Util.clearAndSleep(password, 5000);
-
-					spaTraversal.dbservice = new GraphDatabaseFactory().newEmbeddedDatabase(new File(db_path));
+//					spaTraversal.dbservice.shutdown();
+//					Util.clearAndSleep(password, 5000);
+//					spaTraversal.dbservice = new GraphDatabaseFactory().newEmbeddedDatabase(new File(db_path));
 
 				}
 				spaTraversal.dbservice.shutdown();
@@ -371,11 +370,9 @@ public class QueryLength {
 							Util.WriteFile(result_detail_path, true, write_line);
 					}
 
-					simpleGraphTraversal.dbservice.shutdown();
-
-					Util.clearAndSleep(password, 5000);
-
-					simpleGraphTraversal.dbservice = new GraphDatabaseFactory().newEmbeddedDatabase(new File(db_path));
+//					simpleGraphTraversal.dbservice.shutdown();
+//					Util.clearAndSleep(password, 5000);
+//					simpleGraphTraversal.dbservice = new GraphDatabaseFactory().newEmbeddedDatabase(new File(db_path));
 
 				}
 				simpleGraphTraversal.dbservice.shutdown();
