@@ -101,9 +101,9 @@ public class Resolution {
 			suffix = "bitmap";
 		
 		String dir = "D:\\Ubuntu_shared\\GeoReachHop\\data";
-		int[] piecesArray = new int[] {32, 64, 256};
-		for (int pieces = 32; pieces <= 64; pieces *= 2) 
+//		int[] piecesArray = new int[] {32, 64, 256};
 //		for ( int pieces : piecesArray)
+		for (int pieces = 128; pieces <= 256; pieces *= 2) 
 		{
 			Util.Print("\npieces: " + pieces);
 			Loader loader = new Loader(config);
