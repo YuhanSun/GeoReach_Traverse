@@ -236,6 +236,8 @@ public class QueryLength {
 						Util.Print(String.format("%d : %s", i, rectangle.toString()));
 						Util.Print(startIDs);
 
+						Util.clearAndSleep(password, 5000);
+						
 						start = System.currentTimeMillis();
 						spaTraversal.traverse(startNodes, length, rectangle);
 						time = System.currentTimeMillis() - start;
@@ -254,9 +256,9 @@ public class QueryLength {
 							Util.WriteFile(result_detail_path, true, write_line);
 					}
 
-//					spaTraversal.dbservice.shutdown();
-//					Util.clearAndSleep(password, 5000);
-//					spaTraversal.dbservice = new GraphDatabaseFactory().newEmbeddedDatabase(new File(db_path));
+					spaTraversal.dbservice.shutdown();
+					Util.clearAndSleep(password, 5000);
+					spaTraversal.dbservice = new GraphDatabaseFactory().newEmbeddedDatabase(new File(db_path));
 
 				}
 				spaTraversal.dbservice.shutdown();
@@ -356,6 +358,8 @@ public class QueryLength {
 						Util.Print(String.format("%d : %s", i, rectangle.toString()));
 						Util.Print(startIDs);
 
+						Util.clearAndSleep(password, 5000);
+						
 						start = System.currentTimeMillis();
 						simpleGraphTraversal.traverse(startNodes, length, rectangle);
 						time = System.currentTimeMillis() - start;
@@ -370,9 +374,9 @@ public class QueryLength {
 							Util.WriteFile(result_detail_path, true, write_line);
 					}
 
-//					simpleGraphTraversal.dbservice.shutdown();
-//					Util.clearAndSleep(password, 5000);
-//					simpleGraphTraversal.dbservice = new GraphDatabaseFactory().newEmbeddedDatabase(new File(db_path));
+					simpleGraphTraversal.dbservice.shutdown();
+					Util.clearAndSleep(password, 5000);
+					simpleGraphTraversal.dbservice = new GraphDatabaseFactory().newEmbeddedDatabase(new File(db_path));
 
 				}
 				simpleGraphTraversal.dbservice.shutdown();
