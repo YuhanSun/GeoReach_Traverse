@@ -48,20 +48,20 @@ public class Resolution {
 	
 	public static void main(String[] args) {
 		Config config = new Config();
-		config.setDatasetName(Datasets.Gowalla_10.name());
+		config.setDatasetName(Datasets.foursquare.name());
 		config.setMAXHOPNUM(3);
 		Resolution resolution = new Resolution(config);
 //		resolution.generateIndex();
-//		resolution.loadIndex();
-		resolution.query();
+		resolution.loadIndex();
+//		resolution.query();
 	}
 	
 	public void generateIndex()
 	{
 		String dir = "D:\\Ubuntu_shared\\GeoReachHop\\data";
 		
-//		for (int pieces = 32; pieces <= 256; pieces *= 2) 
-		int pieces = 32;
+		for (int pieces = 32; pieces <= 64; pieces *= 2) 
+//		int pieces = 32;
 		{
 			Util.Print("\npieces: " + pieces);
 			
@@ -102,8 +102,8 @@ public class Resolution {
 		
 		String dir = "D:\\Ubuntu_shared\\GeoReachHop\\data";
 		int[] piecesArray = new int[] {32, 64, 256};
-//		for (int pieces = 64; pieces <= 512; pieces *= 2) 
-		for ( int pieces : piecesArray)
+		for (int pieces = 32; pieces <= 64; pieces *= 2) 
+//		for ( int pieces : piecesArray)
 		{
 			Util.Print("\npieces: " + pieces);
 			Loader loader = new Loader(config);
@@ -149,39 +149,31 @@ public class Resolution {
 				startIDsList.get(index).add(graph_pos_map_list[id]);
 			}
 			
-//			for ( int pieces = 64; pieces <= 256; pieces *= 2)
-			int pieces = 32;
+			double selectivity = startSelectivity;
+			int times = 10;
+			
+			String result_detail_path = null, result_avg_path = null;
+			switch (systemName) {
+			case Ubuntu:
+				result_detail_path = String.format("%s/%s_%d_detail.txt", resultDir, dataset);
+				result_avg_path = String.format("%s/%s_%d_avg.txt", resultDir, dataset);
+				break;
+			case Windows:
+//				result_detail_path = String.format("%s\\risotree_PN_%d_%d.txt", resultDir, nodeCount, query_id);
+//				result_avg_path = String.format("%s\\risotree_PN_%d_%d_avg.txt.txt", resultDir, nodeCount, query_id);
+				break;
+			}
+			while ( selectivity <= endSelectivity)
 			{
-				long start;
-				long time;
-
-				String result_detail_path = null, result_avg_path = null;
-				switch (systemName) {
-				case Ubuntu:
-					result_detail_path = String.format("%s/%s_%d_detail.txt", resultDir, dataset, pieces);
-					result_avg_path = String.format("%s/%s_%d_avg.txt", resultDir, dataset, pieces);
-					break;
-				case Windows:
-//					result_detail_path = String.format("%s\\risotree_PN_%d_%d.txt", resultDir, nodeCount, query_id);
-//					result_avg_path = String.format("%s\\risotree_PN_%d_%d_avg.txt.txt", resultDir, nodeCount, query_id);
-					break;
-				}
-
-				String write_line = String.format("%s\t%d\n", dataset, length);
-				{
-					Util.WriteFile(result_detail_path, true, write_line);
-					Util.WriteFile(result_avg_path, true, write_line);
-				}
-
+				Util.WriteFile(result_avg_path, true, selectivity + "\n");
 				String head_line = "time\tdbTime\tcheckTime\tvisited_count\tGeoReachPruned\tHistoryPruned\tresult_count\n";
-				Util.WriteFile(result_avg_path, true, "selectivity\t" + head_line);
-
-				double selectivity = startSelectivity;
-				int times = 10;
-				while ( selectivity <= endSelectivity)
+				Util.WriteFile(result_avg_path, true, "resolution\t" + head_line);
+				Util.WriteFile(result_detail_path, true, selectivity + "\n");
+				for ( int pieces = 32; pieces <= 256; pieces *= 2)
 				{
+					long start;
+					long time;
 					int name_suffix = (int) (selectivity * spaCount);
-
 					String queryrect_path = null;
 					switch (systemName) {
 					case Ubuntu:
@@ -192,8 +184,8 @@ public class Resolution {
 						break;
 					}
 					Util.Print("query rectangle path: " + queryrect_path);
-
-					write_line = selectivity + "\n" + head_line;
+					
+					String write_line = pieces + "\n" + head_line;
 					Util.WriteFile(result_detail_path, true, write_line);
 
 					Util.Print("queryrect path: " + queryrect_path);
@@ -257,7 +249,7 @@ public class Resolution {
 					}
 					spaTraversal.dbservice.shutdown();
 
-					write_line = String.valueOf(selectivity) + "\t";
+					write_line = String.valueOf(pieces) + "\t";
 					write_line += String.format("%d\t%d\t", Util.Average(total_time), Util.Average(visitedcount));
 					write_line += String.format("%d\t%d\t%d\n", Util.Average(GeoReachPrunedCount), 
 							Util.Average(HistoryPrunedCount), Util.Average(resultCount));
@@ -268,7 +260,6 @@ public class Resolution {
 				Util.WriteFile(result_detail_path, true, "\n");
 				Util.WriteFile(result_avg_path, true, "\n");
 			}
-			
 		}
 		catch(Exception e)
 		{
@@ -277,6 +268,163 @@ public class Resolution {
 		}
 	}
 
+//	public void query()
+//	{
+//		SpaTraversal spaTraversal = null;
+//		try
+//		{
+//			int length = 3;
+//			double startSelectivity = 0.00001;
+//			double endSelectivity = 0.2;
+//
+//			//Read start ids
+//			String startIDPath = String.format("%s/startID.txt", queryDir);
+//			Util.Print("start id path: " + startIDPath);
+//			ArrayList<Integer> allStartIDs = Util.readIntegerArray(startIDPath);
+//			Util.Print(allStartIDs);
+//			
+//			int experimentCount = 500;
+//			int repeatTime = 1;
+//			ArrayList<ArrayList<Long>> startIDsList = new ArrayList<>();
+//			for ( int i = 0; i < repeatTime; i++)
+//				startIDsList.add(new ArrayList<>());
+//			
+//			int offset = 500;
+//			for ( int i = offset; i < offset + experimentCount * repeatTime; i++)
+//			{
+//				int id = allStartIDs.get(i);
+//				int index = i % repeatTime;
+//				startIDsList.get(index).add(graph_pos_map_list[id]);
+//			}
+//			
+////			for ( int pieces = 64; pieces <= 256; pieces *= 2)
+//			int pieces = 32;
+//			{
+//				long start;
+//				long time;
+//
+//				String result_detail_path = null, result_avg_path = null;
+//				switch (systemName) {
+//				case Ubuntu:
+//					result_detail_path = String.format("%s/%s_%d_detail.txt", resultDir, dataset, pieces);
+//					result_avg_path = String.format("%s/%s_%d_avg.txt", resultDir, dataset, pieces);
+//					break;
+//				case Windows:
+////					result_detail_path = String.format("%s\\risotree_PN_%d_%d.txt", resultDir, nodeCount, query_id);
+////					result_avg_path = String.format("%s\\risotree_PN_%d_%d_avg.txt.txt", resultDir, nodeCount, query_id);
+//					break;
+//				}
+//
+//				String write_line = String.format("%s\t%d\n", dataset, length);
+//				{
+//					Util.WriteFile(result_detail_path, true, write_line);
+//					Util.WriteFile(result_avg_path, true, write_line);
+//				}
+//
+//				String head_line = "time\tdbTime\tcheckTime\tvisited_count\tGeoReachPruned\tHistoryPruned\tresult_count\n";
+//				Util.WriteFile(result_avg_path, true, "selectivity\t" + head_line);
+//
+//				double selectivity = startSelectivity;
+//				int times = 10;
+//				while ( selectivity <= endSelectivity)
+//				{
+//					int name_suffix = (int) (selectivity * spaCount);
+//
+//					String queryrect_path = null;
+//					switch (systemName) {
+//					case Ubuntu:
+//						queryrect_path = String.format("%s/queryrect_%d.txt", queryDir, name_suffix);
+//						break;
+//					case Windows:
+//						queryrect_path = String.format("%s\\queryrect_%d.txt", queryDir, name_suffix);
+//						break;
+//					}
+//					Util.Print("query rectangle path: " + queryrect_path);
+//
+//					write_line = selectivity + "\n" + head_line;
+//					Util.WriteFile(result_detail_path, true, write_line);
+//
+//					Util.Print("queryrect path: " + queryrect_path);
+//					ArrayList<MyRectangle> queryrect = Util.ReadQueryRectangle(queryrect_path);
+//					
+//					String dbFolder = String.format("%s_%d_%d_%d_%d_%d_%d", version, pieces, pieces, (int) (MG * 100), (int) (MR * 100), MC, 3);
+//					String db_path = String.format("%s/%s/resolution/%s/data/databases/graph.db", dbDir, dataset, dbFolder);
+//					Util.Print("db path: " + db_path);
+//					MyRectangle totalRange = new MyRectangle(minx, miny, maxx, maxy);
+//					spaTraversal = new SpaTraversal(db_path, MAX_HOPNUM, totalRange, pieces, pieces);
+//
+//					ArrayList<Long> total_time = new ArrayList<Long>();
+//					ArrayList<Long> visitedcount = new ArrayList<Long>();
+//					ArrayList<Long> resultCount = new ArrayList<Long>();
+//					ArrayList<Long> GeoReachPrunedCount = new ArrayList<Long>();
+//					ArrayList<Long> HistoryPrunedCount = new ArrayList<Long>();
+//
+//					for ( int i = 0; i < startIDsList.size(); i++)
+//					{
+//						ArrayList<Long> startIDs = startIDsList.get(i);
+//						Transaction tx = spaTraversal.dbservice.beginTx();
+//						ArrayList<Node> startNodes = Util.getNodesByIDs(spaTraversal.dbservice, startIDs); 
+//						tx.success();
+//						tx.close();
+//
+//						MyRectangle rectangle = queryrect.get(i);
+//						if ( rectangle.area() == 0.0)
+//						{
+//							double delta = Math.pow(0.1, 10);
+//							rectangle = new MyRectangle(rectangle.min_x - delta, rectangle.min_y - delta,
+//									rectangle.max_x + delta, rectangle.max_y + delta);
+//						}
+//
+//						Util.Print(String.format("%d : %s", i, rectangle.toString()));
+//						Util.Print(startIDs);
+//
+//						start = System.currentTimeMillis();
+//						spaTraversal.traverse(startNodes, length, rectangle);
+//						time = System.currentTimeMillis() - start;
+//
+//						total_time.add(time);
+//						visitedcount.add(spaTraversal.visitedCount);
+//						resultCount.add(spaTraversal.resultCount);
+//						GeoReachPrunedCount.add(spaTraversal.GeoReachPruneCount);
+//						HistoryPrunedCount.add(spaTraversal.PrunedVerticesWorkCount);
+//
+//
+//						write_line = String.format("%d\t%d\t", total_time.get(i), visitedcount.get(i));
+//						write_line += String.format("%d\t%d\t", GeoReachPrunedCount.get(i), HistoryPrunedCount.get(i));
+//						write_line += String.format("%d\n", resultCount.get(i));
+//						Util.WriteFile(result_detail_path, true, write_line);
+//
+//						spaTraversal.dbservice.shutdown();
+//
+//						Util.ClearCache(password);
+//						Thread.currentThread();
+//						Thread.sleep(5000);
+//
+//						spaTraversal.dbservice = new GraphDatabaseFactory().newEmbeddedDatabase(new File(db_path));
+//
+//					}
+//					spaTraversal.dbservice.shutdown();
+//
+//					write_line = String.valueOf(selectivity) + "\t";
+//					write_line += String.format("%d\t%d\t", Util.Average(total_time), Util.Average(visitedcount));
+//					write_line += String.format("%d\t%d\t%d\n", Util.Average(GeoReachPrunedCount), 
+//							Util.Average(HistoryPrunedCount), Util.Average(resultCount));
+//					Util.WriteFile(result_avg_path, true, write_line);
+//
+//					selectivity *= times;
+//				}
+//				Util.WriteFile(result_detail_path, true, "\n");
+//				Util.WriteFile(result_avg_path, true, "\n");
+//			}
+//			
+//		}
+//		catch(Exception e)
+//		{
+//			e.printStackTrace();
+//			System.exit(-1);
+//		}
+//	}
+	
 	public void initParameters()
 	{
 		systemName = config.getSystemName();
