@@ -46,22 +46,24 @@ public class Resolution {
 		initParameters();
 	}
 	
+	int[] piecesArray = new int[] {96};
+	
 	public static void main(String[] args) {
 		Config config = new Config();
-		config.setDatasetName(Datasets.foursquare.name());
+		config.setDatasetName(Datasets.Gowalla_10.name());
 		config.setMAXHOPNUM(3);
 		Resolution resolution = new Resolution(config);
 //		resolution.generateIndex();
-//		resolution.loadIndex();
-		resolution.query();
+		resolution.loadIndex();
+//		resolution.query();
 	}
 	
 	public void generateIndex()
 	{
 		String dir = "D:\\Ubuntu_shared\\GeoReachHop\\data";
 		
-		for (int pieces = 32; pieces <= 64; pieces *= 2) 
-//		int pieces = 32;
+//		for ( int pieces : piecesArray)
+		int pieces = 96;
 		{
 			Util.Print("\npieces: " + pieces);
 			
@@ -101,9 +103,8 @@ public class Resolution {
 			suffix = "bitmap";
 		
 		String dir = "D:\\Ubuntu_shared\\GeoReachHop\\data";
-//		int[] piecesArray = new int[] {32, 64, 256};
-//		for ( int pieces : piecesArray)
-		for (int pieces = 128; pieces <= 256; pieces *= 2) 
+		for ( int pieces : piecesArray)
+//		int pieces = 96;
 		{
 			Util.Print("\npieces: " + pieces);
 			Loader loader = new Loader(config);
@@ -169,7 +170,8 @@ public class Resolution {
 				String head_line = "time\tdbTime\tcheckTime\tvisited_count\tGeoReachPruned\tHistoryPruned\tresult_count\n";
 				Util.WriteFile(result_avg_path, true, "resolution\t" + head_line);
 				Util.WriteFile(result_detail_path, true, selectivity + "\n");
-				for ( int pieces = 32; pieces <= 256; pieces *= 2)
+				for ( int pieces : piecesArray)
+//				for ( int pieces = 32; pieces <= 256; pieces *= 2)
 				{
 					long start;
 					long time;
