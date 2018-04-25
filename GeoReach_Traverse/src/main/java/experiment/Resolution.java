@@ -52,8 +52,8 @@ public class Resolution {
 		config.setMAXHOPNUM(3);
 		Resolution resolution = new Resolution(config);
 //		resolution.generateIndex();
-		resolution.loadIndex();
-//		resolution.query();
+//		resolution.loadIndex();
+		resolution.query();
 	}
 	
 	public void generateIndex()
@@ -149,7 +149,8 @@ public class Resolution {
 				startIDsList.get(index).add(graph_pos_map_list[id]);
 			}
 			
-			for ( int pieces = 64; pieces <= 512; pieces *= 2)
+//			for ( int pieces = 64; pieces <= 256; pieces *= 2)
+			int pieces = 32;
 			{
 				long start;
 				long time;
@@ -199,7 +200,7 @@ public class Resolution {
 					ArrayList<MyRectangle> queryrect = Util.ReadQueryRectangle(queryrect_path);
 					
 					String dbFolder = String.format("%s_%d_%d_%d_%d_%d_%d", version, pieces, pieces, (int) (MG * 100), (int) (MR * 100), MC, 3);
-					String db_path = String.format("%s/%s/%s/data/databases/graph.db", dbDir, dataset, dbFolder);
+					String db_path = String.format("%s/%s/resolution/%s/data/databases/graph.db", dbDir, dataset, dbFolder);
 					Util.Print("db path: " + db_path);
 					MyRectangle totalRange = new MyRectangle(minx, miny, maxx, maxy);
 					spaTraversal = new SpaTraversal(db_path, MAX_HOPNUM, totalRange, pieces, pieces);
