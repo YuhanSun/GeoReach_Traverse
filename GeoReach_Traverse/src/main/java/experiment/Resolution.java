@@ -46,7 +46,8 @@ public class Resolution {
 		initParameters();
 	}
 	
-	int[] piecesArray = new int[] {96};
+//	int[] piecesArray = new int[] {96};
+	int[] piecesArray = new int[] {32, 64, 96, 128};
 	
 	public static void main(String[] args) {
 		Config config = new Config();
@@ -125,7 +126,8 @@ public class Resolution {
 		try
 		{
 			int length = 3;
-			double startSelectivity = 0.00001;
+//			double startSelectivity = 0.00001;
+			double startSelectivity = 0.1;
 			double endSelectivity = 0.2;
 
 			//Read start ids
@@ -221,6 +223,8 @@ public class Resolution {
 						Util.Print(String.format("%d : %s", i, rectangle.toString()));
 						Util.Print(startIDs);
 
+						Util.clearAndSleep(password, 5000);
+						
 						start = System.currentTimeMillis();
 						spaTraversal.traverse(startNodes, length, rectangle);
 						time = System.currentTimeMillis() - start;
@@ -239,9 +243,7 @@ public class Resolution {
 
 						spaTraversal.dbservice.shutdown();
 
-						Util.ClearCache(password);
-						Thread.currentThread();
-						Thread.sleep(5000);
+						Util.clearAndSleep(password, 5000);
 
 						spaTraversal.dbservice = new GraphDatabaseFactory().newEmbeddedDatabase(new File(db_path));
 
