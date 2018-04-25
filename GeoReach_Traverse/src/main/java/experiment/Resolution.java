@@ -62,8 +62,7 @@ public class Resolution {
 	{
 		String dir = "D:\\Ubuntu_shared\\GeoReachHop\\data";
 		
-//		for ( int pieces : piecesArray)
-		int pieces = 96;
+		for ( int pieces : piecesArray)
 		{
 			Util.Print("\npieces: " + pieces);
 			
@@ -104,7 +103,6 @@ public class Resolution {
 		
 		String dir = "D:\\Ubuntu_shared\\GeoReachHop\\data";
 		for ( int pieces : piecesArray)
-//		int pieces = 96;
 		{
 			Util.Print("\npieces: " + pieces);
 			Loader loader = new Loader(config);
@@ -171,7 +169,6 @@ public class Resolution {
 				Util.WriteFile(result_avg_path, true, "resolution\t" + head_line);
 				Util.WriteFile(result_detail_path, true, selectivity + "\n");
 				for ( int pieces : piecesArray)
-//				for ( int pieces = 32; pieces <= 256; pieces *= 2)
 				{
 					long start;
 					long time;
@@ -257,8 +254,8 @@ public class Resolution {
 							Util.Average(HistoryPrunedCount), Util.Average(resultCount));
 					Util.WriteFile(result_avg_path, true, write_line);
 
-					selectivity *= times;
 				}
+				selectivity *= times;
 				Util.WriteFile(result_detail_path, true, "\n");
 				Util.WriteFile(result_avg_path, true, "\n");
 			}
