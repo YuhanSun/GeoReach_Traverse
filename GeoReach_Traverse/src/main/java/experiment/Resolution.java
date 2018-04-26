@@ -46,17 +46,17 @@ public class Resolution {
 		initParameters();
 	}
 	
-	int[] piecesArray = new int[] {96};
-//	int[] piecesArray = new int[] {32, 64, 96, 128};
+//	int[] piecesArray = new int[] {96};
+	int[] piecesArray = new int[] {32, 64, 96, 128};
 	
 	public static void main(String[] args) {
 		Config config = new Config();
 		config.setDatasetName(Datasets.foursquare.name());
 		config.setMAXHOPNUM(3);
 		Resolution resolution = new Resolution(config);
-		resolution.generateIndex();
-		resolution.loadIndex();
-//		resolution.query();
+//		resolution.generateIndex();
+//		resolution.loadIndex();
+		resolution.query();
 	}
 	
 	public void generateIndex()
@@ -143,7 +143,7 @@ public class Resolution {
 			for ( int i = 0; i < repeatTime; i++)
 				startIDsList.add(new ArrayList<>());
 			
-			int offset = 500;
+			int offset = 0;
 			for ( int i = offset; i < offset + experimentCount * repeatTime; i++)
 			{
 				int id = allStartIDs.get(i);
