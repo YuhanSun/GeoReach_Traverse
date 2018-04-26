@@ -46,15 +46,15 @@ public class Resolution {
 		initParameters();
 	}
 	
-//	int[] piecesArray = new int[] {96};
-	int[] piecesArray = new int[] {32, 64, 96, 128};
+	int[] piecesArray = new int[] {96};
+//	int[] piecesArray = new int[] {32, 64, 96, 128};
 	
 	public static void main(String[] args) {
 		Config config = new Config();
-		config.setDatasetName(Datasets.Gowalla_10.name());
+		config.setDatasetName(Datasets.foursquare.name());
 		config.setMAXHOPNUM(3);
 		Resolution resolution = new Resolution(config);
-//		resolution.generateIndex();
+		resolution.generateIndex();
 		resolution.loadIndex();
 //		resolution.query();
 	}
@@ -126,9 +126,10 @@ public class Resolution {
 		try
 		{
 			int length = 3;
-//			double startSelectivity = 0.00001;
-			double startSelectivity = 0.1;
-			double endSelectivity = 0.2;
+			double startSelectivity = 0.00001;
+			double endSelectivity = 0.00002;
+//			double startSelectivity = 0.01;
+//			double endSelectivity = 0.02;
 
 			//Read start ids
 			String startIDPath = String.format("%s/startID.txt", queryDir);
