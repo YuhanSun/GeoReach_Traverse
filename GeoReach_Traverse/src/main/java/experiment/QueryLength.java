@@ -222,6 +222,7 @@ public class QueryLength {
 				if(!TEST_FORMAT)
 					Util.WriteFile(result_detail_path, true, write_line);
 				Util.Print("db path: " + db_path);
+				Util.clearAndSleep(password, 5000);
 				spaTraversal = new SpaTraversal(db_path, MAX_HOPNUM, totalRange, pieces_x, pieces_y);
 
 				ArrayList<Long> total_time = new ArrayList<Long>();
@@ -348,6 +349,7 @@ public class QueryLength {
 
 				ArrayList<MyRectangle> queryrect = Util.ReadQueryRectangle(queryrect_path);
 				
+				Util.clearAndSleep(password, 5000);
 				SimpleGraphTraversal simpleGraphTraversal = new SimpleGraphTraversal(db_path);
 
 				ArrayList<Long> total_time = new ArrayList<Long>();
