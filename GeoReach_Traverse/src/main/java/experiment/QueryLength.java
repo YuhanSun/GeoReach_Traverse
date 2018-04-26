@@ -113,6 +113,8 @@ public class QueryLength {
 		}
 	}
 	
+	public static boolean cacheFlag = false;
+	
 	public static void main(String[] args) {
 		try {
 			Config config = new Config();
@@ -133,7 +135,7 @@ public class QueryLength {
 			Util.Print(startIDs);
 			
 			int experimentCount = 500;
-			int repeatTime = 1;
+			int repeatTime = 10;
 			ArrayList<ArrayList<Long>> startIDsList = new ArrayList<>();
 			for ( int i = 0; i < repeatTime; i++)
 				startIDsList.add(new ArrayList<>());
@@ -146,6 +148,7 @@ public class QueryLength {
 				startIDsList.get(index).add(queryLength.graph_pos_map_list[id]);
 			}
 			
+			cacheFlag = false;
 			queryLength.spaTraversal(startIDsList);
 			queryLength.simpleTraversal(startIDsList);
 //			selectivityNumber.neo4jCypherTraveral(startIDsList);
@@ -235,8 +238,9 @@ public class QueryLength {
 					{
 						Util.Print(String.format("%d : %s", i, rectangle.toString()));
 						Util.Print(startIDs);
-
-						Util.clearAndSleep(password, 5000);
+						
+						if (cacheFlag)
+							Util.clearAndSleep(password, 5000);
 						
 						start = System.currentTimeMillis();
 						spaTraversal.traverse(startNodes, length, rectangle);
@@ -255,10 +259,12 @@ public class QueryLength {
 						if(!TEST_FORMAT)
 							Util.WriteFile(result_detail_path, true, write_line);
 					}
-
-					spaTraversal.dbservice.shutdown();
-					Util.clearAndSleep(password, 5000);
-					spaTraversal.dbservice = new GraphDatabaseFactory().newEmbeddedDatabase(new File(db_path));
+					if (cacheFlag)
+					{
+						spaTraversal.dbservice.shutdown();
+						Util.clearAndSleep(password, 5000);
+						spaTraversal.dbservice = new GraphDatabaseFactory().newEmbeddedDatabase(new File(db_path));
+					}
 
 				}
 				spaTraversal.dbservice.shutdown();
@@ -357,8 +363,8 @@ public class QueryLength {
 					{
 						Util.Print(String.format("%d : %s", i, rectangle.toString()));
 						Util.Print(startIDs);
-
-						Util.clearAndSleep(password, 5000);
+						if (cacheFlag)
+							Util.clearAndSleep(password, 5000);
 						
 						start = System.currentTimeMillis();
 						simpleGraphTraversal.traverse(startNodes, length, rectangle);
@@ -374,9 +380,12 @@ public class QueryLength {
 							Util.WriteFile(result_detail_path, true, write_line);
 					}
 
-					simpleGraphTraversal.dbservice.shutdown();
-					Util.clearAndSleep(password, 5000);
-					simpleGraphTraversal.dbservice = new GraphDatabaseFactory().newEmbeddedDatabase(new File(db_path));
+					if (cacheFlag)
+					{
+						simpleGraphTraversal.dbservice.shutdown();
+						Util.clearAndSleep(password, 5000);
+						simpleGraphTraversal.dbservice = new GraphDatabaseFactory().newEmbeddedDatabase(new File(db_path));
+					}
 
 				}
 				simpleGraphTraversal.dbservice.shutdown();
