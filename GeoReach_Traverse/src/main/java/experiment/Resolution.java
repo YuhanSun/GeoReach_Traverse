@@ -197,6 +197,8 @@ public class Resolution {
 					String db_path = String.format("%s/%s/resolution/%s/data/databases/graph.db", dbDir, dataset, dbFolder);
 					Util.Print("db path: " + db_path);
 					MyRectangle totalRange = new MyRectangle(minx, miny, maxx, maxy);
+					
+					Util.clearAndSleep(password, 5000);
 					spaTraversal = new SpaTraversal(db_path, MAX_HOPNUM, totalRange, pieces, pieces);
 
 					ArrayList<Long> total_time = new ArrayList<Long>();
