@@ -158,7 +158,9 @@ public class QueryLength {
 			}
 			
 			cacheFlag = false;
+			Util.clearAndSleep(queryLength.password, 5000);
 			queryLength.spaTraversal(startIDsListRepeat);
+			Util.clearAndSleep(queryLength.password, 5000);
 			queryLength.simpleTraversal(startIDsListRepeat);
 //			selectivityNumber.neo4jCypherTraveral(startIDsList);
 		} catch (Exception e) {
