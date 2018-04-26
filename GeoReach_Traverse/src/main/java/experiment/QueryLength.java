@@ -149,19 +149,20 @@ public class QueryLength {
 			}
 			
 			
-			int repeatTime = 10;
-			ArrayList<ArrayList<Long>> startIDsListRepeat = new ArrayList<>();
-			for (ArrayList<Long> startIDs : startIDsList)
-			{
-				for ( int i = 0; i < repeatTime; i++)
-					startIDsListRepeat.add(new ArrayList<>(startIDs));
-			}
+//			int repeatTime = 10;
+//			ArrayList<ArrayList<Long>> startIDsListRepeat = new ArrayList<>();
+//			for (ArrayList<Long> startIDs : startIDsList)
+//			{
+//				for ( int i = 0; i < repeatTime; i++)
+//					startIDsListRepeat.add(new ArrayList<>(startIDs));
+//			}
+//			startIDsList = startIDsListRepeat;
 			
 			cacheFlag = false;
 			Util.clearAndSleep(queryLength.password, 5000);
-			queryLength.spaTraversal(startIDsListRepeat);
+			queryLength.spaTraversal(startIDsList);
 			Util.clearAndSleep(queryLength.password, 5000);
-			queryLength.simpleTraversal(startIDsListRepeat);
+			queryLength.simpleTraversal(startIDsList);
 //			selectivityNumber.neo4jCypherTraveral(startIDsList);
 		} catch (Exception e) {
 			// TODO: handle exception
