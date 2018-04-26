@@ -131,26 +131,35 @@ public class QueryLength {
 			//Read start ids
 			String startIDPath = String.format("%s/startID.txt", queryLength.queryDir);
 			Util.Print("start id path: " + startIDPath);
-			ArrayList<Integer> startIDs = Util.readIntegerArray(startIDPath);
-			Util.Print(startIDs);
+			ArrayList<Integer> allIDs = Util.readIntegerArray(startIDPath);
+			Util.Print(allIDs);
 			
 			int experimentCount = 500;
-			int repeatTime = 10;
+			int groupCount = 10;
 			ArrayList<ArrayList<Long>> startIDsList = new ArrayList<>();
-			for ( int i = 0; i < repeatTime; i++)
+			for ( int i = 0; i < groupCount; i++)
 				startIDsList.add(new ArrayList<>());
 			
 			int offset = 0;
-			for ( int i = offset; i < offset + experimentCount * repeatTime; i++)
+			for ( int i = offset; i < offset + experimentCount * groupCount; i++)
 			{
-				int id = startIDs.get(i);
-				int index = i % repeatTime;
+				int id = allIDs.get(i);
+				int index = i % groupCount;
 				startIDsList.get(index).add(queryLength.graph_pos_map_list[id]);
 			}
 			
+			
+			int repeatTime = 10;
+			ArrayList<ArrayList<Long>> startIDsListRepeat = new ArrayList<>();
+			for (ArrayList<Long> startIDs : startIDsList)
+			{
+				for ( int i = 0; i < repeatTime; i++)
+					startIDsListRepeat.add(new ArrayList<>(startIDs));
+			}
+			
 			cacheFlag = false;
-			queryLength.spaTraversal(startIDsList);
-			queryLength.simpleTraversal(startIDsList);
+			queryLength.spaTraversal(startIDsListRepeat);
+			queryLength.simpleTraversal(startIDsListRepeat);
 //			selectivityNumber.neo4jCypherTraveral(startIDsList);
 		} catch (Exception e) {
 			// TODO: handle exception
