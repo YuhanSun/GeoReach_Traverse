@@ -9,6 +9,7 @@ import commons.Entity;
 import commons.MyRectangle;
 import commons.Util;
 import commons.VertexGeoReach;
+import commons.VertexGeoReachList;
 import commons.Config.Datasets;
 import commons.Config.system;
 
@@ -26,6 +27,7 @@ public class IndexConstruct {
 	
 	/**
 	 * Example of how to use such class.
+	 * Construct from stracth.
 	 */
 	public void construct()
 	{
@@ -40,41 +42,68 @@ public class IndexConstruct {
 			graph = Util.ReadGraph(graphPath);
 		Util.Print("graph size: " + graph.size());
 
-		int pieces_x = 128, pieces_y = 128, MC = 0;
-		double MG = 1.0, MR = 1.0;
-		
-		int format = 0;
-		String suffix = "bitmap";
-			
-		String outputPath = String.format("D:\\Ubuntu_shared\\GeoReachHop\\data\\%s\\%d_%d_%d_%d_%d_%d_%s.txt",
-				dataset, pieces_x, pieces_y, (int)(MG * 100), (int)(MR * 100), MC, MAX_HOPNUM, suffix);
-		
 		ArrayList<VertexGeoReach> index = ConstructIndex(graph, entities, 
-				minx, miny, maxx, maxy, 
-				pieces_x, pieces_y, MAX_HOPNUM);
+		minx, miny, maxx, maxy, 
+		pieces_x, pieces_y, MAX_HOPNUM);
 		
-		ArrayList<ArrayList<Integer>> typesList = generateTypeList(index, MAX_HOPNUM, 
+		//ouput whole index
+		String suffix = "whole";
+		String outputPath = String.format("D:\\Ubuntu_shared\\GeoReachHop\\data\\%s\\%d_%d_%d_%s.txt",
+				dataset, pieces_x, pieces_y, MAX_HOPNUM, suffix);
+		Util.outputGeoReach(index, outputPath);
+		
+		//output single index
+//		ArrayList<ArrayList<Integer>> typesList = generateTypeList(index, MAX_HOPNUM, 
+//		minx, miny, maxx, maxy, 
+//		pieces_x, pieces_y, MG, MR, MC);
+//		
+//		int format = 0;
+//		String suffix = "bitmap";
+//		String outputPath = String.format("D:\\Ubuntu_shared\\GeoReachHop\\data\\%s\\%d_%d_%d_%d_%d_%d_%s.txt",
+//				dataset, pieces_x, pieces_y, (int)(MG * 100), (int)(MR * 100), MC, MAX_HOPNUM, suffix);
+//		Util.outputGeoReach(index, outputPath, typesList, format);
+//		
+//		format = 1;
+//		suffix = "list";
+//		outputPath = String.format("D:\\Ubuntu_shared\\GeoReachHop\\data\\%s\\%d_%d_%d_%d_%d_%d_%s.txt",
+//				dataset, pieces_x, pieces_y, (int)(MG * 100), (int)(MR * 100), MC, MAX_HOPNUM, suffix);
+//		Util.outputGeoReach(index, outputPath, typesList, format);
+	}
+	
+	public void constructFromFile()
+	{
+		String indexPath = "D:\\Ubuntu_shared\\GeoReachHop\\data\\Gowalla_10\\128_128_80_80_0_2_whole.txt";
+		ArrayList<VertexGeoReachList> index = Util.readGeoReachWhole(indexPath);
+		
+		ArrayList<ArrayList<Integer>> typesList = generateTypeListForList(index, MAX_HOPNUM, 
 				minx, miny, maxx, maxy, 
 				pieces_x, pieces_y, MG, MR, MC);
 		
-		Util.outputGeoReach(index, outputPath, typesList, format);
+		int format = 0;
+		String suffix = "bitmap";
+		String outputPath = String.format("D:\\Ubuntu_shared\\GeoReachHop\\data\\%s\\%d_%d_%d_%d_%d_%d_%s.txt",
+				dataset, pieces_x, pieces_y, (int)(MG * 100), (int)(MR * 100), MC, MAX_HOPNUM, suffix);
+		Util.outputGeoReachForList(index, outputPath, typesList, format);
 		
 		format = 1;
 		suffix = "list";
 		outputPath = String.format("D:\\Ubuntu_shared\\GeoReachHop\\data\\%s\\%d_%d_%d_%d_%d_%d_%s.txt",
 				dataset, pieces_x, pieces_y, (int)(MG * 100), (int)(MR * 100), MC, MAX_HOPNUM, suffix);
-		Util.outputGeoReach(index, outputPath, typesList, format);
-		
+		Util.outputGeoReachForList(index, outputPath, typesList, format);
 	}
+	
+	int pieces_x = 128, pieces_y = 128, MC = 0;
+	double MG = 0.0, MR = 1.0;
 	
 	public static void main(String[] args) {
 		Config config = new Config();
 //		config.setDatasetName("Patents_2_random_80");
-		config.setDatasetName(Datasets.go_uniprot_100_random_80.name());
+		config.setDatasetName(Datasets.Gowalla_10.name());
 		
 		config.setMAXHOPNUM(3);
 		IndexConstruct indexConstruct = new IndexConstruct(config);
 		indexConstruct.construct();
+//		indexConstruct.constructFromFile();
 //		indexConstruct.getReachbleVertices();
 	}
 	
@@ -246,7 +275,21 @@ public class IndexConstruct {
 		return index;
 	}
 	
-	//Generate index type for each vertex
+	/**
+	 * Generate index type for each vertex
+	 * @param index
+	 * @param MAX_HOP
+	 * @param minx
+	 * @param miny
+	 * @param maxx
+	 * @param maxy
+	 * @param pieces_x
+	 * @param pieces_y
+	 * @param MG
+	 * @param MR
+	 * @param MC
+	 * @return
+	 */
 	public static ArrayList<ArrayList<Integer>> generateTypeList(ArrayList<VertexGeoReach> index, 
 			int MAX_HOP, 
 			double minx, double miny, double maxx, double maxy, 
@@ -322,7 +365,95 @@ public class IndexConstruct {
 		return typesList;
 	}
 	
-	
+	/**
+	 * 
+	 * @param index
+	 * @param MAX_HOP
+	 * @param minx
+	 * @param miny
+	 * @param maxx
+	 * @param maxy
+	 * @param pieces_x
+	 * @param pieces_y
+	 * @param MG
+	 * @param MR
+	 * @param MC
+	 * @return
+	 */
+	public static ArrayList<ArrayList<Integer>> generateTypeListForList(ArrayList<VertexGeoReachList> index, 
+			int MAX_HOP, 
+			double minx, double miny, double maxx, double maxy, 
+			int pieces_x, int pieces_y, 
+			double MG, double MR, int MC)
+	{
+		long start = System.currentTimeMillis();
+		double total_area = (maxx - minx) * (maxy - miny);
+		double resolution_x = (maxx - minx) / pieces_x;
+		double resolution_y = (maxy - miny) / pieces_y;
+
+		ArrayList<ArrayList<Integer>> typesList = new ArrayList<>();
+		for (VertexGeoReachList vertexGeoReach : index)
+		{
+			ArrayList<Integer> types = new ArrayList<>(); 
+			for ( int i = 0; i < MAX_HOP; i++)
+			{
+				ArrayList<Integer> reachgrid = vertexGeoReach.ReachGrids.get(i);
+				MyRectangle rmbr = vertexGeoReach.RMBRs.get(i);
+
+				int type = 0;
+				if (reachgrid != null)
+				{
+					int idX_min = (int) ((rmbr.min_x - minx) / resolution_x);
+					int idY_min = (int) ((rmbr.min_y- miny) / resolution_y);
+					int idX_max = (int) ((rmbr.max_x - minx) / resolution_x);
+					int idY_max = (int) ((rmbr.max_y- miny) / resolution_y);
+
+					idX_min = Math.min(pieces_x - 1, idX_min);
+					idY_min = Math.min(pieces_y - 1, idY_min);
+					idX_max = Math.min(pieces_x - 1, idX_max);
+					idY_max = Math.min(pieces_y - 1, idY_max);
+
+					if (reachgrid.size() > (idX_max - idX_min + 1) * (idY_max - idY_min + 1) * MG)
+					{
+						type = 1;
+						if (rmbr.area() > total_area * MR)
+						{
+							vertexGeoReach.GeoBs.set(i, true);
+							type = 2;
+						}
+					}
+				}
+				else
+				{
+					type = 2;
+					vertexGeoReach.GeoBs.set(i, false);
+				}
+
+				types.add(type);
+			}
+			typesList.add(types);
+		}
+
+		Util.Print("\nConstruct types time: " + (System.currentTimeMillis() - start));
+
+		ArrayList<ArrayList<Integer>> statis = new ArrayList<>(MAX_HOP);
+		for ( int i = 0; i < MAX_HOP; i++)
+			statis.add(new ArrayList<>());
+		for (int i = 0; i < typesList.size(); i++)
+		{
+			ArrayList<Integer> types = typesList.get(i);
+			for ( int j = 0; j < MAX_HOP; j++)
+			{
+				int type = types.get(j);
+				statis.get(j).add(type);
+			}
+		}
+
+		for (ArrayList<Integer> types : statis)
+			Util.Print(Util.histogram(types));
+
+		return typesList;
+	}
 	
 	/**
 	 * This part is the baseline for correctness proof

@@ -525,19 +525,25 @@ public class Util {
 					
 					String reachGridStr = strList[0];
 					String rmbrStr = strList[1];
-					String geoBStr = strList[2];
+//					String geoBStr = strList[2];
 					
 					// reachGrid
-					reachGridStr = reachGridStr.substring(1, reachGridStr.length() - 1);
-					strList = reachGridStr.split(", ");
-					ArrayList<Integer> reachGrid = new ArrayList<>(strList.length);
-					for ( String string : strList)
-						reachGrid.add(Integer.parseInt(string));
-					vertexGeoReachList.ReachGrids.set(j, reachGrid);
+					if (!reachGridStr.equals("null"))
+					{
+						reachGridStr = reachGridStr.substring(1, reachGridStr.length() - 1);
+						strList = reachGridStr.split(", ");
+						ArrayList<Integer> reachGrid = new ArrayList<>(strList.length);
+						for ( String string : strList)
+							reachGrid.add(Integer.parseInt(string));
+						vertexGeoReachList.ReachGrids.set(j, reachGrid);
+					}
 					
 					//rmbr
-					MyRectangle rmbr = new MyRectangle(rmbrStr);
-					vertexGeoReachList.RMBRs.set(j, rmbr);
+					if (!rmbrStr.equals("null"))
+					{
+						MyRectangle rmbr = new MyRectangle(rmbrStr);
+						vertexGeoReachList.RMBRs.set(j, rmbr);
+					}
 				}
 				index.add(vertexGeoReachList);
 			}
@@ -586,6 +592,77 @@ public class Util {
     				switch (type) {
 					case 0:
 						TreeSet<Integer> reachgrid = vertexGeoReach.ReachGrids.get(i);
+						if (format == 1)
+						{
+							RoaringBitmap r = new RoaringBitmap();
+							for(int gridID : reachgrid)
+								r.add(gridID);
+							String bitmap_ser = Util.Serialize_RoarBitmap_ToString(r);
+							writer.write(bitmap_ser + "\n");
+						}
+						else {
+							writer.write(reachgrid.toString() + "\n");
+						}
+						break;
+					case 1:
+						writer.write(vertexGeoReach.RMBRs.get(i).toString() + "\n");
+						break;
+					case 2:
+						writer.write(vertexGeoReach.GeoBs.get(i).toString() + "\n");
+						break;
+					default:
+						throw new Exception(String.format("Wrong type %d for vertex %d!", 
+								type, id));
+					}
+    			}
+        		id++;
+        	}
+    		writer.close();
+    	}
+    	catch(Exception e)
+    	{
+    		Util.Print("Error happens when output index for vertex " + id);
+    		Util.Print("Type List: " + typesList.get(id));
+    		e.printStackTrace();
+    		System.exit(-1);
+    	}
+    }
+    
+    /**
+     * Output index based on type
+     * @param index
+     * @param filepath
+     * @param types
+     * @param format 0 represents list while 1 represents bitmap
+     */
+    public static void outputGeoReachForList(ArrayList<VertexGeoReachList> index, String filepath, 
+    		ArrayList<ArrayList<Integer>> typesList, int format)
+    {
+    	int id = 0;
+    	FileWriter writer = null;
+    	try
+    	{
+    		int nodeCount = index.size();
+    		int MAX_HOP = index.get(0).ReachGrids.size();
+    		writer = new FileWriter(filepath);
+    		writer.write(String.format("%d,%d\n", nodeCount, MAX_HOP));
+    		
+    		Iterator<VertexGeoReachList> iterator1 = index.iterator();
+    		Iterator<ArrayList<Integer>> iterator2 = typesList.iterator();
+    		
+    		while (iterator1.hasNext() && iterator2.hasNext())
+        	{
+    			VertexGeoReachList vertexGeoReach = iterator1.next();
+    			ArrayList<Integer> types = iterator2.next();
+    			
+    			writer.write(id + "\n");
+    			for ( int i = 0; i < MAX_HOP; i++)
+    			{
+    				int type = types.get(i);
+    				writer.write("" + type + ":");
+    				switch (type) {
+					case 0:
+						ArrayList<Integer> reachgrid = vertexGeoReach.ReachGrids.get(i);
 						if (format == 1)
 						{
 							RoaringBitmap r = new RoaringBitmap();

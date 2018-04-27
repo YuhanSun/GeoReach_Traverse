@@ -13,6 +13,7 @@ import org.neo4j.unsafe.batchinsert.BatchInserters;
 import commons.Config;
 import commons.Entity;
 import commons.Util;
+import commons.Config.Datasets;
 import commons.Config.system;
 
 public class Loader {
@@ -35,9 +36,15 @@ public class Loader {
 	
 	public static void load()
 	{
-		Loader loader = new Loader(new Config());
-		String indexPath = "D:\\Ubuntu_shared\\GeoReachHop\\data\\Yelp\\1024_1024_100_100_0_3_bitmap.txt";
-		String dbPath = "D:\\Ubuntu_shared\\GeoReachHop\\data\\Yelp\\neo4j-community-3.1.1_1024_1024_100_100_0_3\\data\\databases\\graph.db";
+		Config config = new Config();
+		config.setDatasetName(Datasets.Gowalla_10.name());
+		
+		Loader loader = new Loader(config);
+		String dir = "D:\\Ubuntu_shared\\GeoReachHop\\data\\Gowalla_10";
+		String indexPath = dir + "\\128_128_0_100_0_3_bitmap.txt";
+		String dbFolder = "neo4j-community-3.1.1_Gowalla_10_128_128_100_100_0_3";
+		String dbPath = dir + "\\" + dbFolder + "\\data\\databases\\graph.db";
+		Util.Print("load from " + indexPath + " \nto " + dbPath);
 		loader.load(indexPath, dbPath);
 	}
 	
@@ -170,6 +177,7 @@ public class Loader {
 			int pos_id = Integer.parseInt(graph_pos_map.get(key_str));
 			graph_pos_map_list[key] = pos_id;
 		}
+		Util.Print(graph_pos_map.size());
 	}
 
 }
