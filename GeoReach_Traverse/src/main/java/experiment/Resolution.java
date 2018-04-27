@@ -47,7 +47,8 @@ public class Resolution {
 	}
 	
 //	int[] piecesArray = new int[] {96};
-	int[] piecesArray = new int[] {32, 64, 96, 128};
+//	int[] piecesArray = new int[] {32, 64, 96, 128};
+	int[] piecesArray = new int[] {128, 96, 64, 32};
 	
 	public static void main(String[] args) {
 		Config config = new Config();
@@ -130,6 +131,9 @@ public class Resolution {
 			double endSelectivity = 0.00002;
 //			double startSelectivity = 0.01;
 //			double endSelectivity = 0.02;
+//			double startSelectivity = 0.1;
+//			double endSelectivity = 0.2;
+			int times = 100;
 
 			//Read start ids
 			String startIDPath = String.format("%s/startID.txt", queryDir);
@@ -143,16 +147,16 @@ public class Resolution {
 			for ( int i = 0; i < repeatTime; i++)
 				startIDsList.add(new ArrayList<>());
 			
-			int offset = 0;
+			int offset = 500;
 			for ( int i = offset; i < offset + experimentCount * repeatTime; i++)
 			{
 				int id = allStartIDs.get(i);
 				int index = i % repeatTime;
 				startIDsList.get(index).add(graph_pos_map_list[id]);
 			}
+			int rectangleOffset = 1;
 			
 			double selectivity = startSelectivity;
-			int times = 10;
 			
 			String result_detail_path = null, result_avg_path = null;
 			switch (systemName) {
@@ -215,7 +219,7 @@ public class Resolution {
 						tx.success();
 						tx.close();
 
-						MyRectangle rectangle = queryrect.get(i);
+						MyRectangle rectangle = queryrect.get(i + rectangleOffset);
 						if ( rectangle.area() == 0.0)
 						{
 							double delta = Math.pow(0.1, 10);
