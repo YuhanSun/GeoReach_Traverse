@@ -42,12 +42,9 @@ public class MG {
 		Config config = new Config();
 		config.setDatasetName(Datasets.Gowalla_10.name());
 		MG mg = new MG(config);
-		mg.testMAXHOP = 1;
+		mg.testMAXHOP = 3;
 //		mg.generateIndex();
 //		mg.loadIndex();
-		mg.query();
-		
-		mg.testMAXHOP = 3;
 		mg.query();
 	}
 	
@@ -98,7 +95,7 @@ public class MG {
 	
 	public void loadIndex()
 	{
-		int pieces_x = 256, pieces_y = 256, MC = 0;
+		int pieces_x = 128, pieces_y = 128, MC = 0;
 		int MR = 100;
 		
 		int format = 1;
@@ -110,7 +107,23 @@ public class MG {
 		
 		String dir = "D:\\Ubuntu_shared\\GeoReachHop\\data";
 		
-//		for (int MG = 0; MG <= 3; MG += 1) 
+		for (int MG = 25; MG <= 75; MG += 25)
+		{
+			Util.Print("\nMG: " + MG);
+			Loader loader = new Loader(config);
+			
+			String indexPath = String.format("%s\\%s\\MG\\%d_%d_%d_%d_%d_%d_%s.txt",
+					dir, dataset, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, suffix);
+			
+			String dbPath = String.format("%s\\%s\\MG\\%s_%d_%d_%d_%d_%d_%d"
+					+ "\\data\\databases\\graph.db", 
+					dir, dataset, neo4j_version, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM);
+			
+			Util.Print(String.format("Load from %s\nto %s", indexPath, dbPath));
+			loader.load(indexPath, dbPath);
+		}
+		
+//		int MG = 100;
 //		{
 //			Util.Print("\nMG: " + MG);
 //			Loader loader = new Loader(new Config());
@@ -125,22 +138,6 @@ public class MG {
 //			Util.Print(String.format("Load from %s\nto %s", indexPath, dbPath));
 //			loader.load(indexPath, dbPath);
 //		}
-		
-		int MG = 100;
-		{
-			Util.Print("\nMG: " + MG);
-			Loader loader = new Loader(new Config());
-			
-			String indexPath = String.format("%s\\%s\\MG\\%d_%d_%d_%d_%d_%d_%s.txt",
-					dir, dataset, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, suffix);
-			
-			String dbPath = String.format("%s\\%s\\MG\\%s_%d_%d_%d_%d_%d_%d"
-					+ "\\data\\databases\\graph.db", 
-					dir, dataset, neo4j_version, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM);
-			
-			Util.Print(String.format("Load from %s\nto %s", indexPath, dbPath));
-			loader.load(indexPath, dbPath);
-		}
 	}
 	
 	public void query()
@@ -193,7 +190,7 @@ public class MG {
 					+ "visited_count\tGeoReachPruned\tHistoryPruned\tresult_count\n";
 			Util.WriteFile(result_avg_path, true, "MG\t" + head_line);
 			
-			for ( double MG = 0; MG < 0.07; MG += 0.02) //Gowalla
+			for ( double MG = 0; MG < 1.01; MG += 0.25) //Gowalla
 			{
 				String dbRootFolder = String.format("%s_%d_%d_%d_%d_%d_%d", 
 						neo4j_version, pieces_x, pieces_y, (int)(MG * 100), (int)(MR*100), MC, MAX_HOPNUM);
