@@ -47,13 +47,13 @@ public class SelectivityNumber {
 //	double startSelectivity = 0.00001;
 //	double endSelectivity = 0.2;
 	
-	//foursquare_100
-//	public double startSelectivity = 0.000001;
-//	public double endSelectivity = 0.2;
+	//foursquare_100 and Gowalla
+	public double startSelectivity = 0.000001;
+	public double endSelectivity = 0.2;
 	
 	//Yelp
-	public double startSelectivity = 0.0001;
-	public double endSelectivity = 0.2;
+//	public double startSelectivity = 0.0001;
+//	public double endSelectivity = 0.2;
 	
 	//Patents
 //	double startSelectivity = 0.00001;
@@ -74,7 +74,7 @@ public class SelectivityNumber {
 		initializeParameters();
 	}
 
-	public static int pieces_x = 1024, pieces_y = 1024;
+	public static int pieces_x = 128, pieces_y = 128;
 	public static double MG = 1.0, MR = 1.0;
 	public static int MC = 0;
 	public static int length = 3;
@@ -146,7 +146,7 @@ public class SelectivityNumber {
 //					Config.Datasets.Patents_100_random_80.name(), 
 //					Config.Datasets.go_uniprot_100_random_80.name()));
 			
-			config.setDatasetName(Config.Datasets.Yelp.name());
+			config.setDatasetName(Config.Datasets.Gowalla_10.name());
 			SelectivityNumber selectivityNumber = new SelectivityNumber(config);
 			
 			//Read start ids
@@ -262,6 +262,7 @@ public class SelectivityNumber {
 						Util.Print(String.format("%d : %s", i, rectangle.toString()));
 						Util.Print(startIDs);
 
+						Util.clearAndSleep(password, 5000);
 						start = System.currentTimeMillis();
 						spaTraversal.traverse(startNodes, length, rectangle);
 						time = System.currentTimeMillis() - start;
@@ -388,6 +389,8 @@ public class SelectivityNumber {
 						Util.Print(String.format("%d : %s", i, rectangle.toString()));
 						Util.Print(startIDs);
 
+						Util.clearAndSleep(password, 5000);
+						
 						start = System.currentTimeMillis();
 						simpleGraphTraversal.traverse(startNodes, length, rectangle);
 						time = System.currentTimeMillis() - start;
