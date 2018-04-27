@@ -9,7 +9,7 @@ import java.util.ArrayList;
  *
  */
 public class VertexGeoReachList {
-	public ArrayList<Integer> types;
+//	public ArrayList<Integer> types;
 	public ArrayList<ArrayList<Integer>> ReachGrids;
 	public ArrayList<MyRectangle> RMBRs;
 	public ArrayList<Boolean> GeoBs;

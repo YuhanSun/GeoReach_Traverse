@@ -499,6 +499,58 @@ public class Util {
     	}
     }
     
+    public static ArrayList<VertexGeoReachList> readGeoReachWhole(String filepath)
+    {
+    	int id = 0;
+    	String line = null;
+    	BufferedReader reader = null;
+    	try {
+			reader = new BufferedReader(new FileReader(new File(filepath)));
+			line = reader.readLine();
+			String[] strList = line.split(",");
+			int nodeCount = Integer.parseInt(strList[0]);
+			int MAX_HOPNUM = Integer.parseInt(strList[1]);
+			ArrayList<VertexGeoReachList> index = new ArrayList<>(nodeCount);
+			// each vertex
+			for ( int i = 0; i < nodeCount; i++)
+			{
+				VertexGeoReachList vertexGeoReachList = new VertexGeoReachList(MAX_HOPNUM);
+				id = Integer.parseInt(reader.readLine());
+				
+				// each hop
+				for ( int j = 0; j < MAX_HOPNUM; j++)
+				{
+					line = reader.readLine();
+					strList = line.split(";");
+					
+					String reachGridStr = strList[0];
+					String rmbrStr = strList[1];
+					String geoBStr = strList[2];
+					
+					// reachGrid
+					reachGridStr = reachGridStr.substring(1, reachGridStr.length() - 1);
+					strList = reachGridStr.split(", ");
+					ArrayList<Integer> reachGrid = new ArrayList<>(strList.length);
+					for ( String string : strList)
+						reachGrid.add(Integer.parseInt(string));
+					vertexGeoReachList.ReachGrids.set(j, reachGrid);
+					
+					//rmbr
+					MyRectangle rmbr = new MyRectangle(rmbrStr);
+					vertexGeoReachList.RMBRs.set(j, rmbr);
+				}
+				index.add(vertexGeoReachList);
+			}
+			reader.close();
+			return index;
+		} catch (Exception e) {
+			Util.Print("id: " + id + "\n" + line);
+			e.printStackTrace();
+			System.exit(-1);
+		}
+    	return null;
+    }
+    
     /**
      * Output index based on type
      * @param index

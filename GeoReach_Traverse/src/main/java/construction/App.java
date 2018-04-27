@@ -24,9 +24,12 @@ public class App
 //    	Util.Print(i);
 //        System.out.println( "Hello World!" );
     	
-    	String ser = "OjAAAAEAAAAAAAAAEAAAANwQ";
-    	ByteBuffer newbb = ByteBuffer.wrap(Base64.getDecoder().decode(ser));
-        ImmutableRoaringBitmap reachgrid = new ImmutableRoaringBitmap(newbb);
-        Util.Print(reachgrid);
+//    	String ser = "OjAAAAEAAAAAAAAAEAAAANwQ";
+//    	ByteBuffer newbb = ByteBuffer.wrap(Base64.getDecoder().decode(ser));
+//        ImmutableRoaringBitmap reachgrid = new ImmutableRoaringBitmap(newbb);
+//        Util.Print(reachgrid);
+    	
+    	String listStr = "[0, 1, 2]";
+    	Util.Print(listStr.substring(1, listStr.length()-1));
     }
 }
