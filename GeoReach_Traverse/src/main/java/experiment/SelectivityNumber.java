@@ -406,7 +406,8 @@ public class SelectivityNumber {
 						Util.Print(String.format("%d : %s", i, rectangle.toString()));
 						Util.Print(startIDs);
 
-						Util.clearAndSleep(password, 5000);
+						if(cacheFlag)
+							Util.clearAndSleep(password, 5000);
 						
 						start = System.currentTimeMillis();
 						simpleGraphTraversal.traverse(startNodes, length, rectangle);
@@ -423,9 +424,6 @@ public class SelectivityNumber {
 					}
 
 					simpleGraphTraversal.dbservice.shutdown();
-
-					Util.clearAndSleep(password, 5000);
-
 					simpleGraphTraversal.dbservice = new GraphDatabaseFactory().newEmbeddedDatabase(new File(db_path));
 
 				}
@@ -438,6 +436,7 @@ public class SelectivityNumber {
 					Util.WriteFile(result_avg_path, true, write_line);
 
 				selectivity *= times;
+				Util.clearAndSleep(password, 5000);
 			}
 			Util.WriteFile(result_detail_path, true, "\n");
 			Util.WriteFile(result_avg_path, true, "\n");
