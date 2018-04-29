@@ -74,10 +74,11 @@ public class SelectivityNumber {
 		initializeParameters();
 	}
 
-	public static int pieces_x = 128, pieces_y = 128;
+	public static int pieces_x = 64, pieces_y = 64;
 	public static double MG = 1.0, MR = 1.0;
 	public static int MC = 0;
-	public static int length = 3;
+	public static int length = 2;
+	public static int times = 100;
 	
 	public void initializeParameters()
 	{	
@@ -136,6 +137,8 @@ public class SelectivityNumber {
 		}
 	}
 	
+	public static boolean cacheFlag = true;
+	
 	public static void main(String[] args) {
 		try {
 			Config config = new Config();
@@ -147,27 +150,40 @@ public class SelectivityNumber {
 //					Config.Datasets.go_uniprot_100_random_80.name()));
 			
 			config.setDatasetName(Config.Datasets.Gowalla_10.name());
+			config.setMAXHOPNUM(2);
 			SelectivityNumber selectivityNumber = new SelectivityNumber(config);
 			
 			//Read start ids
 			String startIDPath = String.format("%s/startID.txt", selectivityNumber.queryDir);
 			Util.Print("start id path: " + startIDPath);
-			ArrayList<Integer> startIDs = Util.readIntegerArray(startIDPath);
-			Util.Print(startIDs);
+			ArrayList<Integer> allIDs = Util.readIntegerArray(startIDPath);
+			Util.Print(allIDs);
 			
-			int experimentCount = 500;
-			int repeatTime = 1;
+			int experimentCount = 1000;
+			int groupCount = 10;
 			ArrayList<ArrayList<Long>> startIDsList = new ArrayList<>();
-			for ( int i = 0; i < repeatTime; i++)
+			for ( int i = 0; i < groupCount; i++)
 				startIDsList.add(new ArrayList<>());
 			
-			for ( int i = 0; i < experimentCount; i++)
+			int offset = 0;
+			for ( int i = offset; i < offset + experimentCount * groupCount; i++)
 			{
-				int id = startIDs.get(i);
-				int index = i % repeatTime;
+				int id = allIDs.get(i);
+				int index = i % groupCount;
 				startIDsList.get(index).add(selectivityNumber.graph_pos_map_list[id]);
 			}
 			
+			
+			int repeatTime = 1;
+			ArrayList<ArrayList<Long>> startIDsListRepeat = new ArrayList<>();
+			for (ArrayList<Long> startIDs : startIDsList)
+			{
+				for ( int i = 0; i < repeatTime; i++)
+					startIDsListRepeat.add(new ArrayList<>(startIDs));
+			}
+			startIDsList = startIDsListRepeat;
+			
+			cacheFlag = false;
 //			selectivityNumber.simpleTraversal(startIDsList);
 			selectivityNumber.spaTraversal(startIDsList);
 //			selectivityNumber.neo4jCypherTraveral(startIDsList);
@@ -197,19 +213,22 @@ public class SelectivityNumber {
 				break;
 			}
 
-			String write_line = String.format("%s\t%d\n", dataset, length);
+			String write_line = String.format("%s\tlength:%d\n", dataset, length);
 			if(!TEST_FORMAT)
 			{
 				Util.WriteFile(result_detail_path, true, write_line);
 				Util.WriteFile(result_avg_path, true, write_line);
 			}
+			
+			write_line = String.format("MAXHOP=%d, pieces=%d, MG=%f", MAX_HOPNUM, pieces_x, MG);
+			write_line = "MAXHOP = " + MAX_HOPNUM + ", pieces = " + pieces_x;
+			Util.WriteFile(result_avg_path, true, write_line + "\n");
 
 			String head_line = "time\tvisited_count\tGeoReachPruned\tHistoryPruned\tresult_count\n";
 			if(!TEST_FORMAT)
 				Util.WriteFile(result_avg_path, true, "selectivity\t" + head_line);
 
 			double selectivity = startSelectivity;
-			int times = 10;
 			while ( selectivity <= endSelectivity)
 			{
 				int name_suffix = (int) (selectivity * spaCount);
@@ -262,7 +281,8 @@ public class SelectivityNumber {
 						Util.Print(String.format("%d : %s", i, rectangle.toString()));
 						Util.Print(startIDs);
 
-						Util.clearAndSleep(password, 5000);
+						if (cacheFlag)
+							Util.clearAndSleep(password, 5000);
 						start = System.currentTimeMillis();
 						spaTraversal.traverse(startNodes, length, rectangle);
 						time = System.currentTimeMillis() - start;
@@ -282,9 +302,6 @@ public class SelectivityNumber {
 					}
 
 					spaTraversal.dbservice.shutdown();
-
-					Util.clearAndSleep(password, 5000);
-
 					spaTraversal.dbservice = new GraphDatabaseFactory().newEmbeddedDatabase(new File(db_path));
 
 				}
@@ -298,6 +315,7 @@ public class SelectivityNumber {
 					Util.WriteFile(result_avg_path, true, write_line);
 
 				selectivity *= times;
+				Util.clearAndSleep(password, 5000);
 			}
 			Util.WriteFile(result_detail_path, true, "\n");
 			Util.WriteFile(result_avg_path, true, "\n");
@@ -339,7 +357,6 @@ public class SelectivityNumber {
 				Util.WriteFile(result_avg_path, true, "selectivity\t" + head_line);
 
 			double selectivity = startSelectivity;
-			int times = 10;
 			while ( selectivity <= endSelectivity)
 			{
 				int name_suffix = (int) (selectivity * spaCount);
