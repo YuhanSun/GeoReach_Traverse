@@ -137,7 +137,8 @@ public class SelectivityNumber {
 		}
 	}
 	
-	public static boolean cacheFlag = true;
+	public static boolean clearCacheFlag = true;
+	public static boolean hotDB = false;
 	
 	public static void main(String[] args) {
 		try {
@@ -183,9 +184,10 @@ public class SelectivityNumber {
 			}
 			startIDsList = startIDsListRepeat;
 			
-			cacheFlag = false;
-			selectivityNumber.simpleTraversal(startIDsList);
-//			selectivityNumber.spaTraversal(startIDsList);
+			clearCacheFlag = false;
+			hotDB = true;
+//			selectivityNumber.simpleTraversal(startIDsList);
+			selectivityNumber.spaTraversal(startIDsList);
 //			selectivityNumber.neo4jCypherTraveral(startIDsList);
 		} catch (Exception e) {
 			// TODO: handle exception
@@ -281,7 +283,7 @@ public class SelectivityNumber {
 						Util.Print(String.format("%d : %s", i, rectangle.toString()));
 						Util.Print(startIDs);
 
-						if (cacheFlag)
+						if (clearCacheFlag)
 							Util.clearAndSleep(password, 5000);
 						start = System.currentTimeMillis();
 						spaTraversal.traverse(startNodes, length, rectangle);
@@ -307,6 +309,15 @@ public class SelectivityNumber {
 				}
 				spaTraversal.dbservice.shutdown();
 
+				if (hotDB)
+				{
+					total_time.remove(0);
+					visitedcount.remove(0);
+					GeoReachPrunedCount.remove(0);
+					HistoryPrunedCount.remove(0);
+					resultCount.remove(0);
+				}
+				
 				write_line = String.valueOf(selectivity) + "\t";
 				write_line += String.format("%d\t%d\t", Util.Average(total_time), Util.Average(visitedcount));
 				write_line += String.format("%d\t%d\t%d\n", Util.Average(GeoReachPrunedCount), 
@@ -406,7 +417,7 @@ public class SelectivityNumber {
 						Util.Print(String.format("%d : %s", i, rectangle.toString()));
 						Util.Print(startIDs);
 
-						if(cacheFlag)
+						if(clearCacheFlag)
 							Util.clearAndSleep(password, 5000);
 						
 						start = System.currentTimeMillis();
@@ -429,6 +440,12 @@ public class SelectivityNumber {
 				}
 				simpleGraphTraversal.dbservice.shutdown();
 
+				if (hotDB)
+				{
+					total_time.remove(0);
+					visitedcount.remove(0);
+					resultCount.remove(0);
+				}
 				write_line = String.valueOf(selectivity) + "\t";
 				write_line += String.format("%d\t%d\t", Util.Average(total_time), Util.Average(visitedcount));
 				write_line += String.format("%d\n", Util.Average(resultCount));
