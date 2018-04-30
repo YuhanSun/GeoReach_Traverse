@@ -77,7 +77,7 @@ public class SelectivityNumber {
 	public static int pieces_x = 64, pieces_y = 64;
 	public static double MG = 1.0, MR = 1.0;
 	public static int MC = 0;
-	public static int length = 2;
+	public static int length = 3;
 	public static int times = 100;
 	
 	public void initializeParameters()
@@ -184,8 +184,8 @@ public class SelectivityNumber {
 			startIDsList = startIDsListRepeat;
 			
 			cacheFlag = false;
-//			selectivityNumber.simpleTraversal(startIDsList);
-			selectivityNumber.spaTraversal(startIDsList);
+			selectivityNumber.simpleTraversal(startIDsList);
+//			selectivityNumber.spaTraversal(startIDsList);
 //			selectivityNumber.neo4jCypherTraveral(startIDsList);
 		} catch (Exception e) {
 			// TODO: handle exception
