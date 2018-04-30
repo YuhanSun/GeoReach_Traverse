@@ -49,7 +49,7 @@ public class SelectivityNumber {
 	
 	//foursquare_100 and Gowalla
 	public double startSelectivity = 0.000001;
-	public double endSelectivity = 0.2;
+	public double endSelectivity = 0.000002;
 	
 	//Yelp
 //	public double startSelectivity = 0.0001;
@@ -160,7 +160,7 @@ public class SelectivityNumber {
 			ArrayList<Integer> allIDs = Util.readIntegerArray(startIDPath);
 			Util.Print(allIDs);
 			
-			int experimentCount = 1000;
+			int experimentCount = 500;
 			int groupCount = 10;
 			ArrayList<ArrayList<Long>> startIDsList = new ArrayList<>();
 			for ( int i = 0; i < groupCount; i++)
@@ -186,7 +186,7 @@ public class SelectivityNumber {
 			
 			clearCacheFlag = false;
 			hotDB = true;
-//			selectivityNumber.simpleTraversal(startIDsList);
+			selectivityNumber.simpleTraversal(startIDsList);
 			selectivityNumber.spaTraversal(startIDsList);
 //			selectivityNumber.neo4jCypherTraveral(startIDsList);
 		} catch (Exception e) {
