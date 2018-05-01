@@ -1,6 +1,7 @@
 package experiment;
 
 import java.io.File;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -48,7 +49,7 @@ public class SelectivityNumber {
 //	double endSelectivity = 0.2;
 	
 	//foursquare_100 and Gowalla
-	public double startSelectivity = 0.00001;
+	public double startSelectivity = 0.000001;
 	public double endSelectivity = 0.2;
 	
 	//Yelp
@@ -74,11 +75,11 @@ public class SelectivityNumber {
 		initializeParameters();
 	}
 
-	public static int pieces_x = 64, pieces_y = 64;
+	public static int pieces_x = 96, pieces_y = 96;
 	public static double MG = 1.0, MR = 1.0;
 	public static int MC = 0;
 	public static int length = 3;
-	public static int times = 100;
+	public static int times = 10;
 	
 	public void initializeParameters()
 	{	
@@ -139,6 +140,7 @@ public class SelectivityNumber {
 	
 	public static boolean clearCacheFlag = true;
 	public static boolean hotDB = false;
+	DecimalFormat df = new DecimalFormat("0E0");
 	
 	public static void main(String[] args) {
 		try {
@@ -246,7 +248,7 @@ public class SelectivityNumber {
 				}
 				Util.Print("query rectangle path: " + queryrect_path);
 
-				write_line = selectivity + "\n" + head_line;
+				write_line = df.format(selectivity) + "\n" + head_line;
 				if(!TEST_FORMAT)
 					Util.WriteFile(result_detail_path, true, write_line);
 
@@ -318,7 +320,7 @@ public class SelectivityNumber {
 					resultCount.remove(0);
 				}
 				
-				write_line = String.valueOf(selectivity) + "\t";
+				write_line = df.format(selectivity) + "\t";
 				write_line += String.format("%d\t%d\t", Util.Average(total_time), Util.Average(visitedcount));
 				write_line += String.format("%d\t%d\t%d\n", Util.Average(GeoReachPrunedCount), 
 						Util.Average(HistoryPrunedCount), Util.Average(resultCount));
@@ -383,7 +385,7 @@ public class SelectivityNumber {
 				}
 				Util.Print("query rectangle path: " + queryrect_path);
 
-				write_line = selectivity + "\n" + head_line;
+				write_line = df.format(selectivity) + "\n" + head_line;
 				if(!TEST_FORMAT)
 					Util.WriteFile(result_detail_path, true, write_line);
 
@@ -446,7 +448,7 @@ public class SelectivityNumber {
 					visitedcount.remove(0);
 					resultCount.remove(0);
 				}
-				write_line = String.valueOf(selectivity) + "\t";
+				write_line = df.format(selectivity) + "\t";
 				write_line += String.format("%d\t%d\t", Util.Average(total_time), Util.Average(visitedcount));
 				write_line += String.format("%d\n", Util.Average(resultCount));
 				if(!TEST_FORMAT)

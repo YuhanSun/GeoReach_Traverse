@@ -1,6 +1,7 @@
 package construction;
 
 import java.nio.ByteBuffer;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Base64;
 
@@ -29,7 +30,15 @@ public class App
 //        ImmutableRoaringBitmap reachgrid = new ImmutableRoaringBitmap(newbb);
 //        Util.Print(reachgrid);
     	
-    	String listStr = "[0, 1, 2]";
-    	Util.Print(listStr.substring(1, listStr.length()-1));
+//    	String listStr = "[0, 1, 2]";
+//    	Util.Print(listStr.substring(1, listStr.length()-1));
+    	
+    	for (double x = 0.00001; x < 0.2; x *= 10)
+    	{
+    		Util.Print(x);
+    		DecimalFormat df = new DecimalFormat("0E0");
+    		String string = df.format(x);
+    		Util.Print(string);
+    	}
     }
 }
