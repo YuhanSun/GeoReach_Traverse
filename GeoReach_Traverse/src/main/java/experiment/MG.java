@@ -38,14 +38,17 @@ public class MG {
 	private String dataDir;
 	Integer testMAXHOP = null;
 	
+	int[] MGs = new int[] {0, 50, 100};
+	
 	public static void main(String[] args) {
 		Config config = new Config();
 		config.setDatasetName(Datasets.Gowalla_10.name());
+		config.setMAXHOPNUM(1);
 		MG mg = new MG(config);
-		mg.testMAXHOP = 3;
-//		mg.generateIndex();
+//		mg.testMAXHOP = 3;
+		mg.generateIndex();
 //		mg.loadIndex();
-		mg.query();
+//		mg.query();
 	}
 	
 	public void generateIndex()
@@ -53,28 +56,31 @@ public class MG {
 		int pieces_x = 128, pieces_y = 128, MC = 0;
 		int MR = 100;
 		
-		int format = 1;
-		String suffix = "";
-		if (format == 0)
-			suffix = "list";
-		else 
-			suffix = "bitmap";
-		
 		String dir = "D:\\Ubuntu_shared\\GeoReachHop\\data";
 		ArrayList<VertexGeoReach> index = IndexConstruct.ConstructIndex(graph, entities, 
 				minx, miny, maxx, maxy, 
 				pieces_x, pieces_y, MAX_HOPNUM);
-		for (int MG = 0; MG <= 0; MG += 10) 
+//		for (int MG = 0; MG <= 100; MG += 10)
+		for (int MG : MGs)
 		{
 			Util.Print("\nMG: " + MG);
-			String indexPath = String.format("%s\\%s\\MG\\%d_%d_%d_%d_%d_%d_%s.txt",
-					dir, dataset, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, suffix);
-			Util.Print("Output index to " + indexPath);
 			
 			ArrayList<ArrayList<Integer>> typesList = IndexConstruct.generateTypeList(index, MAX_HOPNUM, 
 					minx, miny, maxx, maxy, 
 					pieces_x, pieces_y, MG/100.0, MR/100.0, MC);
 			
+			int format = 1;
+			String suffix = "bitmap";
+			String indexPath = String.format("%s\\%s\\MG\\%d_%d_%d_%d_%d_%d_%s.txt",
+					dir, dataset, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, suffix);
+			Util.Print("Output index to " + indexPath);
+			
+			
+			format = 0;
+			suffix = "list";
+			indexPath = String.format("%s\\%s\\MG\\%d_%d_%d_%d_%d_%d_%s.txt",
+					dir, dataset, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, suffix);
+			Util.Print("Output index to " + indexPath);
 			Util.outputGeoReach(index, indexPath, typesList, format);
 		}
 		
@@ -107,7 +113,8 @@ public class MG {
 		
 		String dir = "D:\\Ubuntu_shared\\GeoReachHop\\data";
 		
-		for (int MG = 25; MG <= 75; MG += 25)
+//		for (int MG = 25; MG <= 75; MG += 25)
+		for ( int MG : MGs)
 		{
 			Util.Print("\nMG: " + MG);
 			Loader loader = new Loader(config);
@@ -190,8 +197,10 @@ public class MG {
 					+ "visited_count\tGeoReachPruned\tHistoryPruned\tresult_count\n";
 			Util.WriteFile(result_avg_path, true, "MG\t" + head_line);
 			
-			for ( double MG = 0; MG < 1.01; MG += 0.25) //Gowalla
+//			for ( double MG = 0; MG < 1.01; MG += 0.25) //Gowalla
+			for ( int MGint : MGs)
 			{
+				double MG = MGint / 100.0;
 				String dbRootFolder = String.format("%s_%d_%d_%d_%d_%d_%d", 
 						neo4j_version, pieces_x, pieces_y, (int)(MG * 100), (int)(MR*100), MC, MAX_HOPNUM);
 				dbPath = String.format("%s/%s/MG/%s/data/databases/graph.db", dbDir, dataset, dbRootFolder);
