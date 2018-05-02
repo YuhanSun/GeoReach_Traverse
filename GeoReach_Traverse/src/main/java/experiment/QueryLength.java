@@ -1,6 +1,7 @@
 package experiment;
 
 import java.io.File;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -49,7 +50,7 @@ public class QueryLength {
 		initializeParameters();
 	}
 
-	public static int pieces_x = 128, pieces_y = 128;
+	public static int pieces_x = 96, pieces_y = 96;
 	public static double MG = 1.0, MR = 1.0;
 	public static int MC = 0;
 //	public static double selectivity = 0.00001;	//Gowalla and foursquare
@@ -113,7 +114,9 @@ public class QueryLength {
 		}
 	}
 	
-	public static boolean cacheFlag = false;
+	public static boolean clearCacheFlag = false;
+	public static boolean hotDB = false;
+	DecimalFormat df = new DecimalFormat("0E0");
 	
 	public static void main(String[] args) {
 		try {
@@ -129,13 +132,14 @@ public class QueryLength {
 			QueryLength queryLength = new QueryLength(config);
 			
 			//Read start ids
+			//Read start ids
 			String startIDPath = String.format("%s/startID.txt", queryLength.queryDir);
 			Util.Print("start id path: " + startIDPath);
 			ArrayList<Integer> allIDs = Util.readIntegerArray(startIDPath);
 			Util.Print(allIDs);
 			
 			int experimentCount = 500;
-			int groupCount = 10;
+			int groupCount = 1;
 			ArrayList<ArrayList<Long>> startIDsList = new ArrayList<>();
 			for ( int i = 0; i < groupCount; i++)
 				startIDsList.add(new ArrayList<>());
@@ -148,20 +152,19 @@ public class QueryLength {
 				startIDsList.get(index).add(queryLength.graph_pos_map_list[id]);
 			}
 			
+			int repeatTime = 20;
+			ArrayList<ArrayList<Long>> startIDsListRepeat = new ArrayList<>();
+			for (ArrayList<Long> startIDs : startIDsList)
+			{
+				for ( int i = 0; i < repeatTime; i++)
+					startIDsListRepeat.add(new ArrayList<>(startIDs));
+			}
+			startIDsList = startIDsListRepeat;
 			
-//			int repeatTime = 10;
-//			ArrayList<ArrayList<Long>> startIDsListRepeat = new ArrayList<>();
-//			for (ArrayList<Long> startIDs : startIDsList)
-//			{
-//				for ( int i = 0; i < repeatTime; i++)
-//					startIDsListRepeat.add(new ArrayList<>(startIDs));
-//			}
-//			startIDsList = startIDsListRepeat;
+			clearCacheFlag = false;
+			hotDB = true;
 			
-			cacheFlag = false;
-			Util.clearAndSleep(queryLength.password, 5000);
-			queryLength.spaTraversal(startIDsList);
-			Util.clearAndSleep(queryLength.password, 5000);
+//			queryLength.spaTraversal(startIDsList);
 			queryLength.simpleTraversal(startIDsList);
 //			selectivityNumber.neo4jCypherTraveral(startIDsList);
 		} catch (Exception e) {
@@ -252,7 +255,7 @@ public class QueryLength {
 						Util.Print(String.format("%d : %s", i, rectangle.toString()));
 						Util.Print(startIDs);
 						
-						if (cacheFlag)
+						if (clearCacheFlag)
 							Util.clearAndSleep(password, 5000);
 						
 						start = System.currentTimeMillis();
@@ -272,7 +275,7 @@ public class QueryLength {
 						if(!TEST_FORMAT)
 							Util.WriteFile(result_detail_path, true, write_line);
 					}
-					if (cacheFlag)
+					if (clearCacheFlag)
 					{
 						spaTraversal.dbservice.shutdown();
 						Util.clearAndSleep(password, 5000);
@@ -281,6 +284,16 @@ public class QueryLength {
 
 				}
 				spaTraversal.dbservice.shutdown();
+				Util.clearAndSleep(password, 5000);
+				
+				if (hotDB)
+				{
+					total_time.remove(0);
+					visitedcount.remove(0);
+					GeoReachPrunedCount.remove(0);
+					HistoryPrunedCount.remove(0);
+					resultCount.remove(0);
+				}
 
 				write_line = String.valueOf(length) + "\t";
 				write_line += String.format("%d\t%d\t", Util.Average(total_time), Util.Average(visitedcount));
@@ -377,7 +390,7 @@ public class QueryLength {
 					{
 						Util.Print(String.format("%d : %s", i, rectangle.toString()));
 						Util.Print(startIDs);
-						if (cacheFlag)
+						if (clearCacheFlag)
 							Util.clearAndSleep(password, 5000);
 						
 						start = System.currentTimeMillis();
@@ -394,7 +407,7 @@ public class QueryLength {
 							Util.WriteFile(result_detail_path, true, write_line);
 					}
 
-					if (cacheFlag)
+					if (clearCacheFlag)
 					{
 						simpleGraphTraversal.dbservice.shutdown();
 						Util.clearAndSleep(password, 5000);
@@ -403,7 +416,15 @@ public class QueryLength {
 
 				}
 				simpleGraphTraversal.dbservice.shutdown();
+				Util.clearAndSleep(password, 5000);
 
+				if (hotDB)
+				{
+					total_time.remove(0);
+					visitedcount.remove(0);
+					resultCount.remove(0);
+				}
+				
 				write_line = String.valueOf(length) + "\t";
 				write_line += String.format("%d\t%d\t", Util.Average(total_time), Util.Average(visitedcount));
 				write_line += String.format("%d\n", Util.Average(resultCount));
