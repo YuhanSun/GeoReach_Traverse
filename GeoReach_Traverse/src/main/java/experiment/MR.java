@@ -39,11 +39,15 @@ public class MR {
 	private String queryDir;
 	private int spaCount;
 	
+	static int[] MRs = new int[]{0, 25, 50, 75};
+	
 	public static void main(String[] args) {
 		Config config = new Config();
-		config.setDatasetName(Datasets.Gowalla_10.name());
+//		config.setDatasetName(Datasets.Gowalla_10.name());
+		config.setDatasetName("Patents_2_random_80");
+		config.setMAXHOPNUM(2);
 		MR mr = new MR(config);
-		mr.testMAXHOP = 2;
+//		mr.testMAXHOP = 2;
 		mr.generateIndex();
 //		mr.loadIndex();
 //		mr.query();
@@ -62,7 +66,7 @@ public class MR {
 				minx, miny, maxx, maxy, 
 				pieces_x, pieces_y, MAX_HOPNUM);
 		
-		for (int MR = 0; MR <= 60; MR += 20) 
+		for (int MR : MRs) 
 		{
 			Util.Print("\nMR: " + MR);
 			
@@ -95,7 +99,7 @@ public class MR {
 		else 
 			suffix = "bitmap";
 		
-		for (int MR = 0; MR <= 60; MR += 20) 
+		for (int MR : MRs) 
 		{
 			Util.Print("\nMR: " + MR);
 			Loader loader = new Loader(config);
@@ -160,8 +164,9 @@ public class MR {
 					+ "visited_count\tGeoReachPruned\tHistoryPruned\tresult_count\n";
 			Util.WriteFile(result_avg_path, true, "MR\t" + head_line);
 			
-			for ( double MR = 0; MR < 0.7; MR += 0.2) //Gowalla
+			for ( int MRint : MRs)
 			{
+				double MR = MRint / 100.0;
 				String dbRootFolder = String.format("%s_%d_%d_%d_%d_%d_%d", 
 						neo4j_version, pieces_x, pieces_y, (int)(MG * 100), (int)(MR*100), MC, MAX_HOPNUM);
 				dbPath = String.format("%s/%s/MR/%s/data/databases/graph.db", dbDir, dataset, dbRootFolder);
