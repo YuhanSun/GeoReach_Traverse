@@ -48,6 +48,7 @@ public class Config
 			"D:\\Ubuntu_shared\\GeoMinHop\\data":
 			"/mnt/hgfs/Ubuntu_shared/GeoMinHop/data";
 	
+	//dbDir: database and index dir
 	private String dbDir = operatingSystem.equals(system.Windows) ? 
 			"D:\\Ubuntu_shared\\GeoReachHop\\data":
 			"/home/yuhansun/Documents/GeoReachHop";
