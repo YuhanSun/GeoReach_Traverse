@@ -26,7 +26,8 @@ public class Prepare {
 
 	public static void generateStartID()
 	{
-		for (String dataset : datasets)
+//		for (String dataset : datasets)
+		String dataset = "Patents_2_random_80";
 		{
 			String outputPath = String.format("%s\\query\\%s\\startID.txt", 
 					projectDir, dataset);
