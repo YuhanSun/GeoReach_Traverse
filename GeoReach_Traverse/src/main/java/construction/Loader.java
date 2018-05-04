@@ -3,6 +3,7 @@ package construction;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,6 +54,7 @@ public class Loader {
 		int lineIndex = 0;
 		String line = "";
 		BatchInserter inserter = null;
+		BufferedReader reader = null;
 		int id;
 		try {
 			Map<String, String> config = new HashMap<String, String>();
@@ -62,7 +64,7 @@ public class Loader {
 			inserter = BatchInserters.inserter(
 					new File(dbPath).getAbsoluteFile(), config);
 			
-			BufferedReader reader = new BufferedReader(
+			reader = new BufferedReader(
 					new FileReader(new File(indexPath)));
 			
 			lineIndex++;
@@ -107,6 +109,14 @@ public class Loader {
 			inserter.shutdown();
 			
 		} catch (Exception e) {
+			if (reader != null)
+				try {
+					reader.close();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			
 			if (inserter != null)
 				inserter.shutdown();
 			Util.Print(String.format("line %d: %s", lineIndex, line));
