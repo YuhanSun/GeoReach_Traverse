@@ -39,7 +39,9 @@ public class MG {
 	Integer testMAXHOP = null;
 	
 //	int[] MGs = new int[] {0, 25, 50, 75, 100};
-	int[] MGs = new int[] {0, 50, 100};
+//	int[] MGs = new int[] {0, 50, 100};
+//	int[] MGs = new int[] {0, 5, 10, 15, 20};
+	int[] MGs = new int[] {1, 2, 3};
 	
 	public static void main(String[] args) {
 		Config config = new Config();
