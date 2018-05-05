@@ -39,7 +39,8 @@ public class MR {
 	private String queryDir;
 	private int spaCount;
 	
-	static int[] MRs = new int[]{0, 25, 50, 75};
+//	static int[] MRs = new int[]{0, 10, 20, 30};
+	static int[] MRs = new int[]{0, 10, 20, 30, 40, 50, 60, 70, 80, 90};
 	
 	public static void main(String[] args) {
 		Config config = new Config();
@@ -47,10 +48,10 @@ public class MR {
 		config.setDatasetName("Patents_2_random_80");
 		config.setMAXHOPNUM(2);
 		MR mr = new MR(config);
-//		mr.testMAXHOP = 2;
-		mr.generateIndex();
+		mr.testMAXHOP = 2;
+//		mr.generateIndex();
 //		mr.loadIndex();
-//		mr.query();
+		mr.query();
 	}
 	
 	public void generateIndex()
@@ -124,23 +125,35 @@ public class MR {
 			int length = 2;
 			MyRectangle total_range = new MyRectangle(minx, miny, maxx, maxy);
 			
+			//Read start ids
 			String startIDPath = String.format("%s/startID.txt", queryDir);
 			Util.Print("start id path: " + startIDPath);
-			ArrayList<Integer> ids = Util.readIntegerArray(startIDPath);
-//			Util.Print(ids);
+			ArrayList<Integer> allIDs = Util.readIntegerArray(startIDPath);
+			Util.Print(allIDs);
 			
 			int experimentCount = 500;
-			int repeatTime = 1;
+			int groupCount = 5;
 			ArrayList<ArrayList<Long>> startIDsList = new ArrayList<>();
-			for ( int i = 0; i < repeatTime; i++)
+			for ( int i = 0; i < groupCount; i++)
 				startIDsList.add(new ArrayList<>());
 			
-			for ( int i = 0; i < experimentCount; i++)
+			int offset = 0;
+			for ( int i = offset; i < offset + experimentCount * groupCount; i++)
 			{
-				int id = ids.get(i);
-				int index = i % repeatTime;
+				int id = allIDs.get(i);
+				int index = i % groupCount;
 				startIDsList.get(index).add(graph_pos_map_list[id]);
 			}
+			
+			
+			int repeatTime = 1;
+			ArrayList<ArrayList<Long>> startIDsListRepeat = new ArrayList<>();
+			for (ArrayList<Long> startIDs : startIDsList)
+			{
+				for ( int i = 0; i < repeatTime; i++)
+					startIDsListRepeat.add(new ArrayList<>(startIDs));
+			}
+			startIDsList = startIDsListRepeat;
 			
 			long start, time;
 			

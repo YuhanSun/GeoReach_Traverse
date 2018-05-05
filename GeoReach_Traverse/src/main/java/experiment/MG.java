@@ -41,7 +41,7 @@ public class MG {
 //	int[] MGs = new int[] {0, 25, 50, 75, 100};
 //	int[] MGs = new int[] {0, 50, 100};
 //	int[] MGs = new int[] {0, 5, 10, 15, 20};
-	int[] MGs = new int[] {1, 2, 3};
+	int[] MGs = new int[] {0, 1, 2, 3};
 	
 	public static void main(String[] args) {
 		Config config = new Config();
@@ -49,10 +49,10 @@ public class MG {
 		config.setDatasetName("Patents_2_random_80");
 		config.setMAXHOPNUM(2);
 		MG mg = new MG(config);
-//		mg.testMAXHOP = 3;
+		mg.testMAXHOP = 2;
 //		mg.generateIndex();
-		mg.loadIndex();
-//		mg.query();
+//		mg.loadIndex();
+		mg.query();
 	}
 	
 	public void generateIndex()
@@ -145,23 +145,35 @@ public class MG {
 			int length = 3;
 			MyRectangle total_range = new MyRectangle(minx, miny, maxx, maxy);
 			
+			//Read start ids
 			String startIDPath = String.format("%s/startID.txt", queryDir);
 			Util.Print("start id path: " + startIDPath);
-			ArrayList<Integer> ids = Util.readIntegerArray(startIDPath);
-//			Util.Print(ids);
+			ArrayList<Integer> allIDs = Util.readIntegerArray(startIDPath);
+			Util.Print(allIDs);
 			
 			int experimentCount = 500;
-			int repeatTime = 1;
+			int groupCount = 1;
 			ArrayList<ArrayList<Long>> startIDsList = new ArrayList<>();
-			for ( int i = 0; i < repeatTime; i++)
+			for ( int i = 0; i < groupCount; i++)
 				startIDsList.add(new ArrayList<>());
 			
-			for ( int i = 0; i < experimentCount; i++)
+			int offset = 0;
+			for ( int i = offset; i < offset + experimentCount * groupCount; i++)
 			{
-				int id = ids.get(i);
-				int index = i % repeatTime;
+				int id = allIDs.get(i);
+				int index = i % groupCount;
 				startIDsList.get(index).add(graph_pos_map_list[id]);
 			}
+			
+			
+			int repeatTime = 20;
+			ArrayList<ArrayList<Long>> startIDsListRepeat = new ArrayList<>();
+			for (ArrayList<Long> startIDs : startIDsList)
+			{
+				for ( int i = 0; i < repeatTime; i++)
+					startIDsListRepeat.add(new ArrayList<>(startIDs));
+			}
+			startIDsList = startIDsListRepeat;
 			
 			long start, time;
 			
