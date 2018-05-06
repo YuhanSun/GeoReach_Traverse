@@ -16,7 +16,7 @@ import commons.Util;
 import query.Neo4jCypherTraversal;
 import query.SimpleGraphTraversal;
 import query.SpaTraversal;
-import commons.Config.system;
+import commons.EnumVariables.*;
 
 public class QueryLength {
 
@@ -128,7 +128,7 @@ public class QueryLength {
 //					Config.Datasets.Patents_100_random_80.name(), 
 //					Config.Datasets.go_uniprot_100_random_80.name()));
 			
-			config.setDatasetName(Config.Datasets.Gowalla_10.name());
+			config.setDatasetName(Datasets.Gowalla_10.name());
 			QueryLength queryLength = new QueryLength(config);
 			
 			//Read start ids

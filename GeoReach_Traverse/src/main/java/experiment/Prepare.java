@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 import commons.Config;
-import commons.Config.Datasets;
+import commons.EnumVariables.*;
 import commons.Util;
 
 public class Prepare {

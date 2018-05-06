@@ -10,8 +10,7 @@ import commons.MyRectangle;
 import commons.Util;
 import commons.VertexGeoReach;
 import commons.VertexGeoReachList;
-import commons.Config.Datasets;
-import commons.Config.system;
+import commons.EnumVariables.*;
 
 public class IndexConstruct {
 

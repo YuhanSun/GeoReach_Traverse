@@ -2,17 +2,14 @@ package query;
 
 import static org.junit.Assert.*;
 
-import java.awt.List;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.TreeSet;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.neo4j.cypher.internal.frontend.v2_3.ast.functions.Length;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Result;
@@ -20,8 +17,7 @@ import org.neo4j.graphdb.Transaction;
 
 import commons.Config;
 import commons.MyRectangle;
-import commons.Config.system;
-import scala.reflect.internal.Trees.New;
+import commons.EnumVariables.*;
 import commons.Util;
 
 public class SimpleGraphTraversalTest {

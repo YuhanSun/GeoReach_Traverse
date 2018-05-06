@@ -14,8 +14,8 @@ import org.neo4j.unsafe.batchinsert.BatchInserters;
 import commons.Config;
 import commons.Entity;
 import commons.Util;
-import commons.Config.Datasets;
-import commons.Config.system;
+import commons.EnumVariables.*;
+
 
 public class Loader {
 	Config config;

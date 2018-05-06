@@ -33,12 +33,18 @@ public class App
 //    	String listStr = "[0, 1, 2]";
 //    	Util.Print(listStr.substring(1, listStr.length()-1));
     	
-    	for (double x = 0.00001; x < 0.2; x *= 10)
-    	{
-    		Util.Print(x);
-    		DecimalFormat df = new DecimalFormat("0E0");
-    		String string = df.format(x);
+//    	for (double x = 0.00001; x < 0.2; x *= 10)
+//    	{
+//    		Util.Print(x);
+//    		DecimalFormat df = new DecimalFormat("0E0");
+//    		String string = df.format(x);
+//    		Util.Print(string);
+//    	}
+    	
+    	String teString = "Point(-5.84 54.590933333333)";
+    	String[] strings = teString.split("3\\)");
+    	Util.Print(strings.length);
+    	for (String string : strings)
     		Util.Print(string);
-    	}
     }
 }
