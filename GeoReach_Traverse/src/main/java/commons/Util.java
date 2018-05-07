@@ -404,11 +404,14 @@ public class Util {
         try {
             reader = new BufferedReader(new FileReader(new File(graph_path)));
             str = reader.readLine();
-            int node_count = Integer.parseInt(str);
-            graph = new ArrayList<ArrayList<Integer>>(node_count);
+            int nodeCount = Integer.parseInt(str);
+            graph = new ArrayList<ArrayList<Integer>>(nodeCount);
+            int index = 0;
             while ((str = reader.readLine()) != null) {
                 String[] l_str = str.split(",");
-//                int id = Integer.parseInt(l_str[0]);
+                int id = Integer.parseInt(l_str[0]);
+                if (id != index)
+                	throw new Exception(String.format("this line has id %d, but the index should be %d!", id, index));
                 int neighbor_count = Integer.parseInt(l_str[1]);
                 ArrayList<Integer> line = new ArrayList<Integer>(neighbor_count);
                 if (neighbor_count == 0) {
@@ -422,6 +425,8 @@ public class Util {
                 }
                 graph.add(line);
             }
+            if (nodeCount != index + 1)
+            	throw new Exception(String.format("first line shows node count is %d, but only has %d lines!", nodeCount, index));
         }
         catch (Exception e) {
         	Print(str);

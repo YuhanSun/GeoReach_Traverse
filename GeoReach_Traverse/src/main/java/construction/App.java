@@ -41,7 +41,9 @@ public class App
 //    		Util.Print(string);
 //    	}
     	
-    	String teString = "Point(-5.84 54.590933333333)";
+//    	String teString = "Point(-5.84 54.590933333333)";
+    	Util.Print(args[0]);
+    	String teString = args[1];
     	String[] strings = teString.split("3\\)");
     	Util.Print(strings.length);
     	for (String string : strings)

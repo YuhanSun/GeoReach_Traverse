@@ -28,6 +28,51 @@ public class IndexConstruct {
 	 * Example of how to use such class.
 	 * Construct from stracth.
 	 */
+	public void construct(String graphPath, String entityPath, String dir)
+	{
+		// TODO Auto-generated method stub
+		Util.Print("Read entities from " + entityPath);
+		if (entities == null)
+			entities = Util.ReadEntity(entityPath);
+		Util.Print("entities size: " + entities.size() + "\n");
+
+		Util.Print("Read graph from " + graphPath);
+		if (graph == null)
+			graph = Util.ReadGraph(graphPath);
+		Util.Print("graph size: " + graph.size());
+
+		ArrayList<VertexGeoReach> index = ConstructIndex(graph, entities, 
+		minx, miny, maxx, maxy, 
+		pieces_x, pieces_y, MAX_HOPNUM);
+		
+		//ouput whole index
+		String suffix = "whole";
+		String outputPath = String.format("%s%d_%d_%d_%s.txt",
+				dataset, pieces_x, pieces_y, MAX_HOPNUM, suffix);
+		Util.outputGeoReach(index, outputPath);
+		
+		//output single index
+//		ArrayList<ArrayList<Integer>> typesList = generateTypeList(index, MAX_HOPNUM, 
+//		minx, miny, maxx, maxy, 
+//		pieces_x, pieces_y, MG, MR, MC);
+//		
+//		int format = 0;
+//		String suffix = "bitmap";
+//		String outputPath = String.format("D:\\Ubuntu_shared\\GeoReachHop\\data\\%s\\%d_%d_%d_%d_%d_%d_%s.txt",
+//				dataset, pieces_x, pieces_y, (int)(MG * 100), (int)(MR * 100), MC, MAX_HOPNUM, suffix);
+//		Util.outputGeoReach(index, outputPath, typesList, format);
+//		
+//		format = 1;
+//		suffix = "list";
+//		outputPath = String.format("D:\\Ubuntu_shared\\GeoReachHop\\data\\%s\\%d_%d_%d_%d_%d_%d_%s.txt",
+//				dataset, pieces_x, pieces_y, (int)(MG * 100), (int)(MR * 100), MC, MAX_HOPNUM, suffix);
+//		Util.outputGeoReach(index, outputPath, typesList, format);
+	}
+	
+	/**
+	 * Example of how to use such class.
+	 * Construct from stracth.
+	 */
 	public void construct()
 	{
 		// TODO Auto-generated method stub
@@ -92,16 +137,28 @@ public class IndexConstruct {
 	}
 	
 	int pieces_x = 128, pieces_y = 128, MC = 0;
-	double MG = 0.0, MR = 1.0;
+	double MG = 1.0, MR = 1.0;
 	
 	public static void main(String[] args) {
+		
+		Util.Print(args[0]);
+		Util.Print(args[1]);
+		Util.Print(args[2]);
+		Util.Print(args[3]);
+		
+		String graphPath = args[0];
+		String entityPath = args[1];
+		String dir = args[2];
+		int maxHop = Integer.parseInt(args[3]);
+		
 		Config config = new Config();
 //		config.setDatasetName("Patents_2_random_80");
-		config.setDatasetName(Datasets.Gowalla_10.name());
+		config.setDatasetName(Datasets.wikidata.name());
 		
-		config.setMAXHOPNUM(3);
+		config.setMAXHOPNUM(maxHop);
 		IndexConstruct indexConstruct = new IndexConstruct(config);
-		indexConstruct.construct();
+		indexConstruct.construct(graphPath, entityPath, dir);
+//		indexConstruct.construct();
 //		indexConstruct.constructFromFile();
 //		indexConstruct.getReachbleVertices();
 	}
