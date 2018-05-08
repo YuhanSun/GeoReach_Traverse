@@ -30,6 +30,33 @@ public class IndexConstruct {
 	 */
 	public void construct(String graphPath, String entityPath, String dir)
 	{
+		if (Util.pathExist(graphPath))
+			Util.Print(graphPath);
+		else
+		{
+			Util.Print(graphPath + " not exist");
+			System.exit(-1);
+		}
+		
+		if ( Util.pathExist(entityPath))
+			Util.Print(entityPath);
+		else
+		{
+			Util.Print(entityPath + " not exist");
+			System.exit(-1);
+		}
+		
+		String suffix = "whole";
+		String outputPath = String.format("%s%d_%d_%d_%s.txt",
+				dir, pieces_x, pieces_y, MAX_HOPNUM, suffix);
+		if (Util.pathExist(dir))
+			Util.Print(dir);
+		else
+		{
+			Util.Print(outputPath + " not exist");
+			System.exit(-1);
+		}
+		
 		// TODO Auto-generated method stub
 		Util.Print("Read entities from " + entityPath);
 		if (entities == null)
@@ -40,15 +67,15 @@ public class IndexConstruct {
 		if (graph == null)
 			graph = Util.ReadGraph(graphPath);
 		Util.Print("graph size: " + graph.size());
+		
+		
 
 		ArrayList<VertexGeoReach> index = ConstructIndex(graph, entities, 
 		minx, miny, maxx, maxy, 
 		pieces_x, pieces_y, MAX_HOPNUM);
 		
 		//ouput whole index
-		String suffix = "whole";
-		String outputPath = String.format("%s%d_%d_%d_%s.txt",
-				dataset, pieces_x, pieces_y, MAX_HOPNUM, suffix);
+		Util.Print("output index to " + outputPath);
 		Util.outputGeoReach(index, outputPath);
 		
 		//output single index
@@ -114,25 +141,36 @@ public class IndexConstruct {
 //		Util.outputGeoReach(index, outputPath, typesList, format);
 	}
 	
-	public void constructFromFile()
+	public void constructFromFile(String dir, String inputFileName)
 	{
-		String indexPath = "D:\\Ubuntu_shared\\GeoReachHop\\data\\Gowalla_10\\128_128_80_80_0_2_whole.txt";
+		if (Util.pathExist(dir))
+			Util.Print("directory is " + dir);
+		else
+		{
+			Util.Print(dir + " does not exist");
+			System.exit(-1);
+		}
+		String indexPath = dir + inputFileName;
+		Util.Print("read index from " + indexPath);
 		ArrayList<VertexGeoReachList> index = Util.readGeoReachWhole(indexPath);
 		
+		Util.Print("generate type list");
 		ArrayList<ArrayList<Integer>> typesList = generateTypeListForList(index, MAX_HOPNUM, 
 				minx, miny, maxx, maxy, 
 				pieces_x, pieces_y, MG, MR, MC);
 		
 		int format = 0;
-		String suffix = "bitmap";
-		String outputPath = String.format("D:\\Ubuntu_shared\\GeoReachHop\\data\\%s\\%d_%d_%d_%d_%d_%d_%s.txt",
-				dataset, pieces_x, pieces_y, (int)(MG * 100), (int)(MR * 100), MC, MAX_HOPNUM, suffix);
+		String suffix = "list";
+		String outputPath = String.format("%s%d_%d_%d_%d_%d_%d_%s.txt", 
+				dir, pieces_x, pieces_y, (int)(MG * 100), (int)(MR * 100), MC, MAX_HOPNUM, suffix);
+		Util.Print("output to " + outputPath);
 		Util.outputGeoReachForList(index, outputPath, typesList, format);
 		
 		format = 1;
-		suffix = "list";
-		outputPath = String.format("D:\\Ubuntu_shared\\GeoReachHop\\data\\%s\\%d_%d_%d_%d_%d_%d_%s.txt",
-				dataset, pieces_x, pieces_y, (int)(MG * 100), (int)(MR * 100), MC, MAX_HOPNUM, suffix);
+		suffix = "bitmap";
+		outputPath = String.format("%s%d_%d_%d_%d_%d_%d_%s.txt",
+				dir, pieces_x, pieces_y, (int)(MG * 100), (int)(MR * 100), MC, MAX_HOPNUM, suffix);
+		Util.Print("output to " + outputPath);
 		Util.outputGeoReachForList(index, outputPath, typesList, format);
 	}
 	
@@ -141,25 +179,28 @@ public class IndexConstruct {
 	
 	public static void main(String[] args) {
 		
-		Util.Print(args[0]);
-		Util.Print(args[1]);
-		Util.Print(args[2]);
-		Util.Print(args[3]);
+//		Util.Print(args[0]);
+//		Util.Print(args[1]);
+//		Util.Print(args[2]);
+//		Util.Print(args[3]);
+//		
+//		String graphPath = args[0];
+//		String entityPath = args[1];
+//		String dir = args[2];
+//		int maxHop = Integer.parseInt(args[3]);
 		
-		String graphPath = args[0];
-		String entityPath = args[1];
-		String dir = args[2];
-		int maxHop = Integer.parseInt(args[3]);
+		String dir = args[0];
+		String filename = args[1];
 		
 		Config config = new Config();
 //		config.setDatasetName("Patents_2_random_80");
 		config.setDatasetName(Datasets.wikidata.name());
 		
-		config.setMAXHOPNUM(maxHop);
+		config.setMAXHOPNUM(2);
 		IndexConstruct indexConstruct = new IndexConstruct(config);
-		indexConstruct.construct(graphPath, entityPath, dir);
+//		indexConstruct.construct(graphPath, entityPath, dir);
 //		indexConstruct.construct();
-//		indexConstruct.constructFromFile();
+		indexConstruct.constructFromFile(dir, filename);
 //		indexConstruct.getReachbleVertices();
 	}
 	

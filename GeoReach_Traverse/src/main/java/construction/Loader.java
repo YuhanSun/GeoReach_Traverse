@@ -25,8 +25,8 @@ public class Loader {
 	
 	ArrayList<ArrayList<Integer>> graph;
 	ArrayList<Entity> entities;
-	long[] graph_pos_map_list;
-	String entityPath, graph_pos_map_path, graphPath;
+	public long[] graph_pos_map_list;
+	public String entityPath, graph_pos_map_path, graphPath;
 	
 	String GeoReachTypeName, reachGridName, rmbrName, geoBName;
 	
@@ -130,6 +130,11 @@ public class Loader {
 	{
 		this.config = config;
 		initParameters();
+	}
+	
+	public Loader()
+	{
+		
 	}
 	
 	public void initParameters()

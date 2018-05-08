@@ -33,10 +33,11 @@ public class Wikidata {
 //		extract();
 		
 //		extractEntityMap();
-		extractEntityToEntityRelation();
-		checkGraphVerticesCount();
+//		extractEntityToEntityRelation();
+//		checkGraphVerticesCount();
 //		generateEntityFile();
 		
+		readGraphTest();
 		
 		//test code
 //		String string = "<http://www.wikidata.org/entity/Q26>";
@@ -44,6 +45,15 @@ public class Wikidata {
 //		Util.Print(getEntityID(string));
 	}
 	
+	public static void readGraphTest()
+	{
+		ArrayList<ArrayList<Integer>> graph = Util.ReadGraph(graphPath);
+		
+	}
+	
+	/**
+	 * Check graph file first line and real number of vertices
+	 */
 	public static void checkGraphVerticesCount()
 	{
 		BufferedReader reader = null;

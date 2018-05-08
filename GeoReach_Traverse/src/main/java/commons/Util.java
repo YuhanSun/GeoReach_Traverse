@@ -16,10 +16,12 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.Map.Entry;
 
 import org.neo4j.graphdb.ExecutionPlanDescription;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -32,6 +34,56 @@ public class Util {
 	
 	public static void Print(Object o) {
         System.out.println(o);
+    }
+	
+	/**
+	 * Generate label.txt file based on entity file
+	 * The label.txt has only 0 and 1 label where
+	 * 0 is non-spatial and 1 is spatial.
+	 * @param entityPath
+	 * @param labelListPath
+	 */
+	public static void getLabelListFromEntity(String entityPath, String labelListPath)
+	{
+		ArrayList<Entity> entities = Util.ReadEntity(entityPath);
+		ArrayList<Integer> labelList = new ArrayList<Integer>(entities.size());
+		for ( Entity entity : entities)
+		{
+			if ( entity.IsSpatial)
+				labelList.add(1);
+			else
+				labelList.add(0);
+		}
+		Util.Print("Write label list to: " + labelListPath);
+		
+		ArrayList<String> labelListString = new ArrayList<>(labelList.size());
+		for (int label : labelList)
+			labelListString.add(String.valueOf(label));
+		
+		Util.WriteArray(labelListPath, labelListString);
+	}
+	
+	/**
+	 * write map to file
+	 * @param filename
+	 * @param app	append or not
+	 * @param map
+	 */
+	public static void WriteMap(String filename, boolean app, Map<Object, Object> map)
+    {
+    	try {
+			FileWriter fWriter = new FileWriter(filename, app);
+			Set<Entry<Object, Object>> set = map.entrySet();
+			Iterator<Entry<Object, Object>> iterator = set.iterator();
+			while(iterator.hasNext())
+			{
+				Entry<Object, Object> element = iterator.next();
+				fWriter.write(String.format("%s,%s\n", element.getKey().toString(), element.getValue().toString()));
+			}
+			fWriter.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
     }
 	
 	public static GraphDatabaseService getDatabaseService(String dbPath)
@@ -406,8 +458,9 @@ public class Util {
             str = reader.readLine();
             int nodeCount = Integer.parseInt(str);
             graph = new ArrayList<ArrayList<Integer>>(nodeCount);
-            int index = 0;
+            int index = -1;
             while ((str = reader.readLine()) != null) {
+            	index++;
                 String[] l_str = str.split(",");
                 int id = Integer.parseInt(l_str[0]);
                 if (id != index)
@@ -426,7 +479,8 @@ public class Util {
                 graph.add(line);
             }
             if (nodeCount != index + 1)
-            	throw new Exception(String.format("first line shows node count is %d, but only has %d lines!", nodeCount, index));
+            	throw new Exception(String.format("first line shows node count is %d, but only has %d lines!", 
+            			nodeCount, index + 1));
         }
         catch (Exception e) {
         	Print(str);
@@ -442,11 +496,14 @@ public class Util {
      * @return
      */
     public static ArrayList<Entity> ReadEntity(String entity_path) {
-        ArrayList<Entity> entities = null;
+    	ArrayList<Entity> entities = null;
         BufferedReader reader = null;
         String str = null;
         int id = 0;
         try {
+        	if (!Util.pathExist(entity_path))
+	            throw new Exception(entity_path + " does not exist");
+        	
             reader = new BufferedReader(new FileReader(new File(entity_path)));
             str = reader.readLine();
             int node_count = Integer.parseInt(str);
