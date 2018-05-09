@@ -37,6 +37,42 @@ public class Util {
     }
 	
 	/**
+	 * Get the boundary of all the entities.
+	 * @param entities
+	 * @return
+	 */
+	public static MyRectangle GetEntityRange(ArrayList<Entity> entities) {
+        Entity p_Entity;
+        MyRectangle range = null;
+        int i = 0;
+        while (i < entities.size()) {
+            p_Entity = entities.get(i);
+            if (p_Entity.IsSpatial) {
+                range = new MyRectangle(p_Entity.lon, p_Entity.lat, p_Entity.lon, p_Entity.lat);
+                break;
+            }
+            ++i;
+        }
+        while (i < entities.size()) {
+            p_Entity = entities.get(i);
+            if (p_Entity.lon < range.min_x) {
+                range.min_x = p_Entity.lon;
+            }
+            if (p_Entity.lat < range.min_y) {
+                range.min_y = p_Entity.lat;
+            }
+            if (p_Entity.lon > range.max_x) {
+                range.max_x = p_Entity.lon;
+            }
+            if (p_Entity.lat > range.max_y) {
+                range.max_y = p_Entity.lat;
+            }
+            ++i;
+        }
+        return range;
+    }
+	
+	/**
 	 * Generate label.txt file based on entity file
 	 * The label.txt has only 0 and 1 label where
 	 * 0 is non-spatial and 1 is spatial.
@@ -560,6 +596,69 @@ public class Util {
     		System.exit(-1);
     	}
     }
+    
+//    public static void readGeoReachWhole(String filepath, ArrayList<ArrayList<Integer>> reachgridList,
+//    		ArrayList<MyRectangle> rectangles, ArrayList<Boolean> geoBs)
+//    {
+//    	int id = 0;
+//    	String line = null;
+//    	BufferedReader reader = null;
+//    	try {
+//			reader = new BufferedReader(new FileReader(new File(filepath)));
+//			line = reader.readLine();
+//			String[] strList = line.split(",");
+//			int nodeCount = Integer.parseInt(strList[0]);
+//			int MAX_HOPNUM = Integer.parseInt(strList[1]);
+//			
+//			reachgridList = new ArrayList<>(nodeCount);
+//			rectangles = new ArrayList<>(nodeCount);
+//			
+//
+//			// each vertex
+//			for ( int i = 0; i < nodeCount; i++)
+//			{
+//				VertexGeoReachList vertexGeoReachList = new VertexGeoReachList(MAX_HOPNUM);
+//				id = Integer.parseInt(reader.readLine());
+//				
+//				// each hop
+//				for ( int j = 0; j < MAX_HOPNUM; j++)
+//				{
+//					line = reader.readLine();
+//					strList = line.split(";");
+//					
+//					String reachGridStr = strList[0];
+//					String rmbrStr = strList[1];
+////					String geoBStr = strList[2];
+//					
+//					// reachGrid
+//					if (!reachGridStr.equals("null"))
+//					{
+//						reachGridStr = reachGridStr.substring(1, reachGridStr.length() - 1);
+//						strList = reachGridStr.split(", ");
+//						ArrayList<Integer> reachGrid = new ArrayList<>(strList.length);
+//						for ( String string : strList)
+//							reachGrid.add(Integer.parseInt(string));
+//						vertexGeoReachList.ReachGrids.set(j, reachGrid);
+//					}
+//					
+//					//rmbr
+//					if (!rmbrStr.equals("null"))
+//					{
+//						MyRectangle rmbr = new MyRectangle(rmbrStr);
+//						vertexGeoReachList.RMBRs.set(j, rmbr);
+//					}
+//				}
+//				index.add(vertexGeoReachList);
+//			}
+//			reader.close();
+//			return index;
+//		} catch (Exception e) {
+//			Util.Print("id: " + id + "\n" + line);
+//			e.printStackTrace();
+//			System.exit(-1);
+//		}
+//    	return null;
+//    }
     
     public static ArrayList<VertexGeoReachList> readGeoReachWhole(String filepath)
     {

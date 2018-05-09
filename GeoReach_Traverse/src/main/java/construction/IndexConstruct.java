@@ -189,8 +189,11 @@ public class IndexConstruct {
 //		String dir = args[2];
 //		int maxHop = Integer.parseInt(args[3]);
 		
-		String dir = args[0];
-		String filename = args[1];
+//		String dir = args[0];
+//		String filename = args[1];
+		
+		String dir = "D:\\Ubuntu_shared\\GeoReachHop\\data\\wikidata\\";
+		String filename = "128_128_2_whole.txt";
 		
 		Config config = new Config();
 //		config.setDatasetName("Patents_2_random_80");

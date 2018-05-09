@@ -15,6 +15,7 @@ import org.apache.lucene.document.StringField;
 import org.neo4j.cypher.internal.frontend.v2_3.ast.functions.E;
 
 import commons.Entity;
+import commons.MyRectangle;
 import commons.Util;
 
 public class Wikidata {
@@ -37,18 +38,25 @@ public class Wikidata {
 //		checkGraphVerticesCount();
 //		generateEntityFile();
 		
-		readGraphTest();
+//		readGraphTest();
 		
 		//test code
 //		String string = "<http://www.wikidata.org/entity/Q26>";
 //		Util.Print(isEntity(string));
 //		Util.Print(getEntityID(string));
+		
+		getRange();
+	}
+	
+	public static void getRange()
+	{
+		ArrayList<Entity> entities = Util.ReadEntity(entityPath);
+		Util.Print(Util.GetEntityRange(entities));
 	}
 	
 	public static void readGraphTest()
 	{
 		ArrayList<ArrayList<Integer>> graph = Util.ReadGraph(graphPath);
-		
 	}
 	
 	/**
