@@ -107,27 +107,25 @@ public class LoadData {
 	public static void main(String[] args) {
 		
 		try {
-//			initParameters();
-//			
-//			batchRTreeInsert();
-//			
-//			if ( nonspatial_label_count == 1)
-//				generateLabelList();
-//			else
-//			{
-////				generateNonspatialLabel();
-////				nonspatialLabelTest();
-//			}
-//			
-//			Util.Print("LoadNonSpatialEntity");
-//			LoadNonSpatialEntity();
-//			
-//			
-//			GetSpatialNodeMap();
-//			
-//			LoadGraphEdges();
+			initParameters();
 			
-			loadGeoReachIndex();
+			batchRTreeInsert();
+			
+			if ( nonspatial_label_count == 1)
+				generateLabelList();
+			else
+			{
+//				generateNonspatialLabel();
+//				nonspatialLabelTest();
+			}
+			
+			LoadNonSpatialEntity();
+			
+			GetSpatialNodeMap();
+			
+			LoadGraphEdges();
+			
+//			loadGeoReachIndex();
 			
 //			CalculateCount();
 			

@@ -26,7 +26,6 @@ import java.util.Map.Entry;
 import org.neo4j.graphdb.ExecutionPlanDescription;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.roaringbitmap.RoaringBitmap;
 
@@ -35,6 +34,46 @@ public class Util {
 	public static void Print(Object o) {
         System.out.println(o);
     }
+	
+	public static boolean compareFile(String file1, String file2)
+	{
+		BufferedReader reader1 = null;
+		BufferedReader reader2 = null;
+		try {
+			reader1 = new BufferedReader(new FileReader(new File(file1)));
+			reader2 = new BufferedReader(new FileReader(new File(file2)));
+			String line1 = "";
+			String line2 = "";
+			while (true)
+			{
+				line1 = reader1.readLine();
+				line2 = reader2.readLine();
+			
+				if (line1 == null || line2 == null)
+					break;
+				
+				if (line1.equals(line2))
+					continue;
+				else
+				{
+					Util.Print(line1);
+					Util.Print(line2);
+					return false;
+				}
+			}
+			if (line1!= null || line2 != null)
+			{
+				Util.Print("line count different!");
+				return false;
+			}
+			reader1.close();
+			reader2.close();
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
 	
 	/**
 	 * Get the boundary of all the entities.
@@ -514,12 +553,20 @@ public class Util {
                 }
                 graph.add(line);
             }
+            reader.close();
             if (nodeCount != index + 1)
             	throw new Exception(String.format("first line shows node count is %d, but only has %d lines!", 
             			nodeCount, index + 1));
         }
         catch (Exception e) {
         	Print(str);
+        	if (reader!=null)
+        		try {
+        			reader.close();
+        		} catch (IOException e1) {
+        			// TODO Auto-generated catch block
+        			e1.printStackTrace();
+        		}
             e.printStackTrace();
             System.exit(-1);
         }
@@ -566,6 +613,28 @@ public class Util {
         return entities;
     }
     
+    public static void writeEntity(ArrayList<Entity> entities, String entityPath)
+    {
+    	FileWriter writer = null;
+    	try {
+			writer = new FileWriter(new File(entityPath));
+			writer.write(entities.size() + "\n");
+			for (Entity entity : entities)
+			{
+				writer.write(entity.id + ",");
+				if (entity.IsSpatial)
+					writer.write(String.format("1,%s,%s\n", 
+							String.valueOf(entity.lon), String.valueOf(entity.lat)));
+				else writer.write("0\n");
+			}
+			writer.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.exit(-1);
+		}
+    }
+    
     /**
      * Output everything.
      * Each vertex for each step contains all the ReachGrid and RMBR information
@@ -597,68 +666,106 @@ public class Util {
     	}
     }
     
-//    public static void readGeoReachWhole(String filepath, ArrayList<ArrayList<Integer>> reachgridList,
-//    		ArrayList<MyRectangle> rectangles, ArrayList<Boolean> geoBs)
-//    {
-//    	int id = 0;
-//    	String line = null;
-//    	BufferedReader reader = null;
-//    	try {
-//			reader = new BufferedReader(new FileReader(new File(filepath)));
-//			line = reader.readLine();
-//			String[] strList = line.split(",");
-//			int nodeCount = Integer.parseInt(strList[0]);
-//			int MAX_HOPNUM = Integer.parseInt(strList[1]);
-//			
-//			reachgridList = new ArrayList<>(nodeCount);
-//			rectangles = new ArrayList<>(nodeCount);
-//			
-//
-//			// each vertex
-//			for ( int i = 0; i < nodeCount; i++)
-//			{
+    /**
+     * Output everything.
+     * Each vertex for each step contains all the ReachGrid and RMBR information
+     * @param index
+     * @param filepath
+     */
+    public static void outputGeoReachList(ArrayList<VertexGeoReachList> index, String filepath)
+    {
+    	int id = 0;
+    	FileWriter writer = null;
+    	try
+    	{
+    		int nodeCount = index.size();
+    		int MAX_HOP = index.get(0).ReachGrids.size();
+    		writer = new FileWriter(filepath);
+    		writer.write(String.format("%d,%d\n", nodeCount, MAX_HOP));
+    		for (VertexGeoReachList vertexGeoReach : index)
+        	{
+        		writer.write(id + "\n");
+        		writer.write(vertexGeoReach.toString());
+        		id++;
+        	}
+    		writer.close();
+    	}
+    	catch(Exception e)
+    	{
+    		e.printStackTrace();
+    		System.exit(-1);
+    	}
+    }
+    
+    public static void readGeoReachWhole(String filepath, ArrayList<ArrayList<ArrayList<Integer>>> reachgridsList,
+    		ArrayList<ArrayList<MyRectangle>> rectanglesList)
+    {
+    	int id = 0;
+    	String line = null;
+    	BufferedReader reader = null;
+    	try {
+			reader = new BufferedReader(new FileReader(new File(filepath)));
+			line = reader.readLine();
+			String[] strList = line.split(",");
+			int nodeCount = Integer.parseInt(strList[0]);
+			int MAX_HOPNUM = Integer.parseInt(strList[1]);
+			
+			reachgridsList = new ArrayList<>(nodeCount);
+			rectanglesList = new ArrayList<>(nodeCount);
+
+			// each vertex
+			for ( int i = 0; i < nodeCount; i++)
+			{
 //				VertexGeoReachList vertexGeoReachList = new VertexGeoReachList(MAX_HOPNUM);
-//				id = Integer.parseInt(reader.readLine());
-//				
-//				// each hop
-//				for ( int j = 0; j < MAX_HOPNUM; j++)
-//				{
-//					line = reader.readLine();
-//					strList = line.split(";");
-//					
-//					String reachGridStr = strList[0];
-//					String rmbrStr = strList[1];
-////					String geoBStr = strList[2];
-//					
-//					// reachGrid
-//					if (!reachGridStr.equals("null"))
-//					{
-//						reachGridStr = reachGridStr.substring(1, reachGridStr.length() - 1);
-//						strList = reachGridStr.split(", ");
-//						ArrayList<Integer> reachGrid = new ArrayList<>(strList.length);
-//						for ( String string : strList)
-//							reachGrid.add(Integer.parseInt(string));
+				ArrayList<ArrayList<Integer>> reachgrids = new ArrayList<>(MAX_HOPNUM);
+				ArrayList<MyRectangle> rectangles = new ArrayList<>(MAX_HOPNUM);
+				
+				id = Integer.parseInt(reader.readLine());
+				
+				// each hop
+				for ( int j = 0; j < MAX_HOPNUM; j++)
+				{
+					line = reader.readLine();
+					strList = line.split(";");
+					
+					String reachGridStr = strList[0];
+					String rmbrStr = strList[1];
+					
+					// reachGrid
+					if (!reachGridStr.equals("null"))
+					{
+						reachGridStr = reachGridStr.substring(1, reachGridStr.length() - 1);
+						strList = reachGridStr.split(", ");
+						ArrayList<Integer> reachGrid = new ArrayList<>(strList.length);
+						for ( String string : strList)
+							reachGrid.add(Integer.parseInt(string));
 //						vertexGeoReachList.ReachGrids.set(j, reachGrid);
-//					}
-//					
-//					//rmbr
-//					if (!rmbrStr.equals("null"))
-//					{
-//						MyRectangle rmbr = new MyRectangle(rmbrStr);
+						reachgrids.add(reachGrid);
+					}
+					else
+						reachgrids.add(null);
+					
+					//rmbr
+					if (!rmbrStr.equals("null"))
+					{
+						MyRectangle rmbr = new MyRectangle(rmbrStr);
 //						vertexGeoReachList.RMBRs.set(j, rmbr);
-//					}
-//				}
+						rectangles.add(rmbr);
+					}
+					else
+						rectangles.add(null);
+				}
 //				index.add(vertexGeoReachList);
-//			}
-//			reader.close();
-//			return index;
-//		} catch (Exception e) {
-//			Util.Print("id: " + id + "\n" + line);
-//			e.printStackTrace();
-//			System.exit(-1);
-//		}
-//    	return null;
-//    }
+				reachgridsList.add(reachgrids);
+				rectanglesList.add(rectangles);
+			}
+			reader.close();
+		} catch (Exception e) {
+			Util.Print("id: " + id + "\n" + line);
+			e.printStackTrace();
+			System.exit(-1);
+		}
+    }
     
     public static ArrayList<VertexGeoReachList> readGeoReachWhole(String filepath)
     {

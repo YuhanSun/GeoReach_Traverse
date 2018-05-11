@@ -1,7 +1,9 @@
 package construction;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.TreeSet;
 
 import commons.Config;
@@ -11,24 +13,26 @@ import commons.Util;
 import commons.VertexGeoReach;
 import commons.VertexGeoReachList;
 import commons.EnumVariables.*;
+import kwaysort.KWayMerging;
+import scala.reflect.internal.Trees.This;
 
 public class IndexConstruct {
 
-	Config config;
-	String dataset, version;
-	system systemName;
-	int MAX_HOPNUM;
-	double minx, miny, maxx, maxy;
+	public Config config;
+	public String dataset, version;
+	public system systemName;
+	public int MAX_HOPNUM;
+	public double minx, miny, maxx, maxy;
 	
-	ArrayList<ArrayList<Integer>> graph;
-	ArrayList<Entity> entities;
-	String dbPath, entityPath, graphPath;
+	public ArrayList<ArrayList<Integer>> graph;
+	public ArrayList<Entity> entities;
+	public String dbPath, entityPath, graphPath;
 	
 	/**
 	 * Example of how to use such class.
 	 * Construct from stracth.
 	 */
-	public void construct(String graphPath, String entityPath, String dir)
+	public void constructList(String dir)
 	{
 		if (Util.pathExist(graphPath))
 			Util.Print(graphPath);
@@ -68,32 +72,30 @@ public class IndexConstruct {
 			graph = Util.ReadGraph(graphPath);
 		Util.Print("graph size: " + graph.size());
 		
-		
-
-		ArrayList<VertexGeoReach> index = ConstructIndex(graph, entities, 
+		ArrayList<VertexGeoReachList> index = ConstructIndexList(graph, entities, 
 		minx, miny, maxx, maxy, 
 		pieces_x, pieces_y, MAX_HOPNUM);
 		
 		//ouput whole index
 		Util.Print("output index to " + outputPath);
-		Util.outputGeoReach(index, outputPath);
+		Util.outputGeoReachList(index, outputPath);
 		
 		//output single index
-//		ArrayList<ArrayList<Integer>> typesList = generateTypeList(index, MAX_HOPNUM, 
-//		minx, miny, maxx, maxy, 
-//		pieces_x, pieces_y, MG, MR, MC);
-//		
-//		int format = 0;
-//		String suffix = "bitmap";
-//		String outputPath = String.format("D:\\Ubuntu_shared\\GeoReachHop\\data\\%s\\%d_%d_%d_%d_%d_%d_%s.txt",
-//				dataset, pieces_x, pieces_y, (int)(MG * 100), (int)(MR * 100), MC, MAX_HOPNUM, suffix);
-//		Util.outputGeoReach(index, outputPath, typesList, format);
-//		
-//		format = 1;
-//		suffix = "list";
-//		outputPath = String.format("D:\\Ubuntu_shared\\GeoReachHop\\data\\%s\\%d_%d_%d_%d_%d_%d_%s.txt",
-//				dataset, pieces_x, pieces_y, (int)(MG * 100), (int)(MR * 100), MC, MAX_HOPNUM, suffix);
-//		Util.outputGeoReach(index, outputPath, typesList, format);
+		ArrayList<ArrayList<Integer>> typesList = generateTypeListForList(index, MAX_HOPNUM, 
+		minx, miny, maxx, maxy, 
+		pieces_x, pieces_y, MG, MR, MC);
+		
+		int format = 1;
+		suffix = "bitmap";
+		outputPath = String.format("D:\\Ubuntu_shared\\GeoReachHop\\data\\%s\\%d_%d_%d_%d_%d_%d_%s.txt",
+				dataset, pieces_x, pieces_y, (int)(MG * 100), (int)(MR * 100), MC, MAX_HOPNUM, suffix);
+		Util.outputGeoReachForList(index, outputPath, typesList, format);
+		
+		format = 0;
+		suffix = "list";
+		outputPath = String.format("D:\\Ubuntu_shared\\GeoReachHop\\data\\%s\\%d_%d_%d_%d_%d_%d_%s.txt",
+				dataset, pieces_x, pieces_y, (int)(MG * 100), (int)(MR * 100), MC, MAX_HOPNUM, suffix);
+		Util.outputGeoReachForList(index, outputPath, typesList, format);
 	}
 	
 	/**
@@ -117,11 +119,21 @@ public class IndexConstruct {
 		minx, miny, maxx, maxy, 
 		pieces_x, pieces_y, MAX_HOPNUM);
 		
-		//ouput whole index
 		String suffix = "whole";
 		String outputPath = String.format("D:\\Ubuntu_shared\\GeoReachHop\\data\\%s\\%d_%d_%d_%s.txt",
 				dataset, pieces_x, pieces_y, MAX_HOPNUM, suffix);
+		Util.Print("output index to " + outputPath);
 		Util.outputGeoReach(index, outputPath);
+		
+//		ArrayList<VertexGeoReachList> index = ConstructIndexList(graph, entities, 
+//				minx, miny, maxx, maxy, 
+//				pieces_x, pieces_y, MAX_HOPNUM);
+//		
+//		//ouput whole index
+//		String suffix = "whole_test";
+//		String outputPath = String.format("D:\\Ubuntu_shared\\GeoReachHop\\data\\%s\\%d_%d_%d_%s.txt",
+//				dataset, pieces_x, pieces_y, MAX_HOPNUM, suffix);
+//		Util.outputGeoReachList(index, outputPath);
 		
 		//output single index
 //		ArrayList<ArrayList<Integer>> typesList = generateTypeList(index, MAX_HOPNUM, 
@@ -179,32 +191,38 @@ public class IndexConstruct {
 	
 	public static void main(String[] args) {
 		
-//		Util.Print(args[0]);
-//		Util.Print(args[1]);
-//		Util.Print(args[2]);
-//		Util.Print(args[3]);
-//		
-//		String graphPath = args[0];
-//		String entityPath = args[1];
-//		String dir = args[2];
-//		int maxHop = Integer.parseInt(args[3]);
+		Util.Print(args[0]);
+		Util.Print(args[1]);
+		Util.Print(args[2]);
+		Util.Print(args[3]);
+		
+		IndexConstruct indexConstruct = new IndexConstruct();
+		indexConstruct.graphPath = args[0];
+		indexConstruct.entityPath = args[1];
+		String dir = args[2];
+		indexConstruct.MAX_HOPNUM = Integer.parseInt(args[3]);
+		indexConstruct.constructList(dir);
 		
 //		String dir = args[0];
 //		String filename = args[1];
 		
-		String dir = "D:\\Ubuntu_shared\\GeoReachHop\\data\\wikidata\\";
-		String filename = "128_128_2_whole.txt";
+//		Config config = new Config();
+//		String dir = "D:\\Ubuntu_shared\\GeoReachHop\\data\\wikidata\\";
+//		String filename = "128_128_2_whole.txt";
+//		config.setDatasetName(Datasets.wikidata.name());
+//		config.setMAXHOPNUM(2);
+//		IndexConstruct indexConstruct = new IndexConstruct(config);
+//		indexConstruct.constructFromFile(dir, filename);
 		
-		Config config = new Config();
-//		config.setDatasetName("Patents_2_random_80");
-		config.setDatasetName(Datasets.wikidata.name());
-		
-		config.setMAXHOPNUM(2);
-		IndexConstruct indexConstruct = new IndexConstruct(config);
-//		indexConstruct.construct(graphPath, entityPath, dir);
+//		config.setDatasetName(Datasets.wikidata.name());
+//		IndexConstruct indexConstruct = new IndexConstruct(config);
 //		indexConstruct.construct();
-		indexConstruct.constructFromFile(dir, filename);
-//		indexConstruct.getReachbleVertices();
+//		try {
+//			System.in.read();
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 	}
 	
 	/**
@@ -214,6 +232,10 @@ public class IndexConstruct {
 	{
 		this.config = config;
 		initParameters();
+	}
+	
+	public IndexConstruct()
+	{
 	}
 	
 	public void initParameters()
@@ -257,10 +279,14 @@ public class IndexConstruct {
 	 * 
 	 * @param graph
 	 * @param entities
-	 * @param MG Threshold for degrading ReachGrid to RMBR.
-	 * @param MR Threshold for degrading RMBR to GeoB.
-	 * @param MC Threshold for merging grid cells.
-	 * @param outputPath
+	 * @param minx
+	 * @param miny
+	 * @param maxx
+	 * @param maxy
+	 * @param pieces_x
+	 * @param pieces_y
+	 * @param MAX_HOP
+	 * @return
 	 */
 	public static ArrayList<VertexGeoReach> ConstructIndex(ArrayList<ArrayList<Integer>> graph, ArrayList<Entity> entities, 
 			double minx, double miny, double maxx, double maxy, int pieces_x, int pieces_y, int MAX_HOP) {
@@ -366,6 +392,140 @@ public class IndexConstruct {
 						
 					}
 				}
+				id++;
+			}
+			Util.Print(String.format("%d-hop time: %d\n", i + 1, System.currentTimeMillis() - start));
+			start = System.currentTimeMillis();
+		}
+		
+		return index;
+	}
+	
+	/**
+	 * 
+	 * @param graph
+	 * @param entities
+	 * @param minx
+	 * @param miny
+	 * @param maxx
+	 * @param maxy
+	 * @param pieces_x
+	 * @param pieces_y
+	 * @param MAX_HOP
+	 * @return
+	 */
+	public static ArrayList<VertexGeoReachList> ConstructIndexList(
+			ArrayList<ArrayList<Integer>> graph, ArrayList<Entity> entities, 
+			double minx, double miny, double maxx, double maxy, int pieces_x, int pieces_y, int MAX_HOP) 
+	{
+		int nodeCount = graph.size();
+		double resolution_x = (maxx - minx) / pieces_x;
+		double resolution_y = (maxy - miny) / pieces_y;
+		ArrayList<VertexGeoReachList> index = new ArrayList<>(nodeCount);
+		for (int i = 0; i < nodeCount; i++)
+		{
+			VertexGeoReachList vertexGeoReach = new VertexGeoReachList(MAX_HOP);
+			index.add(vertexGeoReach);
+		}
+		
+		long start = System.currentTimeMillis();
+		
+		/**
+		 * Construct the 1-hop GeoReach.
+		 * It will be stored at index 0.
+		 */
+		Util.Print("Construct 1-hop");
+		int id = 0;
+		for (ArrayList<Integer> neighbors : graph)
+		{
+			VertexGeoReachList vertexGeoReach = index.get(id);
+			TreeSet<Integer> reachgrid = null;
+			MyRectangle rmbr = null;
+			for (int neighborID : neighbors)
+			{
+				Entity entity = entities.get(neighborID);
+				if (entity.IsSpatial)
+				{
+					int idX = (int) ((entity.lon - minx) / resolution_x);
+					int idY = (int) ((entity.lat - miny) / resolution_y);
+					idX = Math.min(pieces_x - 1, idX);
+					idY = Math.min(pieces_y - 1, idY);
+					int gridID = idX * pieces_x + idY;
+					
+//					TreeSet<Integer> reachgrid = vertexGeoReach.ReachGrids.get(0);
+					if (reachgrid == null)
+						reachgrid = new TreeSet<>();
+					reachgrid.add(gridID);
+					
+					
+//					MyRectangle rmbr = vertexGeoReach.RMBRs.get(0);
+					if (rmbr == null)
+					{
+						rmbr = new MyRectangle(entity.lon, entity.lat, entity.lon, entity.lat);
+//						vertexGeoReach.RMBRs.set(0, rmbr);
+					}
+					else
+						rmbr.MBR(new MyRectangle(entity.lon, entity.lat, entity.lon, entity.lat));
+				}
+			}
+			if (reachgrid == null)
+				vertexGeoReach.ReachGrids.set(0, null);
+			else
+			{
+				ArrayList<Integer> list = new ArrayList<>(reachgrid);
+				vertexGeoReach.ReachGrids.set(0, list);
+			}
+			vertexGeoReach.RMBRs.set(0, rmbr);
+			id++;
+		}
+		
+		Util.Print("1-hop time: " + (System.currentTimeMillis() - start) + "\n");
+		start = System.currentTimeMillis();
+		/**
+		 * 2-hop and more hops
+		 */
+		for (int i = 1; i < MAX_HOP; i++)
+		{
+			Util.Print(String.format("Construct %d-hop", i+1));
+			id = 0;
+			
+			for (ArrayList<Integer> neighbors : graph)
+			{
+				VertexGeoReachList vertexGeoReach = index.get(id);
+				ArrayList<ArrayList<Integer>> temp = new ArrayList<>(neighbors.size());
+
+				if (i == MAX_HOP - 1)
+					Util.Print(id);
+
+				//				ArrayList<Integer> targetReachGrid = vertexGeoReach.ReachGrids.get(i);
+				MyRectangle targetRMBR = vertexGeoReach.RMBRs.get(i);
+				for (int neighborID : neighbors)
+				{
+					VertexGeoReachList neighborGeoReach = index.get(neighborID);
+					ArrayList<Integer> reachgrid = neighborGeoReach.ReachGrids.get(i-1);
+					if (reachgrid != null)
+						temp.add(reachgrid);
+
+					MyRectangle rmbr = neighborGeoReach.RMBRs.get(i-1);
+					if (rmbr != null)
+					{
+						if (targetRMBR == null)
+						{
+							targetRMBR = new MyRectangle(rmbr);
+							vertexGeoReach.RMBRs.set(i, targetRMBR);
+						}
+						else
+							targetRMBR.MBR(rmbr);
+					}
+				}
+				
+				if(temp.size() > 0)
+				{
+					KWayMerging kWayMerging = new KWayMerging(temp.size());
+					ArrayList<Integer> targetReachGrid = kWayMerging.mergeKList(temp);
+					vertexGeoReach.ReachGrids.set(i, targetReachGrid);
+				}
+
 				id++;
 			}
 			Util.Print(String.format("%d-hop time: %d\n", i + 1, System.currentTimeMillis() - start));

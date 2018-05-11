@@ -8,14 +8,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.TreeSet;
 
-import org.apache.lucene.document.StringField;
-import org.neo4j.cypher.internal.frontend.v2_3.ast.functions.E;
-
 import commons.Entity;
-import commons.MyRectangle;
 import commons.Util;
 
 public class Wikidata {
@@ -40,17 +35,277 @@ public class Wikidata {
 		
 //		readGraphTest();
 		
-		//test code
+//		//test code
 //		String string = "<http://www.wikidata.org/entity/Q26>";
 //		Util.Print(isEntity(string));
 //		Util.Print(getEntityID(string));
+//		//test code
+//		String string = "<https://www.wikidata.org/wiki/Property:P1151>";
+//		Util.Print(isProperty(string));
+//		Util.Print(getPropertyID(string));
 		
-		getRange();
+		
+//		getRange();
+//		checkLocation();
+//		findEntitiesNotOnEarth();
+//		removeLocationOutOfEarth();
+//		removeLocationOutOfBound();
+//		getEdgeCount();
+		
+		extractPropertyID();
+		
+//		getLabelCount();
+	}
+	
+	public static void checkPropertyEntityID()
+	{
+		HashMap<Long, Integer> idMap = readMap(entityMapPath);
+		ArrayList<Integer> propertySet = Util.readIntegerArray(dir + "\\propertyID.txt");
+		int count = 0;
+		for (int id : propertySet)
+		{
+			if (idMap.containsKey(id)) {
+				Util.Print(String.format("%d,%d", id, idMap.get(id)));
+				count++;
+			}
+		}
+		Util.Print("count: " + count);
+	}
+	
+	public static void extractPropertyID()
+	{
+		BufferedReader reader = null;
+		String line = "";
+		HashSet<Long> idSet = new HashSet<>();
+		int lineIndex = 0;
+		try {
+			reader = new BufferedReader(new FileReader(new File(fullfilePath)));
+			while ((line = reader.readLine())!=null)
+			{
+				lineIndex++;
+				String[] strings = line.split(" ");
+				String subject = strings[0];
+				long id = getPropertyEntityID(subject);
+				if (id != -1)
+					idSet.add(id);
+				
+				String object = strings[2];
+				id = getPropertyEntityID(object);
+				if (id != -1)
+					idSet.add(id);
+				
+				if (lineIndex % 10000000 == 0)
+					Util.Print(lineIndex);
+			}
+			reader.close();
+			ArrayList<String> output = new ArrayList<>(idSet.size());
+			for (long id : idSet)
+				output.add(String.valueOf(id));
+			
+			Util.WriteArray(dir + "\\propertyID.txt", output);
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+	}
+	
+	public static void getLabelCount()
+	{
+		BufferedReader reader = null;
+		String line = "";
+		HashMap<Long, Integer> idMap = readMap(entityMapPath);
+		TreeSet<Integer> hasLabelVertices = new TreeSet<>();
+		HashMap<Integer, TreeSet<Integer>> labels = new HashMap<>();
+		int count = 0;
+		try {
+			reader = new BufferedReader(new FileReader(new File(fullfilePath)));
+			while ( (line = reader.readLine()) != null)
+			{
+				String[] strList = line.split(" ");
+				String predicate = strList[1];
+				if (predicate.equals("<http://www.wikidata.org/prop/direct/P31>"))
+				{
+					count++;
+					String subject = strList[0];
+					String object = strList[2];
+					
+					if (!isEntity(subject) || !isEntity(object))
+						continue;
+					
+					int graphID = idMap.get(getEntityID(subject));
+					hasLabelVertices.add(graphID);
+					
+					int labelID = idMap.get(getEntityID(object));
+					if (!labels.containsKey(labelID))
+						labels.put(labelID, new TreeSet<>());
+					labels.get(labelID).add(graphID);
+					
+					if (count % 1000000 == 0)
+						Util.Print(count);
+				}
+			}
+			
+			String filePath = dir + "\\hasLabelVertices.txt";
+			ArrayList<String> outputArray = new ArrayList<>(hasLabelVertices.size());
+			for (int id : hasLabelVertices)
+				outputArray.add(String.valueOf(id));
+			Util.WriteArray(filePath, outputArray);
+			
+			filePath = dir + "\\labels.txt";
+			FileWriter writer = new FileWriter(new File(filePath));
+			writer.write(labels.size() + "\n");
+			for (int key : labels.keySet())
+			{
+				TreeSet<Integer> verticesID = labels.get(key);
+				writer.write(String.format("%d,%d", key, verticesID.size()));
+				for (int id : verticesID)
+					writer.write(String.format(",%d", id));
+				writer.write("\n");
+			}
+			writer.close();
+			
+		} catch (Exception e) {
+			Util.Print(line);
+			e.printStackTrace();
+		}
+	}
+	
+	public static void getEdgeCount()
+	{
+		ArrayList<ArrayList<Integer>> graph = Util.ReadGraph(graphPath);
+		int edgeCount = 0;
+		for (ArrayList<Integer> neighbors : graph)
+			edgeCount += neighbors.size();
+		Util.Print(edgeCount);
+	}
+	
+	public static void removeLocationOutOfBound()
+	{
+		ArrayList<Entity> entities = Util.ReadEntity(entityPath);
+		int count = 0;
+		for (Entity entity : entities)
+		{
+			if (entity.IsSpatial)
+			{
+				if (entity.lon < -180 || entity.lon > 180 || entity.lat < -90 || entity.lat > 90)
+				{
+					count++;
+					entity.IsSpatial = false;
+					entity.lon = 0;
+					entity.lat = 0;
+				}
+			}
+		}
+		Util.Print(count);
+		Util.writeEntity(entities, entityPath);
+	}
+	
+	public static void removeLocationOutOfEarth()
+	{
+		BufferedReader reader = null;
+		HashMap<Long, Integer> idMap = readMap(entityMapPath);
+		ArrayList<Entity> entities = Util.ReadEntity(entityPath);
+		String outearthPath = dir + "\\outofearth_local.csv";
+		String line = "";
+		try {
+			reader = new BufferedReader(new FileReader(new File(outearthPath)));
+			while ((line = reader.readLine()) != null)
+			{
+//				String[] strList = line.split(",");
+//				long wikiID = getEntityID(strList[0]);
+				
+				long wikiID = Long.parseLong(line); 
+
+//				if (!idMap.containsKey(wikiID))
+//					continue;
+
+				int graphID = idMap.get(wikiID);
+				Entity entity = entities.get(graphID);
+				entity.IsSpatial = false;
+				entity.lon = 0;
+				entity.lat = 0;
+			}
+			Util.writeEntity(entities, dir + "\\new_entity.txt");
+		} catch (Exception e) {
+			// TODO: handle exception
+			Util.Print(line);
+			e.printStackTrace();
+		}
+	}
+	
+	public static void findEntitiesNotOnEarth()
+	{
+		String outputPath =  dir + "\\outofearth_local.csv";
+		FileWriter writer = null;
+		BufferedReader reader = null;
+		String line = "";
+		int predicateCount = 0;
+		try {
+			writer = new FileWriter(new File(outputPath));
+			reader = new BufferedReader(new FileReader(new File(fullfilePath)));
+			while ( (line = reader.readLine()) != null)
+			{
+				String[] strList = line.split(" ");
+				String predicate = strList[1];
+				if (predicate.matches("<http://www.wikidata.org/prop/direct/P\\d+>"))
+				{
+					predicateCount++;
+					long propertyID = getPropertyID(predicate);
+					if (propertyID == 376)
+					{
+						String object = strList[2];
+						if (object.matches("<http://www.wikidata.org/entity/Q\\d+>"))
+						{
+							long planetID = getEntityID(object);
+							if (planetID != 2)
+							{
+								String subject = strList[0];
+								if (isEntity(subject))
+								{
+									long subjectWikiID = getEntityID(subject);
+									writer.write(subjectWikiID + "\n");
+								}
+							}
+						}
+					}
+					if (predicateCount % 10000000 == 0)
+						Util.Print(predicateCount);
+				}
+			}
+			reader.close();
+			writer.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
+	}
+	
+	/**
+	 * Find some entities are not on earth.
+	 */
+	public static void checkLocation()
+	{
+		ArrayList<Entity> entities = Util.ReadEntity(entityPath);
+		HashMap<String, String> map = Util.ReadMap(entityMapPath);
+		int count = 0;
+		for (Entity entity : entities)
+		{
+			if (entity.IsSpatial)
+			{
+				if (entity.lon < -180 || entity.lon > 180 || entity.lat < -90 || entity.lat > 90)
+				{
+					Util.Print(entity + " " + map.get("" + entity.id));
+					count++;
+				}
+			}
+		}
+		Util.Print(count);
 	}
 	
 	public static void getRange()
 	{
 		ArrayList<Entity> entities = Util.ReadEntity(entityPath);
+//		ArrayList<Entity> entities = Util.ReadEntity(dir + "\\new_entity.txt");
 		Util.Print(Util.GetEntityRange(entities));
 	}
 	
@@ -272,18 +527,7 @@ public class Wikidata {
 			}
 			reader.close();
 			
-			writer = new FileWriter(entityPath);
-			writer.write(entities.size() + "\n");
-			for (Entity entity : entities)
-			{
-				writer.write(entity.id + ",");
-				if (entity.IsSpatial)
-					writer.write(String.format("1,%s,%s\n", 
-							String.valueOf(entity.lon), String.valueOf(entity.lat)));
-				else writer.write("0\n");
-			}
-			writer.close();
-			
+			Util.writeEntity(entities, entityPath);
 		} catch (Exception e) {
 			Util.Print(lineIndex);
 			Util.Print(line);
@@ -374,12 +618,57 @@ public class Wikidata {
 		return null;
 	}
 	
+	public static long getPropertyID(String string)
+	{
+		if (!string.contains("http://www.wikidata.org/prop/direct/P"))
+		{
+			Util.Print(string + " does not match property format");
+			System.exit(-1);
+		}
+		String tempString = string.replace("<", "").replace(">", "");
+		String[] stringList = tempString.split("prop/direct/P");
+		long id = Long.parseLong(stringList[1]);
+		return id;
+	}
+	
+	public static boolean isProperty(String string)
+	{
+		if (string.matches("<https://www.wikidata.org/wiki/Property:P\\d+>"))
+			return true;
+		else return false;
+	}
+	
 	public static long getEntityID(String string)
 	{
-		String tempString = string.substring(1, string.length() - 1);
+		if (!string.contains("http://www.wikidata.org/entity/"))
+		{
+			Util.Print(string + " does not match entity format");
+			System.exit(-1);
+		}
+		String tempString = string.replace("<", "").replace(">", "");
 		String[] stringList = tempString.split("/entity/Q");
 		long id = Long.parseLong(stringList[1]);
 		return id;
+	}
+	
+
+	public static long getPropertyEntityID(String string)
+	{
+		String tempString = string.replace("<", "").replace(">", "");
+		if (tempString.matches("http://www.wikidata.org/entity/P\\d+"))
+		{
+			String[] stringList = tempString.split("/entity/P");
+			long id = Long.parseLong(stringList[1]);
+			return id;
+		}
+		else return -1;
+	}
+	
+	public static boolean isPropertyEntity(String string)
+	{
+		if (string.matches("<http://www.wikidata.org/entity/P\\d+>"))
+			return true;
+		else return false;
 	}
 	
 	public static boolean isEntity(String string)
