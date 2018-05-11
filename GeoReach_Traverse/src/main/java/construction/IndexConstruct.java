@@ -87,14 +87,16 @@ public class IndexConstruct {
 		
 		int format = 1;
 		suffix = "bitmap";
-		outputPath = String.format("D:\\Ubuntu_shared\\GeoReachHop\\data\\%s\\%d_%d_%d_%d_%d_%d_%s.txt",
-				dataset, pieces_x, pieces_y, (int)(MG * 100), (int)(MR * 100), MC, MAX_HOPNUM, suffix);
+		outputPath = String.format("%s%d_%d_%d_%d_%d_%d_%s.txt",
+				dir, pieces_x, pieces_y, (int)(MG * 100), (int)(MR * 100), MC, MAX_HOPNUM, suffix);
+		Util.Print("output to " + outputPath);
 		Util.outputGeoReachForList(index, outputPath, typesList, format);
 		
 		format = 0;
 		suffix = "list";
-		outputPath = String.format("D:\\Ubuntu_shared\\GeoReachHop\\data\\%s\\%d_%d_%d_%d_%d_%d_%s.txt",
-				dataset, pieces_x, pieces_y, (int)(MG * 100), (int)(MR * 100), MC, MAX_HOPNUM, suffix);
+		outputPath = String.format("%s%d_%d_%d_%d_%d_%d_%s.txt",
+				dir, pieces_x, pieces_y, (int)(MG * 100), (int)(MR * 100), MC, MAX_HOPNUM, suffix);
+		Util.Print("output to " + outputPath);
 		Util.outputGeoReachForList(index, outputPath, typesList, format);
 	}
 	
@@ -199,16 +201,22 @@ public class IndexConstruct {
 		IndexConstruct indexConstruct = new IndexConstruct();
 		indexConstruct.graphPath = args[0];
 		indexConstruct.entityPath = args[1];
+		
+		indexConstruct.minx = -180;
+		indexConstruct.miny = -90;
+		indexConstruct.maxx = 180;
+		indexConstruct.maxy = 90;
+		
 		String dir = args[2];
 		indexConstruct.MAX_HOPNUM = Integer.parseInt(args[3]);
 		indexConstruct.constructList(dir);
 		
 //		String dir = args[0];
 //		String filename = args[1];
-		
+//		
 //		Config config = new Config();
-//		String dir = "D:\\Ubuntu_shared\\GeoReachHop\\data\\wikidata\\";
-//		String filename = "128_128_2_whole.txt";
+////		String dir = "D:\\Ubuntu_shared\\GeoReachHop\\data\\wikidata\\";
+////		String filename = "128_128_2_whole.txt";
 //		config.setDatasetName(Datasets.wikidata.name());
 //		config.setMAXHOPNUM(2);
 //		IndexConstruct indexConstruct = new IndexConstruct(config);

@@ -16,7 +16,11 @@ import commons.Entity;
 import commons.Util;
 import commons.EnumVariables.*;
 
-
+/**
+ * Load GeoReach index
+ * @author ysun138
+ *
+ */
 public class Loader {
 	Config config;
 	String dataset, version;
@@ -32,7 +36,51 @@ public class Loader {
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		load();
+//		load();
+		loadServer();
+		
+	}
+	
+	public static void loadServer()
+	{
+		Loader loader = new Loader();
+		String dir = "/hdd2/data/ysun138";
+		String indexPath = dir + "/128_128_100_100_0_2_bitmap.txt";
+		String dbFolder = "neo4j-community-3.1.1";
+		String dbPath = dir + "/" + dbFolder + "/data/databases/graph.db";
+		Util.Print("load from " + indexPath + " \nto " + dbPath);
+		if (!Util.pathExist(indexPath))
+		{
+			Util.Print(indexPath + " does not exist");
+			System.exit(-1);
+		}
+		if (!Util.pathExist(dbPath))
+		{
+			Util.Print(dbPath + " does not exist");
+			System.exit(-1);
+		}
+		
+		Config config = new Config();
+		loader.GeoReachTypeName = config.getGeoReachTypeName();
+		loader.reachGridName = config.getReachGridName();
+		loader.rmbrName = config.getRMBRName();
+		loader.geoBName = config.getGeoBName();
+		
+		/**
+		 * set graph id to neo4j id map
+		 */
+		String graph_pos_map_path = dir + "/node_map_RTree.txt";
+		HashMap<String, String> graph_pos_map = Util.ReadMap(graph_pos_map_path);
+		loader.graph_pos_map_list= new long[graph_pos_map.size()];
+		for ( String key_str : graph_pos_map.keySet())
+		{
+			int key = Integer.parseInt(key_str);
+			int pos_id = Integer.parseInt(graph_pos_map.get(key_str));
+			loader.graph_pos_map_list[key] = pos_id;
+		}
+		Util.Print("graph pos map size: " + graph_pos_map.size());
+		
+		loader.load(indexPath, dbPath);
 	}
 	
 	public static void load()
@@ -58,7 +106,7 @@ public class Loader {
 		int id;
 		try {
 			Map<String, String> config = new HashMap<String, String>();
-			config.put("dbms.pagecache.memory", "20g");
+			config.put("dbms.pagecache.memory", "100g");
 			if (Util.pathExist(dbPath) == false)
 				throw new Exception(dbPath + " does not exist!");
 			inserter = BatchInserters.inserter(

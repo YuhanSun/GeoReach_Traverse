@@ -29,7 +29,7 @@ import scala.util.control.Exception;
 import commons.Util;
 
 /**
- * latest load class
+ * Generate RTree and load graph
  * @author ysun138
  *
  */
