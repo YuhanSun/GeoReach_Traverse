@@ -1,6 +1,7 @@
 package experiment;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 
 import commons.Config;
@@ -10,9 +11,11 @@ import commons.Util;
 public class Prepare {
 
 	static String[] datasets = new String[] {
-			Datasets.foursquare.toString(), 
-			Datasets.Gowalla_10.toString(), 
-			Datasets.Yelp.toString()
+			Datasets.foursquare.name(), 
+			Datasets.Gowalla_10.name(), 
+			Datasets.Yelp.name(),
+			Datasets.Patens_2_random_80.name(),
+			Datasets.wikidata_2.name(),
 			};
 	
 	static Config config = new Config();
@@ -21,9 +24,49 @@ public class Prepare {
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		generateStartID();
+//		generateStartID();
+		convertStartID();
 	}
 
+	/**
+	 * Convert id to the neo4j node id.
+	 */
+	public static void convertStartID()
+	{
+		for (String dataset : datasets)
+		{
+			String stardIDPath = String.format("%s\\query\\%s\\startID.txt", 
+					projectDir, dataset);
+			ArrayList<Integer> startIDs = Util.readIntegerArray(stardIDPath);
+			
+			String graph_pos_map_path = String.format("%s\\%s\\node_map_RTree.txt", dataDir, dataset);
+	    	Util.Print("read map from " + graph_pos_map_path);
+	    	HashMap<String, String> graph_pos_map = Util.ReadMap(graph_pos_map_path);
+	    	Util.Print("finish reading");
+	    	
+	    	Util.Print("ini array");
+			long[] graph_pos_map_list = new long[graph_pos_map.size()];
+			Util.Print("finish ini");
+			for ( String key_str : graph_pos_map.keySet())
+			{
+				int key = Integer.parseInt(key_str);
+				int pos_id = Integer.parseInt(graph_pos_map.get(key_str));
+				graph_pos_map_list[key] = pos_id;
+			}
+			
+			ArrayList<String> startIDNeo4j = new ArrayList<>(startIDs.size());
+			for (int id : startIDs)
+				startIDNeo4j.add(String.valueOf(graph_pos_map_list[id]));
+			String outputPath = String.format("%s\\query\\%s\\startID_neo4j.txt", 
+					projectDir, dataset);
+			Util.Print("output neo4j ids to " + outputPath);
+			Util.WriteArray(outputPath, startIDNeo4j);
+		}
+	}
+	
+	/**
+	 * Randomly generate id between [0, graphsize-1]
+	 */
 	public static void generateStartID()
 	{
 //		for (String dataset : datasets)
@@ -43,6 +86,5 @@ public class Prepare {
 			Util.Print("Output to " + outputPath);
 			Util.WriteArray(outputPath, idStrings);
 		}
-		
 	}
 }

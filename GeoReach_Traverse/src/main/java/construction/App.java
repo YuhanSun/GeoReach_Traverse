@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HashMap;
 
 import org.roaringbitmap.buffer.ImmutableRoaringBitmap;
 
@@ -22,22 +23,6 @@ public class App
 {
     public static void main( String[] args )
     {
-//    	ArrayList<Integer> arrayList = new ArrayList<Integer>();
-//    	arrayList.add(null);
-//    	Integer i = arrayList.get(0);
-//    	i = arrayList.get(1);
-//    	
-//    	Util.Print(i);
-//        System.out.println( "Hello World!" );
-    	
-//    	String ser = "OjAAAAEAAAAAAAAAEAAAANwQ";
-//    	ByteBuffer newbb = ByteBuffer.wrap(Base64.getDecoder().decode(ser));
-//        ImmutableRoaringBitmap reachgrid = new ImmutableRoaringBitmap(newbb);
-//        Util.Print(reachgrid);
-    	
-//    	String listStr = "[0, 1, 2]";
-//    	Util.Print(listStr.substring(1, listStr.length()-1));
-    	
 //    	for (double x = 0.00001; x < 0.2; x *= 10)
 //    	{
 //    		Util.Print(x);
@@ -69,9 +54,38 @@ public class App
 //			e.printStackTrace();
 //		}
     	
-    	String dir = "D:\\Ubuntu_shared\\GeoReachHop\\data\\Gowalla_10";
-    	String file1 = dir + "\\128_128_3_whole.txt";
-    	String file2 = dir + "\\128_128_3_whole_test.txt";
-    	Util.Print(Util.compareFile(file1, file2));
+    	String graph_pos_map_path = "D:\\Ubuntu_shared\\GeoMinHop\\data\\wikidata_2\\node_map_Rtree.txt";
+    	Util.Print("read map");
+    	HashMap<String, String> graph_pos_map = Util.ReadMap(graph_pos_map_path);
+    	Util.Print("finish reading");
+		
+		try {
+			System.in.read();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		Util.Print("ini array");
+		long[] graph_pos_map_list = new long[graph_pos_map.size()];
+		Util.Print("finish ini");
+		for ( String key_str : graph_pos_map.keySet())
+		{
+			int key = Integer.parseInt(key_str);
+			int pos_id = Integer.parseInt(graph_pos_map.get(key_str));
+			graph_pos_map_list[key] = pos_id;
+		}
+		
+		try {
+			System.in.read();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
+//    	String dir = "D:\\Ubuntu_shared\\GeoReachHop\\data\\Gowalla_10";
+//    	String file1 = dir + "\\128_128_3_whole.txt";
+//    	String file2 = dir + "\\128_128_3_whole_test.txt";
+//    	Util.Print(Util.compareFile(file1, file2));
     }
 }
