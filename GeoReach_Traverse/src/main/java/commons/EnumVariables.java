@@ -20,6 +20,6 @@ public class EnumVariables {
 		Gowalla, Gowalla_10, Gowalla_100, Gowalla_25, Gowalla_50, 
 		Yelp, Yelp_10, Yelp_100,
 		
-		wikidata_2,
+		wikidata, wikidata_2,
 	}
 }
