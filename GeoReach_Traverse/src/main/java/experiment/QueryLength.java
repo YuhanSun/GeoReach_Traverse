@@ -30,9 +30,9 @@ public class QueryLength {
 
 	public String dataDir, projectDir, dbDir;
 	public String db_path;
-	public String graph_pos_map_path;
+//	public String graph_pos_map_path;
 	public String entityPath;
-	public long[] graph_pos_map_list;
+//	public long[] graph_pos_map_list;
 
 //	public String querygraphDir;
 	public String queryDir;
@@ -42,7 +42,7 @@ public class QueryLength {
 	
 	public int spaCount;
 	private int startLength = 1;
-	private int endLength = 3;
+	private int endLength = 2;
 
 	public QueryLength(Config config)
 	{
@@ -50,7 +50,7 @@ public class QueryLength {
 		initializeParameters();
 	}
 
-	public static int pieces_x = 96, pieces_y = 96;
+	public static int pieces_x = 128, pieces_y = 128;
 	public static double MG = 1.0, MR = 1.0;
 	public static int MC = 0;
 //	public static double selectivity = 0.00001;	//Gowalla and foursquare
@@ -70,7 +70,7 @@ public class QueryLength {
 		 * set whole space range
 		 */
 		if (dataset.contains("Gowalla") || dataset.contains("Yelp")
-				|| dataset.contains("foursquare"))
+				|| dataset.contains("foursquare") || dataset.contains("wikidata"))
 			totalRange = new MyRectangle(-180, -90, 180, 90);
 		if (dataset.contains("Patents") || dataset.contains("go_uniprot"))
 			totalRange = new MyRectangle(0, 0, 1000, 1000);
@@ -82,9 +82,9 @@ public class QueryLength {
 		
 		switch (systemName) {
 		case Ubuntu:
-			String dbFolder = String.format("%s_%d_%d_%d_%d_%d_%d", version, pieces_x, pieces_y, (int) (MG * 100), (int) (MR * 100), MC, 3);
+			String dbFolder = String.format("%s_%d_%d_%d_%d_%d_%d", version, pieces_x, pieces_y, (int) (MG * 100), (int) (MR * 100), MC, 2);
 			db_path = String.format("%s/%s/%s/data/databases/graph.db", dbDir, dataset, dbFolder);
-			graph_pos_map_path = dataDir + "/" + dataset + "/node_map_RTree.txt";
+//			graph_pos_map_path = dataDir + "/" + dataset + "/node_map_RTree.txt";
 			entityPath = String.format("%s/%s/entity.txt", dataDir, dataset);
 //			querygraphDir = String.format("/mnt/hgfs/Google_Drive/Projects/risotree/query/query_graph/%s", dataset);
 			queryDir = String.format("%s/query/%s", projectDir, dataset);
@@ -104,14 +104,14 @@ public class QueryLength {
 		ArrayList<Entity> entities = Util.ReadEntity(entityPath);
 		spaCount = Util.GetSpatialEntityCount(entities);
 		
-		HashMap<String, String> graph_pos_map = Util.ReadMap(graph_pos_map_path);
-		graph_pos_map_list = new long[graph_pos_map.size()];
-		for ( String key_str : graph_pos_map.keySet())
-		{
-			int key = Integer.parseInt(key_str);
-			int pos_id = Integer.parseInt(graph_pos_map.get(key_str));
-			graph_pos_map_list[key] = pos_id;
-		}
+//		HashMap<String, String> graph_pos_map = Util.ReadMap(graph_pos_map_path);
+//		graph_pos_map_list = new long[graph_pos_map.size()];
+//		for ( String key_str : graph_pos_map.keySet())
+//		{
+//			int key = Integer.parseInt(key_str);
+//			int pos_id = Integer.parseInt(graph_pos_map.get(key_str));
+//			graph_pos_map_list[key] = pos_id;
+//		}
 	}
 	
 	public static boolean clearCacheFlag = false;
@@ -128,12 +128,11 @@ public class QueryLength {
 //					Config.Datasets.Patents_100_random_80.name(), 
 //					Config.Datasets.go_uniprot_100_random_80.name()));
 			
-			config.setDatasetName(Datasets.Gowalla_10.name());
+			config.setDatasetName(Datasets.wikidata_2.name());
 			QueryLength queryLength = new QueryLength(config);
 			
 			//Read start ids
-			//Read start ids
-			String startIDPath = String.format("%s/startID.txt", queryLength.queryDir);
+			String startIDPath = String.format("%s/startID_neo4j.txt", queryLength.queryDir);
 			Util.Print("start id path: " + startIDPath);
 			ArrayList<Integer> allIDs = Util.readIntegerArray(startIDPath);
 			Util.Print(allIDs);
@@ -149,10 +148,11 @@ public class QueryLength {
 			{
 				int id = allIDs.get(i);
 				int index = i % groupCount;
-				startIDsList.get(index).add(queryLength.graph_pos_map_list[id]);
+//				startIDsList.get(index).add(queryLength.graph_pos_map_list[id]);
+				startIDsList.get(index).add((long) id);
 			}
 			
-			int repeatTime = 20;
+			int repeatTime = 10;
 			ArrayList<ArrayList<Long>> startIDsListRepeat = new ArrayList<>();
 			for (ArrayList<Long> startIDs : startIDsList)
 			{
@@ -161,10 +161,10 @@ public class QueryLength {
 			}
 			startIDsList = startIDsListRepeat;
 			
-			clearCacheFlag = false;
+			clearCacheFlag = true;
 			hotDB = true;
 			
-//			queryLength.spaTraversal(startIDsList);
+			queryLength.spaTraversal(startIDsList);
 			queryLength.simpleTraversal(startIDsList);
 //			selectivityNumber.neo4jCypherTraveral(startIDsList);
 		} catch (Exception e) {
@@ -193,7 +193,9 @@ public class QueryLength {
 				break;
 			}
 
-			String write_line = String.format("%s\t%s\n", dataset, String.valueOf(selectivity));
+			String write_line = String.format("%s\t%s ", dataset, String.valueOf(selectivity));
+			write_line += String.format("clearCache %s, hotDB %s\n", 
+					String.valueOf(clearCacheFlag), String.valueOf(hotDB));
 			if(!TEST_FORMAT)
 			{
 				Util.WriteFile(result_detail_path, true, write_line);
@@ -217,7 +219,6 @@ public class QueryLength {
 			String head_line = "time\tvisited_count\tGeoReachPruned\tHistoryPruned\tresult_count\n";
 			if(!TEST_FORMAT)
 				Util.WriteFile(result_avg_path, true, "length\t" + head_line);
-			
 			
 			for (int length = startLength; length <= endLength; length++)
 			{
@@ -330,7 +331,9 @@ public class QueryLength {
 				break;
 			}
 
-			String write_line = String.format("%s\t%s\n", dataset, String.valueOf(selectivity));
+			String write_line = String.format("%s\t%s ", dataset, String.valueOf(selectivity));
+			write_line += String.format("clearCache %s, hotDB %s\n", 
+					String.valueOf(clearCacheFlag), String.valueOf(hotDB));
 			if(!TEST_FORMAT)
 			{
 				Util.WriteFile(result_detail_path, true, write_line);
