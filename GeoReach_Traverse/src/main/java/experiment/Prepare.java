@@ -11,10 +11,10 @@ import commons.Util;
 public class Prepare {
 
 	static String[] datasets = new String[] {
-			Datasets.foursquare.name(), 
-			Datasets.Gowalla_10.name(), 
-			Datasets.Yelp.name(),
-			Datasets.Patens_2_random_80.name(),
+//			Datasets.foursquare.name(), 
+//			Datasets.Gowalla_10.name(), 
+//			Datasets.Yelp.name(),
+			Datasets.Patents_2_random_80.name(),
 			Datasets.wikidata_2.name(),
 			};
 	

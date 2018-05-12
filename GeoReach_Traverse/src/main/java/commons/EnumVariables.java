@@ -15,7 +15,7 @@ public class EnumVariables {
 		
 		Patents_10_random_20,Patents_10_random_80,
 		Patents_1_random_80,Patents_1_random_20,
-		Patens_2_random_80,
+		Patents_2_random_80,
 		go_uniprot_100_random_80,
 		foursquare, foursquare_10, foursquare_100,
 		Gowalla, Gowalla_10, Gowalla_100, Gowalla_25, Gowalla_50, 
