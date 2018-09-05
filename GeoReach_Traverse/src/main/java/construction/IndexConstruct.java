@@ -143,6 +143,12 @@ public class IndexConstruct {
     // Util.outputGeoReach(index, outputPath, typesList, format);
   }
 
+  /**
+   * Construct final index by reading the local whole index.
+   *
+   * @param dir
+   * @param inputFileName
+   */
   public void constructFromFile(String dir, String inputFileName) {
     if (Util.pathExist(dir))
       Util.Print("directory is " + dir);
