@@ -63,8 +63,8 @@ public class IniTime {
           Util.Serialize_RoarBitmap_ToString(r);
         }
         time = System.currentTimeMillis() - start;
-        Util.Print(String.format("%d-hop bitmap time: %d", i + 1, time));
       }
+      Util.Print(String.format("%d-hop bitmap time: %d", i + 1, time));
     }
   }
 
