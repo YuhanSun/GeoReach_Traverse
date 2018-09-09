@@ -271,7 +271,8 @@ public class IndexConstruct {
   }
 
   /**
-   * 
+   * Generate index where ReachGrid is treeset.
+   *
    * @param graph
    * @param entities
    * @param minx
@@ -344,9 +345,6 @@ public class IndexConstruct {
       for (ArrayList<Integer> neighbors : graph) {
         VertexGeoReach vertexGeoReach = index.get(id);
 
-        if (i == MAX_HOP - 1)
-          Util.Print(id);
-
         TreeSet<Integer> targetReachGrid = vertexGeoReach.ReachGrids.get(i);
         MyRectangle targetRMBR = vertexGeoReach.RMBRs.get(i);
         for (int neighborID : neighbors) {
@@ -380,7 +378,8 @@ public class IndexConstruct {
   }
 
   /**
-   * 
+   * Generate index where Reachgrid is list.
+   *
    * @param graph
    * @param entities
    * @param minx
@@ -460,9 +459,6 @@ public class IndexConstruct {
       for (ArrayList<Integer> neighbors : graph) {
         VertexGeoReachList vertexGeoReach = index.get(id);
         ArrayList<ArrayList<Integer>> temp = new ArrayList<>(neighbors.size());
-
-        if (i == MAX_HOP - 1)
-          Util.Print(id);
 
         // ArrayList<Integer> targetReachGrid = vertexGeoReach.ReachGrids.get(i);
         MyRectangle targetRMBR = vertexGeoReach.RMBRs.get(i);
@@ -637,19 +633,20 @@ public class IndexConstruct {
 
     Util.Print("\nConstruct types time: " + (System.currentTimeMillis() - start));
 
-    ArrayList<ArrayList<Integer>> statis = new ArrayList<>(MAX_HOP);
-    for (int i = 0; i < MAX_HOP; i++)
-      statis.add(new ArrayList<>());
-    for (int i = 0; i < typesList.size(); i++) {
-      ArrayList<Integer> types = typesList.get(i);
-      for (int j = 0; j < MAX_HOP; j++) {
-        int type = types.get(j);
-        statis.get(j).add(type);
-      }
-    }
-
-    for (ArrayList<Integer> types : statis)
-      Util.Print(Util.histogram(types));
+    // Compute statis of types. Should be outside the function.
+    // ArrayList<ArrayList<Integer>> statis = new ArrayList<>(MAX_HOP);
+    // for (int i = 0; i < MAX_HOP; i++)
+    // statis.add(new ArrayList<>());
+    // for (int i = 0; i < typesList.size(); i++) {
+    // ArrayList<Integer> types = typesList.get(i);
+    // for (int j = 0; j < MAX_HOP; j++) {
+    // int type = types.get(j);
+    // statis.get(j).add(type);
+    // }
+    // }
+    //
+    // for (ArrayList<Integer> types : statis)
+    // Util.Print(Util.histogram(types));
 
     return typesList;
   }
