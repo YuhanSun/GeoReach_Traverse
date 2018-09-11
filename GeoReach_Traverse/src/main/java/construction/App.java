@@ -55,9 +55,9 @@ public class App
 //		}
     	
     	String graph_pos_map_path = "D:\\Ubuntu_shared\\GeoMinHop\\data\\wikidata_2\\node_map_Rtree.txt";
-    	Util.Print("read map");
+    	Util.print("read map");
     	HashMap<String, String> graph_pos_map = Util.ReadMap(graph_pos_map_path);
-    	Util.Print("finish reading");
+    	Util.print("finish reading");
 		
 		try {
 			System.in.read();
@@ -66,9 +66,9 @@ public class App
 			e.printStackTrace();
 		}
 		
-		Util.Print("ini array");
+		Util.print("ini array");
 		long[] graph_pos_map_list = new long[graph_pos_map.size()];
-		Util.Print("finish ini");
+		Util.print("finish ini");
 		for ( String key_str : graph_pos_map.keySet())
 		{
 			int key = Integer.parseInt(key_str);

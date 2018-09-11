@@ -13,16 +13,16 @@ public class IniTime {
   public static void getIniTime(String graphPath, String entityPath, double minx, double miny,
       double maxx, double maxy, int pieces_x, int pieces_y, int MAX_HOP, double MG, double MR,
       int MC) {
-    Util.Print("Read graph from " + graphPath);
+    Util.print("Read graph from " + graphPath);
     if (!Util.pathExist(graphPath)) {
-      Util.Print(graphPath + " does not exist!");
+      Util.print(graphPath + " does not exist!");
       System.exit(-1);
     }
     ArrayList<ArrayList<Integer>> graph = Util.ReadGraph(graphPath);
 
-    Util.Print("Read entities from " + entityPath);
+    Util.print("Read entities from " + entityPath);
     if (!Util.pathExist(entityPath)) {
-      Util.Print(entityPath + " does not exist!");
+      Util.print(entityPath + " does not exist!");
       System.exit(-1);
     }
     ArrayList<Entity> entities = Util.ReadEntity(entityPath);
@@ -39,7 +39,7 @@ public class IniTime {
     ArrayList<ArrayList<Integer>> typesList = IndexConstruct.generateTypeListForList(index, MAX_HOP,
         minx, miny, maxx, maxy, pieces_x, pieces_y, MG, MR, MC);
     time = System.currentTimeMillis() - start;
-    Util.Print("generate type list time: " + time);
+    Util.print("generate type list time: " + time);
 
     /**
      * Bitmap compression time
@@ -64,7 +64,7 @@ public class IniTime {
         }
         time = System.currentTimeMillis() - start;
       }
-      Util.Print(String.format("%d-hop bitmap time: %d", i + 1, time));
+      Util.print(String.format("%d-hop bitmap time: %d", i + 1, time));
     }
   }
 
@@ -73,39 +73,41 @@ public class IniTime {
       String dataset, dir, graphPath, entityPath;
       double minx = -180, miny = -90, maxx = 180, maxy = 90;
       int pieces_x = 128, pieces_y = 128, MAX_HOP = 3;
-      double MG = 0.8, MR = 0.8;
+      double MG = 1.0, MR = 1.0;
       int MC = 0;
+      Util.print(String.format("MG=%f, MR=%f, MAX_HOP=%d, MC=%d", MG, MR, MAX_HOP, MC));
 
       dataset = "Yelp";
+      Util.print(dataset);
       dir = String.format("D:\\Ubuntu_shared\\GeoMinHop\\data\\%s", dataset);
       graphPath = dir + "\\graph.txt";
       entityPath = dir + "\\entity.txt";
       getIniTime(graphPath, entityPath, minx, miny, maxx, maxy, pieces_x, pieces_y, MAX_HOP, MG, MR,
           MC);
+      Util.print("\n");
 
       dataset = "foursquare";
+      Util.print(dataset);
       dir = String.format("D:\\Ubuntu_shared\\GeoMinHop\\data\\%s", dataset);
       graphPath = dir + "\\graph.txt";
       entityPath = dir + "\\entity.txt";
       getIniTime(graphPath, entityPath, minx, miny, maxx, maxy, pieces_x, pieces_y, MAX_HOP, MG, MR,
           MC);
+      Util.print("\n");
 
       dataset = "Gowalla";
+      Util.print(dataset);
       dir = String.format("D:\\Ubuntu_shared\\GeoMinHop\\data\\%s", dataset);
       graphPath = dir + "\\graph.txt";
       entityPath = dir + "\\entity.txt";
       getIniTime(graphPath, entityPath, minx, miny, maxx, maxy, pieces_x, pieces_y, MAX_HOP, MG, MR,
           MC);
-
-
+      Util.print("\n");
 
     } catch (Exception e) {
       e.printStackTrace();
       System.exit(-1);
     }
-
-
-
   }
 
 }
