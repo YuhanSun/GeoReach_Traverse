@@ -86,7 +86,7 @@ public class Wikidata_property {
 					labels.get(labelID).add(graphID);
 					
 					if (count % 1000000 == 0)
-						Util.Print(count);
+						Util.print(count);
 				}
 			}
 			
@@ -110,7 +110,7 @@ public class Wikidata_property {
 			writer.close();
 			
 		} catch (Exception e) {
-			Util.Print(line);
+			Util.print(line);
 			e.printStackTrace();
 		}
 	}
@@ -121,7 +121,7 @@ public class Wikidata_property {
 		int edgeCount = 0;
 		for (ArrayList<Integer> neighbors : graph)
 			edgeCount += neighbors.size();
-		Util.Print(edgeCount);
+		Util.print(edgeCount);
 	}
 	
 	public static void removeLocationOutOfBound()
@@ -141,7 +141,7 @@ public class Wikidata_property {
 				}
 			}
 		}
-		Util.Print(count);
+		Util.print(count);
 		Util.writeEntity(entities, entityPath);
 	}
 	
@@ -173,7 +173,7 @@ public class Wikidata_property {
 			Util.writeEntity(entities, dir + "\\new_entity.txt");
 		} catch (Exception e) {
 			// TODO: handle exception
-			Util.Print(line);
+			Util.print(line);
 			e.printStackTrace();
 		}
 	}
@@ -214,7 +214,7 @@ public class Wikidata_property {
 						}
 					}
 					if (predicateCount % 10000000 == 0)
-						Util.Print(predicateCount);
+						Util.print(predicateCount);
 				}
 			}
 			reader.close();
@@ -239,19 +239,19 @@ public class Wikidata_property {
 			{
 				if (entity.lon < -180 || entity.lon > 180 || entity.lat < -90 || entity.lat > 90)
 				{
-					Util.Print(entity + " " + map.get("" + entity.id));
+					Util.print(entity + " " + map.get("" + entity.id));
 					count++;
 				}
 			}
 		}
-		Util.Print(count);
+		Util.print(count);
 	}
 	
 	public static void getRange()
 	{
 		ArrayList<Entity> entities = Util.ReadEntity(entityPath);
 //		ArrayList<Entity> entities = Util.ReadEntity(dir + "\\new_entity.txt");
-		Util.Print(Util.GetEntityRange(entities));
+		Util.print(Util.GetEntityRange(entities));
 	}
 	
 	public static void readGraphTest()
@@ -269,7 +269,7 @@ public class Wikidata_property {
 			reader = new BufferedReader(new FileReader(new File(graphPath)));
 			String line = reader.readLine();
 			int nodeCount = Integer.parseInt(line);
-			Util.Print(nodeCount);
+			Util.print(nodeCount);
 			
 			int index = 0;
 			
@@ -278,7 +278,7 @@ public class Wikidata_property {
 				index++;
 			}
 			reader.close();
-			Util.Print(index);
+			Util.print(index);
 		}catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
@@ -339,13 +339,13 @@ public class Wikidata_property {
 				
 				lineIndex++;
 				if (lineIndex % 10000000 == 0)
-					Util.Print(lineIndex);
+					Util.print(lineIndex);
 				
 				if (lineIndex == 10000000)
 					break;
 			}
 			
-			Util.Print("leaf count: " + leafVerticesSet.size());
+			Util.print("leaf count: " + leafVerticesSet.size());
 			for (long key : leafVerticesSet)
 				map.add(key);
 			
@@ -361,7 +361,7 @@ public class Wikidata_property {
 			logWriter.close();
 			
 		} catch (Exception e) {
-			Util.Print(String.format("line %d:\n%s", lineIndex, line));
+			Util.print(String.format("line %d:\n%s", lineIndex, line));
 			e.printStackTrace();
 		}
 	}
@@ -376,7 +376,7 @@ public class Wikidata_property {
 		
 		try {
 			HashMap<Long, Integer> idMap = readMap(entityMapPath);
-			Util.Print(idMap.size());
+			Util.print(idMap.size());
 			
 			reader = new BufferedReader(new FileReader(new File(fullfilePath)));
 			writer = new FileWriter(graphPath);
@@ -415,7 +415,7 @@ public class Wikidata_property {
 
 				lineIndex++;
 				if (lineIndex % 10000000 == 0)
-					Util.Print(lineIndex);
+					Util.print(lineIndex);
 				
 //				if (lineIndex == 10000000)
 //					break;
@@ -431,7 +431,7 @@ public class Wikidata_property {
 			logWriter.close();
 			
 		} catch (Exception e) {
-			Util.Print(String.format("line %d:\n%s", lineIndex, line));
+			Util.print(String.format("line %d:\n%s", lineIndex, line));
 			e.printStackTrace();
 		}
 	}
@@ -443,14 +443,14 @@ public class Wikidata_property {
 		int lineIndex = 0;
 		String line = "";
 		try {
-			Util.Print("read map from " + entityMapPath);
+			Util.print("read map from " + entityMapPath);
 			HashMap<Long, Integer> idMap = readMap(entityMapPath);
-			Util.Print("initialize entities");
+			Util.print("initialize entities");
 			ArrayList<Entity> entities = new ArrayList<>(idMap.size());
 			for (int i = 0; i < idMap.size(); i++)
 				entities.add(new Entity(i));
 			
-			Util.Print("read locations from " + locationPath);
+			Util.print("read locations from " + locationPath);
 			reader = new BufferedReader(new FileReader(new File(locationPath)));
 			while ((line = reader.readLine()) != null)
 			{
@@ -474,8 +474,8 @@ public class Wikidata_property {
 			
 			Util.writeEntity(entities, entityPath);
 		} catch (Exception e) {
-			Util.Print(lineIndex);
-			Util.Print(line);
+			Util.print(lineIndex);
+			Util.print(line);
 			e.printStackTrace();
 		}
 	}
@@ -518,7 +518,7 @@ public class Wikidata_property {
 				index++;
 				
 				if (index % 10000000 == 0)
-					Util.Print(index);
+					Util.print(index);
 				
 //				if (index == 100000)
 //					break;
@@ -527,9 +527,9 @@ public class Wikidata_property {
 			writer.close();
 			logWriter.close();
 			
-			Util.Print("p625Count: " + p625Count);
+			Util.print("p625Count: " + p625Count);
 		} catch (Exception e) {
-			Util.Print(String.format("line %d:\n%s", index, line));
+			Util.print(String.format("line %d:\n%s", index, line));
 			e.printStackTrace();
 		}
 	}
@@ -567,7 +567,7 @@ public class Wikidata_property {
 	{
 		if (!string.contains("http://www.wikidata.org/prop/direct/P"))
 		{
-			Util.Print(string + " does not match property format");
+			Util.print(string + " does not match property format");
 			System.exit(-1);
 		}
 		String tempString = string.replace("<", "").replace(">", "");
@@ -587,7 +587,7 @@ public class Wikidata_property {
 	{
 		if (!string.contains("http://www.wikidata.org/entity/"))
 		{
-			Util.Print(string + " does not match entity format");
+			Util.print(string + " does not match entity format");
 			System.exit(-1);
 		}
 		String tempString = string.replace("<", "").replace(">", "");

@@ -19,7 +19,7 @@ public class ConfigTest {
 	@Test
 	public void getProjectDirTest() {
 		Config config = new Config();
-		Util.Print(config.getDataDir());;
+		Util.print(config.getDataDir());;
 	}
 
 }

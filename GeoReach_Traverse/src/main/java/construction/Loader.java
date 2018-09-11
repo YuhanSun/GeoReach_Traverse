@@ -48,15 +48,15 @@ public class Loader {
 		String indexPath = dir + "/128_128_100_100_0_2_bitmap.txt";
 		String dbFolder = "neo4j-community-3.1.1";
 		String dbPath = dir + "/" + dbFolder + "/data/databases/graph.db";
-		Util.Print("load from " + indexPath + " \nto " + dbPath);
+		Util.print("load from " + indexPath + " \nto " + dbPath);
 		if (!Util.pathExist(indexPath))
 		{
-			Util.Print(indexPath + " does not exist");
+			Util.print(indexPath + " does not exist");
 			System.exit(-1);
 		}
 		if (!Util.pathExist(dbPath))
 		{
-			Util.Print(dbPath + " does not exist");
+			Util.print(dbPath + " does not exist");
 			System.exit(-1);
 		}
 		
@@ -78,7 +78,7 @@ public class Loader {
 			int pos_id = Integer.parseInt(graph_pos_map.get(key_str));
 			loader.graph_pos_map_list[key] = pos_id;
 		}
-		Util.Print("graph pos map size: " + graph_pos_map.size());
+		Util.print("graph pos map size: " + graph_pos_map.size());
 		
 		loader.load(indexPath, dbPath);
 	}
@@ -93,7 +93,7 @@ public class Loader {
 		String indexPath = dir + "\\128_128_0_100_0_3_bitmap.txt";
 		String dbFolder = "neo4j-community-3.1.1_Gowalla_10_128_128_100_100_0_3";
 		String dbPath = dir + "\\" + dbFolder + "\\data\\databases\\graph.db";
-		Util.Print("load from " + indexPath + " \nto " + dbPath);
+		Util.print("load from " + indexPath + " \nto " + dbPath);
 		loader.load(indexPath, dbPath);
 	}
 	
@@ -167,7 +167,7 @@ public class Loader {
 			
 			if (inserter != null)
 				inserter.shutdown();
-			Util.Print(String.format("line %d: %s", lineIndex, line));
+			Util.print(String.format("line %d: %s", lineIndex, line));
 			e.printStackTrace();
 			System.exit(-1);
 		}
@@ -240,7 +240,7 @@ public class Loader {
 			int pos_id = Integer.parseInt(graph_pos_map.get(key_str));
 			graph_pos_map_list[key] = pos_id;
 		}
-		Util.Print(graph_pos_map.size());
+		Util.print(graph_pos_map.size());
 	}
 
 }

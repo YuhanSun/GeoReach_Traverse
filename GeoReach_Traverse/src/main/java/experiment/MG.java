@@ -66,7 +66,7 @@ public class MG {
 //		for (int MG = 0; MG <= 100; MG += 10)
 		for (int MG : MGs)
 		{
-			Util.Print("\nMG: " + MG);
+			Util.print("\nMG: " + MG);
 			
 			ArrayList<ArrayList<Integer>> typesList = IndexConstruct.generateTypeList(index, MAX_HOPNUM, 
 					minx, miny, maxx, maxy, 
@@ -76,14 +76,14 @@ public class MG {
 			String suffix = "bitmap";
 			String indexPath = String.format("%s\\%s\\MG\\%d_%d_%d_%d_%d_%d_%s.txt",
 					dir, dataset, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, suffix);
-			Util.Print("Output index to " + indexPath);
+			Util.print("Output index to " + indexPath);
 			Util.outputGeoReach(index, indexPath, typesList, format);
 			
 			format = 0;
 			suffix = "list";
 			indexPath = String.format("%s\\%s\\MG\\%d_%d_%d_%d_%d_%d_%s.txt",
 					dir, dataset, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, suffix);
-			Util.Print("Output index to " + indexPath);
+			Util.print("Output index to " + indexPath);
 			Util.outputGeoReach(index, indexPath, typesList, format);
 		}
 		
@@ -119,7 +119,7 @@ public class MG {
 //		for (int MG = 25; MG <= 75; MG += 25)
 		for ( int MG : MGs)
 		{
-			Util.Print("\nMG: " + MG);
+			Util.print("\nMG: " + MG);
 			Loader loader = new Loader(config);
 			
 			String indexPath = String.format("%s\\%s\\MG\\%d_%d_%d_%d_%d_%d_%s.txt",
@@ -129,7 +129,7 @@ public class MG {
 					+ "\\data\\databases\\graph.db", 
 					dir, dataset, neo4j_version, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM);
 			
-			Util.Print(String.format("Load from %s\nto %s", indexPath, dbPath));
+			Util.print(String.format("Load from %s\nto %s", indexPath, dbPath));
 			loader.load(indexPath, dbPath);
 		}
 	}
@@ -146,9 +146,9 @@ public class MG {
 			
 			//Read start ids
 			String startIDPath = String.format("%s/startID.txt", queryDir);
-			Util.Print("start id path: " + startIDPath);
+			Util.print("start id path: " + startIDPath);
 			ArrayList<Integer> allIDs = Util.readIntegerArray(startIDPath);
-			Util.Print(allIDs);
+			Util.print(allIDs);
 			
 			int experimentCount = 500;
 			int groupCount = 1;
@@ -216,7 +216,7 @@ public class MG {
 						queryrect_path = String.format("%s\\queryrect_%d.txt", queryDir, name_suffix);
 						break;
 					}
-					Util.Print("query rectangle path: " + queryrect_path);
+					Util.print("query rectangle path: " + queryrect_path);
 
 					write_line = selectivity + "\n" + head_line;
 					Util.WriteFile(result_detail_path, true, write_line);
@@ -233,7 +233,7 @@ public class MG {
 
 					for ( int i = 0; i < startIDsList.size(); i++)
 					{
-						Util.Print(dbPath);
+						Util.print(dbPath);
 						SpaTraversal spaTraversal = new SpaTraversal(dbPath, testMAXHOP, total_range, pieces_x, pieces_y);
 						ArrayList<Long> startIDs = startIDsList.get(i);
 						Transaction tx = spaTraversal.dbservice.beginTx();
@@ -249,7 +249,7 @@ public class MG {
 									rectangle.max_x + delta, rectangle.max_y + delta);
 						}
 
-						Util.Print(String.format("%d : %s", i, rectangle.toString()));
+						Util.print(String.format("%d : %s", i, rectangle.toString()));
 //						Util.Print(ids);
 
 						Util.clearAndSleep(password, 5000);
@@ -331,10 +331,10 @@ public class MG {
 			break;
 		}
 		
-		Util.Print("Read graph from " + graphPath);
+		Util.print("Read graph from " + graphPath);
 		graph = Util.ReadGraph(graphPath);
 		
-		Util.Print("Read entity from " + entityPath);
+		Util.print("Read entity from " + entityPath);
 		entities = Util.ReadEntity(entityPath);
 		
 		spaCount = Util.GetSpatialEntityCount(entities);

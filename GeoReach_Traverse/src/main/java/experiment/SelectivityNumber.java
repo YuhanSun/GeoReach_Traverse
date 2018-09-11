@@ -125,7 +125,7 @@ public class SelectivityNumber {
 //			resultDir = String.format("D:\\Google_Drive\\Experiment_Result\\Riso-Tree\\%s", dataset);
 			break;
 		}
-		Util.Print("entity path: " + entityPath);
+		Util.print("entity path: " + entityPath);
 		ArrayList<Entity> entities = Util.ReadEntity(entityPath);
 		spaCount = Util.GetSpatialEntityCount(entities);
 		
@@ -159,9 +159,9 @@ public class SelectivityNumber {
 			
 			//Read start ids
 			String startIDPath = String.format("%s/startID.txt", selectivityNumber.queryDir);
-			Util.Print("start id path: " + startIDPath);
+			Util.print("start id path: " + startIDPath);
 			ArrayList<Integer> allIDs = Util.readIntegerArray(startIDPath);
-			Util.Print(allIDs);
+			Util.print(allIDs);
 			
 			int experimentCount = 500;
 			int groupCount = 1;
@@ -247,16 +247,16 @@ public class SelectivityNumber {
 					queryrect_path = String.format("%s\\queryrect_%d.txt", queryDir, name_suffix);
 					break;
 				}
-				Util.Print("query rectangle path: " + queryrect_path);
+				Util.print("query rectangle path: " + queryrect_path);
 
 				write_line = df.format(selectivity) + "\n" + head_line;
 				if(!TEST_FORMAT)
 					Util.WriteFile(result_detail_path, true, write_line);
 
-				Util.Print("queryrect path: " + queryrect_path);
+				Util.print("queryrect path: " + queryrect_path);
 				ArrayList<MyRectangle> queryrect = Util.ReadQueryRectangle(queryrect_path);
 				
-				Util.Print("db path: " + db_path);
+				Util.print("db path: " + db_path);
 				spaTraversal = new SpaTraversal(db_path, MAX_HOPNUM, totalRange, pieces_x, pieces_y);
 
 				ArrayList<Long> total_time = new ArrayList<Long>();
@@ -283,8 +283,8 @@ public class SelectivityNumber {
 
 					if(!TEST_FORMAT)
 					{
-						Util.Print(String.format("%d : %s", i, rectangle.toString()));
-						Util.Print(startIDs);
+						Util.print(String.format("%d : %s", i, rectangle.toString()));
+						Util.print(startIDs);
 
 						if (clearCacheFlag)
 							Util.clearAndSleep(password, 5000);
@@ -384,7 +384,7 @@ public class SelectivityNumber {
 					queryrect_path = String.format("%s\\queryrect_%d.txt", queryDir, name_suffix);
 					break;
 				}
-				Util.Print("query rectangle path: " + queryrect_path);
+				Util.print("query rectangle path: " + queryrect_path);
 
 				write_line = df.format(selectivity) + "\n" + head_line;
 				if(!TEST_FORMAT)
@@ -401,7 +401,7 @@ public class SelectivityNumber {
 				for ( int i = 0; i < startIDsList.size(); i++)
 				{
 					ArrayList<Long> startIDs = startIDsList.get(i);
-					Util.Print("start ids: " + startIDs);
+					Util.print("start ids: " + startIDs);
 					Transaction tx = simpleGraphTraversal.dbservice.beginTx();
 					ArrayList<Node> startNodes = Util.getNodesByIDs(simpleGraphTraversal.dbservice, startIDs);
 					tx.success();
@@ -417,8 +417,8 @@ public class SelectivityNumber {
 
 					if(!TEST_FORMAT)
 					{
-						Util.Print(String.format("%d : %s", i, rectangle.toString()));
-						Util.Print(startIDs);
+						Util.print(String.format("%d : %s", i, rectangle.toString()));
+						Util.print(startIDs);
 
 						if(clearCacheFlag)
 							Util.clearAndSleep(password, 5000);
@@ -510,7 +510,7 @@ public class SelectivityNumber {
 					queryrect_path = String.format("%s\\queryrect_%d.txt", queryDir, name_suffix);
 					break;
 				}
-				Util.Print("query rectangle path: " + queryrect_path);
+				Util.print("query rectangle path: " + queryrect_path);
 
 				write_line = selectivity + "\n" + head_line;
 				if(!TEST_FORMAT)
@@ -527,7 +527,7 @@ public class SelectivityNumber {
 				for ( int i = 0; i < startIDsList.size(); i++)
 				{
 					ArrayList<Long> startIDs = startIDsList.get(i);
-					Util.Print("start ids: " + startIDs);
+					Util.print("start ids: " + startIDs);
 					
 					MyRectangle rectangle = queryrect.get(i);
 					if ( rectangle.area() == 0.0)
@@ -539,8 +539,8 @@ public class SelectivityNumber {
 
 					if(!TEST_FORMAT)
 					{
-						Util.Print(String.format("%d : %s", i, rectangle.toString()));
-						Util.Print(startIDs);
+						Util.print(String.format("%d : %s", i, rectangle.toString()));
+						Util.print(startIDs);
 
 						start = System.currentTimeMillis();
 						neo4jCypherTraversal.traverse(startIDs, length, rectangle);
