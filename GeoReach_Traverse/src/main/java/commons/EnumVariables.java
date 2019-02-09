@@ -20,4 +20,8 @@ public class EnumVariables {
   public static enum UpdateStatus {
     UpdateInside, UpdateOnBoundary, UpdateOutside, NotUpdateInside, NotUpdateOnBoundary
   }
+
+  public static enum GeoReachType {
+    ReachGrid, RMBR, GeoB
+  }
 }
