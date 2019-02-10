@@ -170,4 +170,36 @@ public class SpaceManagerTest {
     roaringBitmap.andNot(groundTruth);
     assertTrue(roaringBitmap.isEmpty());
   }
+
+  @Test
+  public void getMbrOfCellTest() {
+    SpaceManager spaceManager = new SpaceManager(0, 0, 1.0, 1.0, 10, 10);
+    MyRectangle mbr = spaceManager.getMbrOfCell(0, 0);
+    assertTrue(Math.abs(mbr.min_x - 0.0) < 0.00000000001);
+    assertTrue(Math.abs(mbr.min_y - 0.0) < 0.00000000001);
+    assertTrue(Math.abs(mbr.max_x - 0.1) < 0.00000000001);
+    assertTrue(Math.abs(mbr.max_y - 0.1) < 0.00000000001);
+
+    mbr = spaceManager.getMbrOfCell(2, 3);
+    assertTrue(Math.abs(mbr.min_x - 0.2) < 0.00000000001);
+    assertTrue(Math.abs(mbr.min_y - 0.3) < 0.00000000001);
+    assertTrue(Math.abs(mbr.max_x - 0.3) < 0.00000000001);
+    assertTrue(Math.abs(mbr.max_y - 0.4) < 0.00000000001);
+  }
+
+  @Test
+  public void getMbrOfReachGridTest() {
+    SpaceManager spaceManager = new SpaceManager(0, 0, 1.0, 1.0, 10, 10);
+
+    RoaringBitmap roaringBitmap = new RoaringBitmap();
+    roaringBitmap.add(13);
+    roaringBitmap.add(36);
+    roaringBitmap.add(22);
+
+    MyRectangle mbr = spaceManager.getMbrOfReachGrid(roaringBitmap.toMutableRoaringBitmap());
+    assertTrue(Math.abs(mbr.min_x - 0.1) < 0.00000000001);
+    assertTrue(Math.abs(mbr.min_y - 0.2) < 0.00000000001);
+    assertTrue(Math.abs(mbr.max_x - 0.4) < 0.00000000001);
+    assertTrue(Math.abs(mbr.max_y - 0.7) < 0.00000000001);
+  }
 }

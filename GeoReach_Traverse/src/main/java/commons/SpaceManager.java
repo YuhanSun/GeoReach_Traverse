@@ -184,6 +184,12 @@ public class SpaceManager {
     return boundary;
   }
 
+  /**
+   * Get all the grid ids covered by a given rectangle.
+   *
+   * @param rectangle
+   * @return
+   */
   public ImmutableRoaringBitmap getCoverIdOfRectangle(MyRectangle rectangle) {
     RoaringBitmap roaringBitmap = new RoaringBitmap();
     int[] xyBoundary = getXYBoundary(rectangle);
@@ -194,5 +200,33 @@ public class SpaceManager {
       }
     }
     return roaringBitmap.toMutableRoaringBitmap().toImmutableRoaringBitmap();
+  }
+
+  /**
+   * Get the Mbr of a given cell [idX, idY].
+   *
+   * @param idX
+   * @param idY
+   * @return
+   */
+  public MyRectangle getMbrOfCell(int idX, int idY) {
+    double minx = resolutionX * idX;
+    double miny = resolutionY * idY;
+    double maxx = resolutionX * (idX + 1);
+    double maxy = resolutionY * (idY + 1);
+    return new MyRectangle(minx, miny, maxx, maxy);
+  }
+
+  /**
+   * Get the Mbr of a given ReachGrid.
+   *
+   * @param immutableRoaringBitmap
+   * @return
+   */
+  public MyRectangle getMbrOfReachGrid(ImmutableRoaringBitmap immutableRoaringBitmap) {
+    int[] xyBoundary = getXYBoundary(immutableRoaringBitmap);
+    MyRectangle leftBottom = getMbrOfCell(xyBoundary[0], xyBoundary[1]);
+    MyRectangle rightTop = getMbrOfCell(xyBoundary[2], xyBoundary[3]);
+    return new MyRectangle(leftBottom.min_x, leftBottom.min_y, rightTop.max_x, rightTop.max_y);
   }
 }
