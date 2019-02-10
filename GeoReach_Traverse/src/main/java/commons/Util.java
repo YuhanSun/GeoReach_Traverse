@@ -63,55 +63,7 @@ public class Util {
     }
   }
 
-  public static int[] getXYId(int id, int piecesX, int piecesY) {
-    int idX = id / piecesX;
-    int idY = id - piecesX * idX;
-    int[] xy = new int[] {idX, idY};
-    return xy;
-  }
 
-  /**
-   * Get the boundary of a rectangle.
-   *
-   * @param rmbr
-   * @param minx
-   * @param miny
-   * @param maxx
-   * @param maxy
-   * @param resolutionX
-   * @param resolutionY
-   * @return
-   */
-  public static int[] getXYBoundary(MyRectangle rmbr, double minx, double miny, double resolutionX,
-      double resolutionY) {
-    int lb_x = (int) ((rmbr.min_x - minx) / resolutionX);
-    int lb_y = (int) ((rmbr.min_y - miny) / resolutionY);
-    int rt_x = (int) ((rmbr.max_x - minx) / resolutionX);
-    int rt_y = (int) ((rmbr.max_y - miny) / resolutionY);
-    return new int[] {lb_x, lb_y, rt_x, rt_y};
-  }
-
-  /**
-   * Get the [idX_min, idY_min, idX_max, idY_max] as the 2-D boundary for the given reachgrid.
-   *
-   * @param immutableRoaringBitmap
-   * @return
-   */
-  public static int[] getXYBoundary(ImmutableRoaringBitmap immutableRoaringBitmap, int piecesX,
-      int piecesY) {
-    int[] boundary =
-        new int[] {Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE};
-    for (int id : immutableRoaringBitmap) {
-      int idX = id / piecesX;
-      int idY = id - piecesY * idX;
-      boundary[0] = Math.min(idX, boundary[0]);
-      boundary[1] = Math.min(idY, boundary[1]);
-      boundary[2] = Math.max(idX, boundary[2]);
-      boundary[3] = Math.max(idY, boundary[3]);
-    }
-
-    return boundary;
-  }
 
   // public static boolean cellOnBoundary(RoaringBitmap rb, int idX, int idY, int piecesX,
   // int piecesY) {
@@ -121,24 +73,6 @@ public class Util {
   //
   // return false;
   // }
-
-  public static <T> void print(T[] array) {
-    int i = 0, length = array.length;
-    if (length == 0) {
-      System.out.println("[]");
-    }
-
-    System.out.print("[");
-    for (T element : array) {
-      System.out.print(element);
-      if (i == length - 1) {
-        System.out.println("]");
-        break;
-      }
-      System.out.print(", ");
-      i++;
-    }
-  }
 
   public static void print(Object o) {
     System.out.println(o);
