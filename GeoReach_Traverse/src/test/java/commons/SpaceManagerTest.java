@@ -1,11 +1,13 @@
 package commons;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import java.util.Arrays;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.roaringbitmap.RoaringBitmap;
+import org.roaringbitmap.buffer.ImmutableRoaringBitmap;
 
 public class SpaceManagerTest {
 
@@ -110,4 +112,62 @@ public class SpaceManagerTest {
     assert (boundary[3] == 9);
   }
 
+  @Test
+  public void getCoverIdOfRectangleTest() {
+    SpaceManager spaceManager = new SpaceManager(0, 0, 1.0, 1.0, 10, 10);
+    // the first test
+    ImmutableRoaringBitmap immutableRoaringBitmap =
+        spaceManager.getCoverIdOfRectangle(new MyRectangle(0, 0, 0, 0));
+    RoaringBitmap roaringBitmap = new RoaringBitmap(immutableRoaringBitmap);
+
+    RoaringBitmap groundTruth = new RoaringBitmap();
+    groundTruth.add(0);
+
+    roaringBitmap.andNot(groundTruth);
+    assertTrue(roaringBitmap.isEmpty());
+
+    // the second test
+    immutableRoaringBitmap = spaceManager.getCoverIdOfRectangle(new MyRectangle(0, 0, 1.0, 1.0));
+    roaringBitmap = new RoaringBitmap(immutableRoaringBitmap);
+
+    groundTruth = new RoaringBitmap();
+    for (int i = 0; i < 10; i++) {
+      for (int j = 0; j < 10; j++) {
+        groundTruth.add(i * 10 + j);
+      }
+    }
+
+    roaringBitmap.andNot(groundTruth);
+    assertTrue(roaringBitmap.isEmpty());
+
+    // the third test
+    immutableRoaringBitmap =
+        spaceManager.getCoverIdOfRectangle(new MyRectangle(0.01, 0.01, 0.02, 0.99));
+    roaringBitmap = new RoaringBitmap(immutableRoaringBitmap);
+
+    groundTruth = new RoaringBitmap();
+    for (int i = 0; i <= 0; i++) {
+      for (int j = 0; j <= 9; j++) {
+        groundTruth.add(i * 10 + j);
+      }
+    }
+
+    roaringBitmap.andNot(groundTruth);
+    assertTrue(roaringBitmap.isEmpty());
+
+    // the fourth test
+    immutableRoaringBitmap =
+        spaceManager.getCoverIdOfRectangle(new MyRectangle(0.01, 0.01, 0.21, 0.33));
+    roaringBitmap = new RoaringBitmap(immutableRoaringBitmap);
+
+    groundTruth = new RoaringBitmap();
+    for (int i = 0; i <= 2; i++) {
+      for (int j = 0; j <= 3; j++) {
+        groundTruth.add(i * 10 + j);
+      }
+    }
+
+    roaringBitmap.andNot(groundTruth);
+    assertTrue(roaringBitmap.isEmpty());
+  }
 }

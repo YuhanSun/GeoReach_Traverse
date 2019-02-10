@@ -1,5 +1,6 @@
 package commons;
 
+import org.roaringbitmap.RoaringBitmap;
 import org.roaringbitmap.buffer.ImmutableRoaringBitmap;
 
 /**
@@ -180,7 +181,18 @@ public class SpaceManager {
       boundary[2] = Math.max(idXY[0], boundary[2]);
       boundary[3] = Math.max(idXY[1], boundary[3]);
     }
-
     return boundary;
+  }
+
+  public ImmutableRoaringBitmap getCoverIdOfRectangle(MyRectangle rectangle) {
+    RoaringBitmap roaringBitmap = new RoaringBitmap();
+    int[] xyBoundary = getXYBoundary(rectangle);
+    for (int i = xyBoundary[0]; i <= xyBoundary[2]; i++) {
+      for (int j = xyBoundary[1]; j <= xyBoundary[3]; j++) {
+        int grid_id = i * piecesY + j;
+        roaringBitmap.add(grid_id);
+      }
+    }
+    return roaringBitmap.toMutableRoaringBitmap().toImmutableRoaringBitmap();
   }
 }
