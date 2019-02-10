@@ -1,9 +1,7 @@
 package query;
 
 import java.io.File;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.HashSet;
 import java.util.LinkedList;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -189,8 +187,7 @@ public class SpaTraversal {
           dbTime += System.currentTimeMillis() - start;
 
           start = System.currentTimeMillis();
-          ByteBuffer newbb = ByteBuffer.wrap(Base64.getDecoder().decode(ser));
-          ImmutableRoaringBitmap reachgrid = new ImmutableRoaringBitmap(newbb);
+          ImmutableRoaringBitmap reachgrid = Util.getImmutableRoaringBitmap(ser);
 
           for (int i = lb_x; i <= rt_x; i++) {
             for (int j = lb_y; j <= rt_y; j++) {
