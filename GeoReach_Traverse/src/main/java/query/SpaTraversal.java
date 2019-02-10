@@ -194,7 +194,7 @@ public class SpaTraversal {
 
           for (int i = lb_x; i <= rt_x; i++) {
             for (int j = lb_y; j <= rt_y; j++) {
-              int grid_id = i * pieces_x + j;
+              int grid_id = i * pieces_y + j;
               if (reachgrid.contains(grid_id)) {
                 return true;
               }
