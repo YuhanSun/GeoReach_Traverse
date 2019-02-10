@@ -12,6 +12,12 @@ import commons.VertexGeoReach;
 import commons.VertexGeoReachList;
 import kwaysort.KWayMerging;
 
+/**
+ * Construct the GeoReach Index. Do not consider MC now.
+ *
+ * @author Yuhan Sun
+ *
+ */
 public class IndexConstruct {
 
   public Config config;
@@ -25,7 +31,7 @@ public class IndexConstruct {
   public String dbPath, entityPath, graphPath;
 
   /**
-   * Example of how to use such class. Construct from stracth.
+   * Example of how to use such class. Construct from scratch.
    */
   public void constructList(String dir) {
     if (Util.pathExist(graphPath))
@@ -695,7 +701,7 @@ public class IndexConstruct {
         int idY = (int) ((entity.lat - miny) / resolution_y);
         idX = Math.min(pieces_x - 1, idX);
         idY = Math.min(pieces_y - 1, idY);
-        int gridID = idX * pieces_x + idY;
+        int gridID = idX * pieces_y + idY;
         reachgrids.add(gridID);
       }
       Util.print(String.format("reachable grids size:\t%d\t%s", reachgrids.size(), reachgrids));
