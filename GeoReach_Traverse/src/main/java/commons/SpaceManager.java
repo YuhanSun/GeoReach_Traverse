@@ -171,10 +171,10 @@ public class SpaceManager {
    * @param immutableRoaringBitmap
    * @return
    */
-  public int[] getXYBoundary(ImmutableRoaringBitmap immutableRoaringBitmap) {
+  public int[] getXYBoundary(Iterable<Integer> iterable) {
     int[] boundary =
         new int[] {Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE};
-    for (int id : immutableRoaringBitmap) {
+    for (int id : iterable) {
       int[] idXY = getXYId(id);
       boundary[0] = Math.min(idXY[0], boundary[0]);
       boundary[1] = Math.min(idXY[1], boundary[1]);
