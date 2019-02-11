@@ -18,7 +18,11 @@ public class EnumVariables {
   }
 
   public static enum UpdateStatus {
-    UpdateInside, UpdateOnBoundary, UpdateOutside, NotUpdateInside, NotUpdateOnBoundary
+    UpdateInside, // only for ReachGrid
+    UpdateOnBoundary, // only for ReachGrid
+    UpdateOutside, // update outside current boundary (for all three)
+    NotUpdateInside, // no update (for all three)
+    NotUpdateOnBoundary, // no update but boundary grid is touched (for ReachGrid)
   }
 
   public static enum GeoReachType {
