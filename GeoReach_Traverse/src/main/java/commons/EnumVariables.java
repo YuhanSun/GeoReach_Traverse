@@ -25,6 +25,16 @@ public class EnumVariables {
     NotUpdateOnBoundary, // no update but boundary grid is touched (for ReachGrid)
   }
 
+  /**
+   * The relative spatial relation.
+   *
+   * @author Yuhan Sun
+   *
+   */
+  public static enum BoundaryLocationStatus {
+    INSIDE, ONBOUNDARY, OUTSIDE,
+  }
+
   public static enum GeoReachType {
     ReachGrid, RMBR, GeoB
   }

@@ -28,7 +28,7 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.roaringbitmap.RoaringBitmap;
 import org.roaringbitmap.buffer.ImmutableRoaringBitmap;
-import commons.EnumVariables.UpdateStatus;
+import commons.EnumVariables.BoundaryLocationStatus;
 
 public class Util {
 
@@ -39,7 +39,7 @@ public class Util {
    * @param xyId
    * @return
    */
-  public static UpdateStatus locate(int[] boundary, int[] xyId) {
+  public static BoundaryLocationStatus locate(int[] boundary, int[] xyId) {
     return locate(boundary, xyId[0], xyId[1]);
   }
 
@@ -51,14 +51,14 @@ public class Util {
    * @param idY
    * @return
    */
-  public static UpdateStatus locate(int[] boundary, int idX, int idY) {
+  public static BoundaryLocationStatus locate(int[] boundary, int idX, int idY) {
     if (idX < boundary[0] || idY < boundary[1] || idX > boundary[2] || idY > boundary[3]) {
-      return UpdateStatus.UpdateOutside;
+      return BoundaryLocationStatus.OUTSIDE;
     } else {
       if (idX == boundary[0] || idY == boundary[1] || idX == boundary[2] || idY == boundary[3]) {
-        return UpdateStatus.NotUpdateOnBoundary;
+        return BoundaryLocationStatus.ONBOUNDARY;
       } else {
-        return UpdateStatus.NotUpdateInside;
+        return BoundaryLocationStatus.INSIDE;
       }
     }
   }
