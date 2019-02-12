@@ -60,7 +60,7 @@ public class IniTime {
           RoaringBitmap r = new RoaringBitmap();
           for (int gridID : reachgrid)
             r.add(gridID);
-          Util.Serialize_RoarBitmap_ToString(r);
+          Util.roarBitmapSerializeToString(r);
         }
         time = System.currentTimeMillis() - start;
       }
