@@ -498,7 +498,7 @@ public class Util {
     return immutableRoaringBitmap;
   }
 
-  public static String Serialize_RoarBitmap_ToString(RoaringBitmap r) {
+  public static String roarBitmapSerializeToString(RoaringBitmap r) {
     r.runOptimize();
     ByteBuffer outbb = ByteBuffer.allocate(r.serializedSizeInBytes());
     try {
@@ -882,7 +882,7 @@ public class Util {
                 RoaringBitmap r = new RoaringBitmap();
                 for (int gridID : reachgrid)
                   r.add(gridID);
-                String bitmap_ser = Util.Serialize_RoarBitmap_ToString(r);
+                String bitmap_ser = Util.roarBitmapSerializeToString(r);
                 writer.write(bitmap_ser + "\n");
               } else {
                 writer.write(reachgrid.toString() + "\n");
@@ -945,7 +945,7 @@ public class Util {
                 RoaringBitmap r = new RoaringBitmap();
                 for (int gridID : reachgrid)
                   r.add(gridID);
-                String bitmap_ser = Util.Serialize_RoarBitmap_ToString(r);
+                String bitmap_ser = Util.roarBitmapSerializeToString(r);
                 writer.write(bitmap_ser + "\n");
               } else {
                 writer.write(reachgrid.toString() + "\n");
