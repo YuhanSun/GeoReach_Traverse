@@ -1,5 +1,7 @@
 package commons;
 
+import commons.EnumVariables.UpdateStatus;
+
 public class MyRectangle {
   public double min_x;
   public double min_y;
@@ -83,14 +85,39 @@ public class MyRectangle {
 
   /**
    * Extend the rectangle with a new rectangle. It requires that both rectangle exist and are valid.
-   * 
+   *
    * @param rectangle
+   * @return NotUpdateInside or UpdateOutside
    */
-  public void MBR(MyRectangle rectangle) {
-    min_x = Math.min(min_x, rectangle.min_x);
-    min_y = Math.min(min_y, rectangle.min_y);
-    max_x = Math.max(max_x, rectangle.max_x);
-    max_y = Math.max(max_y, rectangle.max_y);
-
+  public UpdateStatus MBR(MyRectangle rectangle) {
+    if (rectangle == null) {
+      return UpdateStatus.NotUpdateInside;
+    }
+    UpdateStatus status = UpdateStatus.NotUpdateInside;
+    if (rectangle.min_x < min_x) {
+      min_x = rectangle.min_x;
+      if (status.equals(UpdateStatus.NotUpdateInside)) {
+        status = UpdateStatus.UpdateOutside;
+      }
+    }
+    if (rectangle.min_y < min_y) {
+      min_y = rectangle.min_y;
+      if (status.equals(UpdateStatus.NotUpdateInside)) {
+        status = UpdateStatus.UpdateOutside;
+      }
+    }
+    if (rectangle.max_x > max_x) {
+      max_x = rectangle.max_x;
+      if (status.equals(UpdateStatus.NotUpdateInside)) {
+        status = UpdateStatus.UpdateOutside;
+      }
+    }
+    if (rectangle.max_y > max_y) {
+      max_y = rectangle.max_y;
+      if (status.equals(UpdateStatus.NotUpdateInside)) {
+        status = UpdateStatus.UpdateOutside;
+      }
+    }
+    return status;
   }
 }
