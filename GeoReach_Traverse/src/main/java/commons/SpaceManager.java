@@ -13,17 +13,19 @@ public class SpaceManager {
   /**
    * The boundary of the space.
    */
-  public double minx, miny, maxx, maxy;
+  private double minx, miny, maxx, maxy;
 
   /**
    * The number of cells on each dimension.
    */
-  public int piecesX, piecesY;
+  private int piecesX, piecesY;
+
+  private double totalArea;
 
   /**
    * The width and height of each cell.
    */
-  public double resolutionX, resolutionY;
+  private double resolutionX, resolutionY;
 
   public SpaceManager(double minx, double miny, double maxx, double maxy, int piecesX,
       int piecesY) {
@@ -35,6 +37,7 @@ public class SpaceManager {
     this.piecesY = piecesY;
     resolutionX = (maxx - minx) / (double) piecesX;
     resolutionY = (maxy - miny) / (double) piecesY;
+    totalArea = (maxx - minx) * (maxy - miny);
   }
 
   public SpaceManager(MyRectangle rectangle, int piecesX, int piecesY) {
@@ -46,6 +49,7 @@ public class SpaceManager {
     this.piecesY = piecesY;
     resolutionX = (maxx - minx) / (double) piecesX;
     resolutionY = (maxy - miny) / (double) piecesY;
+    totalArea = rectangle.area();
   }
 
   public double getMaxx() {
@@ -102,6 +106,10 @@ public class SpaceManager {
 
   public void setMinx(double minx) {
     this.minx = minx;
+  }
+
+  public double getTotalArea() {
+    return totalArea;
   }
 
   /**
@@ -228,6 +236,16 @@ public class SpaceManager {
    */
   public MyRectangle getMbrOfReachGrid(ImmutableRoaringBitmap immutableRoaringBitmap) {
     int[] xyBoundary = getXYBoundary(immutableRoaringBitmap);
+    return getMbrOfBoundary(xyBoundary);
+  }
+
+  /**
+   * Get the Mbr of a given boundary.
+   *
+   * @param boundary
+   * @return
+   */
+  public MyRectangle getMbrOfBoundary(int[] xyBoundary) {
     MyRectangle leftBottom = getMbrOfCell(xyBoundary[0], xyBoundary[1]);
     MyRectangle rightTop = getMbrOfCell(xyBoundary[2], xyBoundary[3]);
     return new MyRectangle(leftBottom.min_x, leftBottom.min_y, rightTop.max_x, rightTop.max_y);
