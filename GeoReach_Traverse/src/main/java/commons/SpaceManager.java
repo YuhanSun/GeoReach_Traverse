@@ -169,18 +169,21 @@ public class SpaceManager {
    * Get the [idX_min, idY_min, idX_max, idY_max] as the 2-D boundary for the given reachgrid.
    *
    * @param immutableRoaringBitmap
-   * @return
+   * @return the boundary in [0, 3]. [4] stores the # of elements in the iterable
    */
   public int[] getXYBoundary(Iterable<Integer> iterable) {
     int[] boundary =
-        new int[] {Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE};
+        new int[] {Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE, 0};
+    int count = 0;
     for (int id : iterable) {
+      count++;
       int[] idXY = getXYId(id);
       boundary[0] = Math.min(idXY[0], boundary[0]);
       boundary[1] = Math.min(idXY[1], boundary[1]);
       boundary[2] = Math.max(idXY[0], boundary[2]);
       boundary[3] = Math.max(idXY[1], boundary[3]);
     }
+    boundary[4] = count;
     return boundary;
   }
 
