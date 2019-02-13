@@ -25,7 +25,6 @@ import java.util.TreeSet;
 import org.neo4j.graphdb.ExecutionPlanDescription;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.roaringbitmap.RoaringBitmap;
 import org.roaringbitmap.buffer.ImmutableRoaringBitmap;
 import commons.EnumVariables.BoundaryLocationStatus;
@@ -198,17 +197,6 @@ public class Util {
       // TODO: handle exception
     }
   }
-
-  public static GraphDatabaseService getDatabaseService(String dbPath) {
-    if (!Util.pathExist(dbPath)) {
-      Util.print(dbPath + "does not exist!");
-      System.exit(-1);
-    }
-    GraphDatabaseService dbservice =
-        new GraphDatabaseFactory().newEmbeddedDatabase(new File(dbPath));
-    return dbservice;
-  }
-
 
   public static long Average(ArrayList<Long> arraylist) {
     if (arraylist.size() == 0)
