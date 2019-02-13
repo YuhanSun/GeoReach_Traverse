@@ -3,12 +3,12 @@ package construction;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.roaringbitmap.RoaringBitmap;
 import org.roaringbitmap.buffer.ImmutableRoaringBitmap;
 import commons.Config;
+import commons.EnumVariables.BoundaryLocationStatus;
 import commons.EnumVariables.GeoReachType;
 import commons.EnumVariables.UpdateStatus;
 import commons.Labels;
@@ -24,16 +24,16 @@ import commons.Util;
  */
 class UpdateUnit {
   public GeoReachType type;
-  public boolean GeoB;
-  public ImmutableRoaringBitmap immutableRoaringBitmap;
+  public boolean geoB;
+  public ImmutableRoaringBitmap reachGrid;
   public MyRectangle rmbr;
 
-  public UpdateUnit(GeoReachType type, ImmutableRoaringBitmap immutableRoaringBitmap,
-      MyRectangle rmbr, boolean GeoB) {
+  public UpdateUnit(GeoReachType type, ImmutableRoaringBitmap ReachGrid, MyRectangle rmbr,
+      boolean GeoB) {
     this.type = type;
-    this.immutableRoaringBitmap = immutableRoaringBitmap;
+    this.reachGrid = ReachGrid;
     this.rmbr = rmbr;
-    this.GeoB = GeoB;
+    this.geoB = GeoB;
   }
 }
 
@@ -55,6 +55,10 @@ public class Maintenance {
   public double resolutionX, resolutionY;
   public SpaceManager spaceManager;
 
+  // MGRatio and MRRatio
+  public double MG, MR;
+
+
   public Maintenance(double minx, double miny, double maxx, double maxy, int piecesX, int piecesY,
       int MAX_HOP) {
     spaceManager = new SpaceManager(minx, miny, maxx, maxy, piecesX, piecesY);
@@ -70,7 +74,7 @@ public class Maintenance {
     for (; minHop <= MAX_HOP - 1; minHop++) {
       UpdateUnit updateUnit = updateUnits.get(minHop);
       // If the unit contains ReachGrid or RMBR or GeoB = true, continue.
-      if (!updateUnit.type.equals(GeoReachType.GeoB) || updateUnit.GeoB) {
+      if (!updateUnit.type.equals(GeoReachType.GeoB) || updateUnit.geoB) {
         break;
       }
     }
@@ -98,7 +102,7 @@ public class Maintenance {
    * @param node
    * @throws Exception
    */
-  private HashMap createUpdateUnit(Node node) throws Exception {
+  private HashMap<Integer, UpdateUnit> createUpdateUnit(Node node) throws Exception {
     HashMap<Integer, UpdateUnit> updateUnits = new HashMap<>();
     // handle the SIP(node, 0)
     if (node.hasProperty(lon_name)) {
@@ -122,17 +126,18 @@ public class Maintenance {
       boolean geoB = false;
       switch (type) {
         case ReachGrid:
-          geoB = (boolean) node.getProperty(geoBName + "_" + hop);
+          immutableRoaringBitmap = getReachGrid(node, hop);
+          rmbr = spaceManager.getMbrOfReachGrid(immutableRoaringBitmap);
+          geoB = true;
           break;
         case RMBR:
-          rmbr = new MyRectangle(node.getProperty(rmbrName + "_" + hop).toString());
+          rmbr = getRMBR(node, hop);
           immutableRoaringBitmap = spaceManager.getCoverIdOfRectangle(rmbr);
           geoB = true;
           break;
         case GeoB:
-          String ser = node.getProperty(reachGridName + "_" + hop).toString();
-          immutableRoaringBitmap = Util.getImmutableRoaringBitmap(ser);
-          rmbr = spaceManager.getMbrOfReachGrid(immutableRoaringBitmap);
+          // No need to set ReachGrid and RMBR because the update does not require.
+          geoB = getGeoB(node, hop);
         default:
           throw new Exception(String.format("type %d does not exist!", type));
       }
@@ -184,21 +189,105 @@ public class Maintenance {
    */
   public UpdateStatus update(Node src, HashMap<Integer, UpdateUnit> updateUnits, int updateHop)
       throws Exception {
+    UpdateStatus status = null;
     int srcUpdateHop = updateHop + 1;
     GeoReachType geoReachType = getGeoReachType(src, srcUpdateHop);
+    UpdateUnit updateUnit = updateUnits.get(updateHop);
     switch (geoReachType) {
       case ReachGrid:
-
+        ImmutableRoaringBitmap irb = getReachGrid(src, srcUpdateHop);
+        RoaringBitmap rb = new RoaringBitmap(irb);
+        int[] xyBoundary = spaceManager.getXYBoundary(rb);
+        status = updateReachGridWithReachGrid(rb, updateUnit.reachGrid, xyBoundary);
+        // If any new cell is added, check the MG.
+        if (!status.equals(UpdateStatus.NotUpdateInside)
+            && !status.equals(UpdateStatus.NotUpdateOnBoundary)) {
+          if (!validateMG(rb, xyBoundary)) {
+            // keep the GeoReach Type but modify ReachGrid value in db
+            setReachGrid(src, srcUpdateHop, rb);
+          } else {
+            // validate MR
+            removeGeoReach(src, GeoReachType.ReachGrid, srcUpdateHop);
+            MyRectangle newRMBR = spaceManager.getMbrOfBoundary(xyBoundary);
+            // remove ReachGrid, change GeoReachType_hop to GeoB, and set GeoB_hop to true
+            if (validateMR(newRMBR)) {
+              setGeoReachType(src, srcUpdateHop, GeoReachType.GeoB);
+              src.setProperty(getGeoReachKey(GeoReachType.GeoB, srcUpdateHop), true);
+            } else {
+              setGeoReachType(src, srcUpdateHop, GeoReachType.RMBR);
+              src.setProperty(getGeoReachKey(GeoReachType.RMBR, srcUpdateHop), newRMBR.toString());
+            }
+          }
+        }
         break;
-
+      case RMBR:
+        MyRectangle srcRect = getRMBR(src, srcUpdateHop);
+        status = srcRect.MBR(updateUnit.rmbr);
+        if (status.equals(UpdateStatus.UpdateOutside)) {
+          if (validateMR(srcRect)) {
+            removeGeoReach(src, GeoReachType.RMBR, srcUpdateHop);
+            setGeoReachType(src, srcUpdateHop, GeoReachType.GeoB);
+            src.setProperty(getGeoReachKey(GeoReachType.GeoB, srcUpdateHop), true);
+          } else {
+            src.setProperty(getGeoReachKey(GeoReachType.RMBR, srcUpdateHop), srcRect.toString());
+          }
+        }
+      case GeoB:
+        boolean srcGeoB = getGeoB(src, srcUpdateHop);
+        // srcGeoB is true, no update is needed.
+        if (srcGeoB) {
+          status = UpdateStatus.NotUpdateInside;
+        } else {
+          // updateUnit geoB is false, no update is needed.
+          if (!updateUnit.geoB) {
+            status = UpdateStatus.NotUpdateInside;
+          } else {
+            status = UpdateStatus.UpdateOutside;
+            src.setProperty(getGeoReachKey(GeoReachType.GeoB, srcUpdateHop), true);
+          }
+        }
       default:
-        break;
+        throw new Exception(String.format("Type %s does not exist!", geoReachType.toString()));
     }
-    return UpdateStatus.NotUpdateInside;
+    return status;
   }
 
-  public UpdateStatus updateReachGridWithReachGrid() {
+  private UpdateStatus updateReachGridWithReachGrid(RoaringBitmap rb, ImmutableRoaringBitmap irb,
+      int[] boundary) throws Exception {
+    if (irb == null) {
+      return UpdateStatus.NotUpdateInside;
+    }
+    BoundaryLocationStatus status = BoundaryLocationStatus.INSIDE;
+    boolean hasDiff = false;
+    for (int id : irb) {
+      int[] xyId = spaceManager.getXYId(id);
+      // Check whether cell is contained
+      if (!rb.contains(id) && !hasDiff) {
+        rb.add(id);
+        hasDiff = true;
+      }
+      // update spatial relation status
+      BoundaryLocationStatus boundaryStatus = Util.locate(boundary, xyId);
+      status = updateBoundaryLocationStatus(status, boundaryStatus);
+    }
+    return getUpdateStatus(status, hasDiff);
+  }
 
+  /**
+   * Decide whether <code>rb</code> needs to be replaced by rmbr
+   *
+   * @param rb
+   * @param boundary
+   * @return <code>true</code> means needs to be replaced by rmbr
+   */
+  public boolean validateMG(RoaringBitmap rb, int[] boundary) {
+    // # of cells in rb > # of cells in the coverage MBR * MG
+    return (boundary[4] > (boundary[2] - boundary[0] + 1) * (boundary[3] - boundary[1] + 1) * MG);
+  }
+
+  public boolean validateMR(MyRectangle rectangle) {
+    // area of rectangle > totalArea * MR
+    return rectangle.area() > spaceManager.getTotalArea() * MR;
   }
 
   /**
@@ -209,7 +298,7 @@ public class Maintenance {
    * @return
    * @throws Exception
    */
-  public GeoReachType getGeoReachType(Node node, int hop) throws Exception {
+  private GeoReachType getGeoReachType(Node node, int hop) throws Exception {
     String typePropertyName = GeoReachTypeName + "_" + hop;
     if (!node.hasProperty(typePropertyName)) {
       throw new Exception(String.format("Type property %s is not found!", typePropertyName));
@@ -227,183 +316,122 @@ public class Maintenance {
     }
   }
 
+  public void setGeoReachType(Node node, int hop, GeoReachType type) throws Exception {
+    int setType = 0;
+    switch (type) {
+      case ReachGrid:
+        setType = 0;
+        break;
+      case RMBR:
+        setType = 1;
+        break;
+      case GeoB:
+        setType = 2;
+        break;
+      default:
+        throw new Exception(String.format("Type %s does not exist!", type.toString()));
+    }
+    node.setProperty(GeoReachTypeName + "_" + hop, setType);
+  }
+
+  public void removeGeoReach(Node node, GeoReachType geoReachType, int hop) throws Exception {
+    node.removeProperty(getGeoReachKey(geoReachType, hop));
+  }
+
   /**
-   * Update specific hop GeoReach of both nodes. Has to make sure that (hop-1) GeoReach is correct.
-   * Update src using trg.
+   * Get the GeoReach property name.
    *
-   * @param dbservice
-   * @param src
-   * @param trg
+   * @param geoReachType
+   * @param hop
+   * @return
+   * @throws Exception
+   */
+  public String getGeoReachKey(GeoReachType geoReachType, int hop) throws Exception {
+    switch (geoReachType) {
+      case ReachGrid:
+        return String.format("%s_%d", reachGridName, hop);
+      case RMBR:
+        return String.format("%s_%d", rmbrName, hop);
+      case GeoB:
+        return String.format("%s_%d", geoBName, hop);
+      default:
+        throw new Exception(String.format("GeoReachType %s does not exist!", geoReachType));
+    }
+  }
+
+  /**
+   * Assume that Type of hop is ReachGrid and the property exists.
+   *
+   * @param node
    * @param hop
    * @return
    */
-  public UpdateStatus update(GraphDatabaseService dbservice, Node src, Node trg, int hop) {
-    double resolution_x = (maxx - minx) / pieces_x;
-    double resolution_y = (maxy - miny) / pieces_y;
-    if (hop == 1) {
-      if (trg.hasProperty(lon_name)) {
-        double lon = (double) trg.getProperty(lon_name);
-        double lat = (double) trg.getProperty(lat_name);
-        String typePropertyName = GeoReachTypeName + "_1";
-        int type = (int) src.getProperty(typePropertyName);
-        String propertyName;
-        switch (type) {
-          case 0:
-            int idX = (int) ((lon - minx) / resolution_x);
-            int idY = (int) ((lat - miny) / resolution_y);
-            idX = Math.min(pieces_x - 1, idX);
-            idY = Math.min(pieces_y - 1, idY);
-            int gridID = idX * pieces_y + idY;
-
-            propertyName = reachGridName + "_1";
-            String reachGridRbStr = (String) src.getProperty(propertyName);
-            ImmutableRoaringBitmap reachGridIrb = Util.getImmutableRoaringBitmap(reachGridRbStr);
-            int[] boundary = spaceManager.getXYBoundary(reachGridIrb);
-            if (idX < boundary[0] || idY < boundary[1] || idX > boundary[2] || idY > boundary[3]) {
-              RoaringBitmap reachGridRb = new RoaringBitmap(reachGridIrb);
-              reachGridRb.add(gridID);
-              src.setProperty(propertyName, reachGridRb);
-              return UpdateStatus.UpdateOutside;
-            }
-            // Not update
-            if (reachGridIrb.contains(gridID)) {
-              if (idX == boundary[0] || idY == boundary[1] || idX == boundary[2]
-                  || idY == boundary[3]) {
-                return UpdateStatus.NotUpdateOnBoundary;
-              } else {
-                return UpdateStatus.NotUpdateInside;
-              }
-            } else {
-              RoaringBitmap reachGridRb = new RoaringBitmap(reachGridIrb);
-              reachGridRb.add(gridID);
-              src.setProperty(propertyName, reachGridRb);
-              if (idX == boundary[0] || idY == boundary[1] || idX == boundary[2]
-                  || idY == boundary[3]) {
-                return UpdateStatus.UpdateOnBoundary;
-              } else {
-                return UpdateStatus.UpdateInside;
-              }
-            }
-          case 1:
-            propertyName = rmbrName + "_1";
-            MyRectangle rmbr = new MyRectangle(src.getProperty(propertyName).toString());
-            if (Util.Location_In_Rect(lon, lat, rmbr)) {
-              return UpdateStatus.NotUpdateInside;
-            } else {
-              rmbr.MBR(new MyRectangle(lon, lat, lon, lat));
-              src.setProperty(propertyName, rmbr.toString());
-              return UpdateStatus.UpdateOutside;
-            }
-          case 2:
-            propertyName = geoBName + "_1";
-            boolean geoB = (boolean) src.getProperty(propertyName);
-            if (geoB) {
-              return UpdateStatus.NotUpdateInside;
-            } else {
-              src.setProperty(typePropertyName, 1);
-              src.setProperty(rmbrName + "_1", new MyRectangle(lon, lat, lon, lat));
-              return UpdateStatus.UpdateOutside;
-            }
-        }
-      } else {
-        return UpdateStatus.NotUpdateInside;
-      }
-    }
-
-    else {
-
-    }
-
-    return UpdateStatus.NotUpdateInside;
+  public ImmutableRoaringBitmap getReachGrid(Node node, int hop) {
+    String rbString = (String) node.getProperty(reachGridName + "_" + hop);
+    return Util.getImmutableRoaringBitmap(rbString);
   }
 
-  // static UpdateStatus updateReachGrid(ImmutableRoaringBitmap immutableRoaringBitmap,
-  // RoaringBitmap roaringBitmap, Node trg, int hop, int piecesX, int piecesY) {
-  //
-  // }
+  public void setReachGrid(Node node, int hop, RoaringBitmap rb) throws Exception {
+    String string = Util.roarBitmapSerializeToString(rb);
+    node.setProperty(getGeoReachKey(GeoReachType.ReachGrid, hop), string);
+  }
+
+  public MyRectangle getRMBR(Node node, int hop) {
+    return new MyRectangle(node.getProperty(rmbrName + "_" + hop).toString());
+  }
+
+  private boolean getGeoB(Node node, int hop) {
+    return (boolean) node.getProperty(geoBName + "_" + hop);
+  }
 
   /**
-   * Update ReachGrid with another ReachGrid.
+   * Get the final status of a ReachGrid update.
    *
-   * @param immutableRoaringBitmap
-   * @param roaringBitmap
-   * @param reachGrid
-   * @param piecesX
-   * @param piecesY
+   * @param status
+   * @param hasDiff
    * @return
+   * @throws Exception
    */
-  public UpdateStatus updateReachGridWithReachGrid(ImmutableRoaringBitmap immutableRoaringBitmap,
-      RoaringBitmap roaringBitmap, ImmutableRoaringBitmap reachGrid, int piecesX, int piecesY) {
-    UpdateStatus status = UpdateStatus.NotUpdateInside;
-    int[] boundary = spaceManager.getXYBoundary(reachGrid);
-    roaringBitmap = immutableRoaringBitmap.toRoaringBitmap();
-    for (int id : reachGrid) {
-      int[] xyId = spaceManager.getXYId(id);
-      UpdateStatus boundaryStatus = Util.locate(boundary, xyId);
-      if (immutableRoaringBitmap.contains(id)) {
-        if (boundaryStatus == UpdateStatus.NotUpdateOnBoundary
-            && status == UpdateStatus.NotUpdateInside) {
-          status = UpdateStatus.NotUpdateOnBoundary;
+  private static UpdateStatus getUpdateStatus(BoundaryLocationStatus status, boolean hasDiff)
+      throws Exception {
+    switch (status) {
+      case OUTSIDE:
+        return UpdateStatus.UpdateOutside;
+      case ONBOUNDARY:
+        if (hasDiff) {
+          return UpdateStatus.UpdateOnBoundary;
+        } else {
+          return UpdateStatus.NotUpdateOnBoundary;
         }
-      } else {
-        roaringBitmap.add(id);
-        if (status == UpdateStatus.NotUpdateInside) {
-          switch (boundaryStatus) {
-            case NotUpdateInside:
-              status = UpdateStatus.UpdateInside;
-            case NotUpdateOnBoundary:
-              status = UpdateStatus.UpdateOnBoundary;
-            case UpdateOutside:
-              status = UpdateStatus.UpdateOutside;
-          }
+      case INSIDE:
+        if (hasDiff) {
+          return UpdateStatus.UpdateInside;
+        } else {
+          return UpdateStatus.NotUpdateInside;
         }
-      }
+      default:
+        throw new Exception(String.format("Status %s not defined!", status));
     }
-    return status;
   }
 
-  public UpdateStatus updateReachGridWithRMBR(ImmutableRoaringBitmap immutableRoaringBitmap,
-      RoaringBitmap roaringBitmap, MyRectangle rmbr, double minx, double miny, double maxx,
-      double maxy, double resolutionX, double resolutionY, int piecesX, int piecesY) {
-    UpdateStatus status = UpdateStatus.NotUpdateInside;
-    int[] boundary = spaceManager.getXYBoundary(immutableRoaringBitmap);
-    roaringBitmap = immutableRoaringBitmap.toRoaringBitmap();
-
-    int[] boundaryRMBR = spaceManager.getXYBoundary(rmbr);
-    // Definitely UpdateOutside
-    if (boundaryRMBR[0] < boundary[0] || boundaryRMBR[1] < boundary[1]
-        || boundaryRMBR[2] > boundary[2] || boundaryRMBR[3] > boundary[3]) {
-      status = UpdateStatus.UpdateOutside;
-      for (int i = boundaryRMBR[0]; i <= boundaryRMBR[2]; i++) {
-        for (int j = boundaryRMBR[1]; j <= boundaryRMBR[3]; j++) {
-          int id = i * piecesX + j;
-          roaringBitmap.add(id);
+  private static BoundaryLocationStatus updateBoundaryLocationStatus(BoundaryLocationStatus status,
+      BoundaryLocationStatus cur) throws Exception {
+    switch (cur) {
+      case ONBOUNDARY:
+        if (status.equals(BoundaryLocationStatus.INSIDE)) {
+          status = cur;
         }
-      }
-    } else {
-      // boundary overlap
-      if (boundaryRMBR[0] == boundary[0] || boundaryRMBR[1] == boundary[1]
-          || boundaryRMBR[2] == boundary[2] || boundaryRMBR[3] == boundary[3]) {
-        status = UpdateStatus.NotUpdateOnBoundary;
-        for (int i = boundaryRMBR[0]; i <= boundaryRMBR[2]; i++) {
-          for (int j = boundaryRMBR[1]; j <= boundaryRMBR[3]; j++) {
-            int id = i * piecesX + j;
-            if (!immutableRoaringBitmap.contains(id))
-              roaringBitmap.add(id);
-            status = UpdateStatus.UpdateOnBoundary;
-          }
+        break;
+      case OUTSIDE:
+        if (status.equals(BoundaryLocationStatus.INSIDE)
+            || status.equals(BoundaryLocationStatus.ONBOUNDARY)) {
+          status = cur;
         }
-      } else { // rmbr inside boundary of reachgrid
-        for (int i = boundaryRMBR[0]; i <= boundaryRMBR[2]; i++) {
-          for (int j = boundaryRMBR[1]; j <= boundaryRMBR[3]; j++) {
-            int id = i * piecesX + j;
-            if (!immutableRoaringBitmap.contains(id)) {
-              roaringBitmap.add(id);
-              status = UpdateStatus.UpdateInside;
-            }
-          }
-        }
-      }
+        break;
+      case INSIDE:
+        break;
+      default:
+        throw new Exception(String.format("BoundaryLocationStatus %s does not exist!", cur));
     }
     return status;
   }
