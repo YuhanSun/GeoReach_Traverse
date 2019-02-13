@@ -3,6 +3,7 @@ package dataprocess;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import org.neo4j.gis.spatial.EditableLayer;
@@ -33,7 +34,10 @@ import construction.Loader;
 public class LoadData {
   static Config config = new Config();
   // static system systemName;
-  static String version, dataset, lon_name, lat_name;
+  static String version, dataset;
+
+  static String lon_name = config.GetLongitudePropertyName(),
+      lat_name = config.GetLatitudePropertyName();
   static int nonspatial_label_count;
 
   static String dbPath, entityPath, mapPath, graphPath, labelListPath;
@@ -262,6 +266,38 @@ public class LoadData {
   }
 
   /**
+   * Used in test.
+   *
+   * @param mapPath
+   * @param dbPath
+   * @param graph
+   * @throws Exception
+   */
+  public void LoadGraphEdges(String mapPath, String dbPath, ArrayList<ArrayList<Integer>> graph)
+      throws Exception {
+    Util.print("Load graph edges\n");
+    BatchInserter inserter = null;
+    Map<String, String> id_map = Util.ReadMap(mapPath);
+    Map<String, String> config = new HashMap<String, String>();
+    config.put("dbms.pagecache.memory", "80g");
+    Util.print("batch insert into: " + dbPath);
+    inserter = BatchInserters.inserter(new File(dbPath).getAbsoluteFile(), config);
+
+    for (int i = 0; i < graph.size(); i++) {
+      ArrayList<Integer> neighbors = graph.get(i);
+      int start_neo4j_id = Integer.parseInt(id_map.get(String.valueOf(i)));
+      for (int j = 0; j < neighbors.size(); j++) {
+        int neighbor = neighbors.get(j);
+        if (i < neighbor) {
+          int end_neo4j_id = Integer.parseInt(id_map.get(String.valueOf(neighbor)));
+          inserter.createRelationship(start_neo4j_id, end_neo4j_id, GraphRel.GRAPH_LINK, null);
+        }
+      }
+    }
+    inserter.shutdown();
+  }
+
+  /**
    * Attach spatial node map to file node_map.txt
    */
   public static void GetSpatialNodeMap() {
@@ -297,7 +333,7 @@ public class LoadData {
   /**
    * Load non-spatial graph vertices and write the map to file node_map.txt
    */
-  static void LoadNonSpatialEntity() {
+  public static void LoadNonSpatialEntity() {
     try {
       Util.print(String.format("LoadNonSpatialEntity\n from %s\n%s\n to %s", entityPath,
           labelListPath, dbPath));
@@ -307,6 +343,85 @@ public class LoadData {
       Util.print("Read label list from: " + labelListPath);
       ArrayList<Integer> labelList = Util.readIntegerArray(labelListPath);
 
+      Map<Object, Object> id_map = new TreeMap<Object, Object>();
+
+      Map<String, String> config = new HashMap<String, String>();
+      config.put("dbms.pagecache.memory", "80g");
+
+      Util.print("Batch insert into: " + dbPath);
+      BatchInserter inserter = BatchInserters.inserter(new File(dbPath).getAbsoluteFile(), config);
+
+      for (int i = 0; i < entities.size(); i++) {
+        Entity entity = entities.get(i);
+        if (entity.IsSpatial == false) {
+          Map<String, Object> properties = new HashMap<String, Object>();
+          properties.put("id", entity.id);
+          int labelID = labelList.get(i);
+          Label label = DynamicLabel.label(String.format("GRAPH_%d", labelID));
+          Long pos_id = inserter.createNode(properties, label);
+          id_map.put(entity.id, pos_id);
+        }
+      }
+      inserter.shutdown();
+      Util.print("Write non-spatial node map to " + mapPath + "\n");
+      Util.WriteMap(mapPath, false, id_map);
+    } catch (java.lang.Exception e) {
+      e.printStackTrace();
+      System.exit(-1);
+    }
+  }
+
+  /**
+   * Load all entities and generate the id map.
+   *
+   * @param entities
+   * @param labelList
+   * @param dbPath
+   * @param mapPath
+   * @throws Exception
+   */
+  public void loadAllEntityAndCreateIdMap(List<Entity> entities, List<Integer> labelList,
+      String dbPath, String mapPath) throws Exception {
+    Util.print("Batch insert into: " + dbPath);
+    Map<Object, Object> id_map = new TreeMap<Object, Object>();
+    Map<String, String> config = new HashMap<String, String>();
+    config.put("dbms.pagecache.memory", "80g");
+    BatchInserter inserter = BatchInserters.inserter(new File(dbPath).getAbsoluteFile(), config);
+    for (int i = 0; i < entities.size(); i++) {
+      Entity entity = entities.get(i);
+      Map<String, Object> properties = new HashMap<String, Object>();
+      properties.put("id", entity.id);
+      int labelID = labelList.get(i);
+      Label label = DynamicLabel.label(String.format("GRAPH_%d", labelID));
+      if (entity.IsSpatial) {
+        if (labelID != 1) {
+          throw new Exception(String.format("entity %d is spatial but label in labellist is %d!",
+              entity.id, labelID));
+        }
+        properties.put(lon_name, entity.lon);
+        properties.put(lat_name, entity.lat);
+      }
+      Long pos_id = inserter.createNode(properties, label);
+      id_map.put(entity.id, pos_id);
+
+    }
+    inserter.shutdown();
+    Util.print("Write all node map to " + mapPath + "\n");
+    Util.print("map is " + id_map);
+    Util.WriteMap(mapPath, false, id_map);
+  }
+
+  /**
+   * Load non-spatial graph vertices and write the map to mapPath (node_map.txt by default).
+   *
+   * @param entityPath
+   * @param labelListPath
+   * @param dbPath
+   * @param mapPath
+   */
+  public static void LoadNonSpatialEntity(List<Entity> entities, List<Integer> labelList,
+      String dbPath, String mapPath) {
+    try {
       Map<Object, Object> id_map = new TreeMap<Object, Object>();
 
       Map<String, String> config = new HashMap<String, String>();
