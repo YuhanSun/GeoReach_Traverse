@@ -229,4 +229,11 @@ public class SpaTraversal {
         queryRectangle));
     return true;
   }
+
+  /**
+   * Always call this to shutdown the dbservice.
+   */
+  public void shutdown() {
+    dbservice.shutdown();
+  }
 }
