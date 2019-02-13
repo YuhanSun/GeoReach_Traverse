@@ -26,7 +26,7 @@ public class UtilTest {
   public void getNodesByIDsTest() {
     String dbPath =
         "/home/yuhansun/Documents/GeoReachHop/Gowalla_10/neo4j-community-3.1.1_128_128_100_100_0_3/data/databases/graph.db";
-    GraphDatabaseService databaseService = Util.getDatabaseService(dbPath);
+    GraphDatabaseService databaseService = Neo4jGraphUtility.getDatabaseService(dbPath);
     Transaction tx = databaseService.beginTx();
     ArrayList<Long> ids = new ArrayList<>();
     ids.add((long) 1299706);

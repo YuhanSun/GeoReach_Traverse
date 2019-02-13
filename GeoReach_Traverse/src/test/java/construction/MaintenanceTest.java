@@ -16,6 +16,7 @@ import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
 import commons.Entity;
+import commons.Neo4jGraphUtility;
 import commons.Util;
 import dataprocess.LoadData;
 
@@ -85,7 +86,7 @@ public class MaintenanceTest {
 
   @Test
   public void loadDbTest() {
-    GraphDatabaseService service = Util.getDatabaseService(dbPath);
+    GraphDatabaseService service = Neo4jGraphUtility.getDatabaseService(dbPath);
     Transaction tx = service.beginTx();
     ResourceIterable<Node> nodes = service.getAllNodes();
     for (Node node : nodes) {
