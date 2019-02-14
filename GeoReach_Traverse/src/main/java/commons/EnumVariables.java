@@ -38,4 +38,8 @@ public class EnumVariables {
   public static enum GeoReachType {
     ReachGrid, RMBR, GeoB
   }
+
+  public static enum GeoReachOutputFormat {
+    BITMAP, LIST,
+  }
 }
