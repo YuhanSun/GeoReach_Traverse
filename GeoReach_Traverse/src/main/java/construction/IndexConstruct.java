@@ -87,14 +87,16 @@ public class IndexConstruct {
     outputPath = String.format("%s%d_%d_%d_%d_%d_%d_%s.txt", dir, pieces_x, pieces_y,
         (int) (MG * 100), (int) (MR * 100), MC, MAX_HOP, suffix);
     Util.print("output to " + outputPath);
-    GeoReachIndexUtil.outputGeoReachForList(index, outputPath, typesList, GeoReachOutputFormat.BITMAP);
+    GeoReachIndexUtil.outputGeoReachForList(index, outputPath, typesList,
+        GeoReachOutputFormat.BITMAP);
 
     format = 0;
     suffix = "list";
     outputPath = String.format("%s%d_%d_%d_%d_%d_%d_%s.txt", dir, pieces_x, pieces_y,
         (int) (MG * 100), (int) (MR * 100), MC, MAX_HOP, suffix);
     Util.print("output to " + outputPath);
-    GeoReachIndexUtil.outputGeoReachForList(index, outputPath, typesList, GeoReachOutputFormat.LIST);
+    GeoReachIndexUtil.outputGeoReachForList(index, outputPath, typesList,
+        GeoReachOutputFormat.LIST);
   }
 
   /**
@@ -178,14 +180,16 @@ public class IndexConstruct {
     String outputPath = String.format("%s%d_%d_%d_%d_%d_%d_%s.txt", dir, pieces_x, pieces_y,
         (int) (MG * 100), (int) (MR * 100), MC, MAX_HOP, suffix);
     Util.print("output to " + outputPath);
-    GeoReachIndexUtil.outputGeoReachForList(index, outputPath, typesList, GeoReachOutputFormat.LIST);
+    GeoReachIndexUtil.outputGeoReachForList(index, outputPath, typesList,
+        GeoReachOutputFormat.LIST);
 
     format = 1;
     suffix = "bitmap";
     outputPath = String.format("%s%d_%d_%d_%d_%d_%d_%s.txt", dir, pieces_x, pieces_y,
         (int) (MG * 100), (int) (MR * 100), MC, MAX_HOP, suffix);
     Util.print("output to " + outputPath);
-    GeoReachIndexUtil.outputGeoReachForList(index, outputPath, typesList, GeoReachOutputFormat.BITMAP);
+    GeoReachIndexUtil.outputGeoReachForList(index, outputPath, typesList,
+        GeoReachOutputFormat.BITMAP);
   }
 
   int pieces_x = 128, pieces_y = 128, MC = 0;
@@ -603,8 +607,9 @@ public class IndexConstruct {
     return typesList;
   }
 
-  public static ArrayList<ArrayList<Integer>> generateTypeListForList(SpaceManager spaceManager,
-      ArrayList<VertexGeoReachList> index, int MAX_HOP, double MG, double MR, int MC) {
+  public static ArrayList<ArrayList<Integer>> generateTypeListForList(
+      ArrayList<VertexGeoReachList> index, int MAX_HOP, SpaceManager spaceManager, double MG,
+      double MR, int MC) {
     return generateTypeListForList(index, MAX_HOP, spaceManager.getMinx(), spaceManager.getMiny(),
         spaceManager.getMaxx(), spaceManager.getMaxy(), spaceManager.getPiecesX(),
         spaceManager.getPiecesY(), MG, MR, MC);
