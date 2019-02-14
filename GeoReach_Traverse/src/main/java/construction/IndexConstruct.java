@@ -5,9 +5,11 @@ import java.util.HashSet;
 import java.util.TreeSet;
 import commons.Config;
 import commons.Entity;
+import commons.EnumVariables.GeoReachOutputFormat;
 import commons.EnumVariables.system;
 import commons.GeoReachIndexUtil;
 import commons.MyRectangle;
+import commons.SpaceManager;
 import commons.Util;
 import commons.VertexGeoReach;
 import commons.VertexGeoReachList;
@@ -24,7 +26,7 @@ public class IndexConstruct {
   public Config config;
   public String dataset, version;
   public system systemName;
-  public int MAX_HOPNUM;
+  public int MAX_HOP;
   public double minx, miny, maxx, maxy;
 
   public ArrayList<ArrayList<Integer>> graph;
@@ -51,7 +53,7 @@ public class IndexConstruct {
 
     String suffix = "whole";
     String outputPath =
-        String.format("%s%d_%d_%d_%s.txt", dir, pieces_x, pieces_y, MAX_HOPNUM, suffix);
+        String.format("%s%d_%d_%d_%s.txt", dir, pieces_x, pieces_y, MAX_HOP, suffix);
     if (Util.pathExist(dir))
       Util.print(dir);
     else {
@@ -70,29 +72,29 @@ public class IndexConstruct {
     Util.print("graph size: " + graph.size());
 
     ArrayList<VertexGeoReachList> index =
-        ConstructIndexList(graph, entities, minx, miny, maxx, maxy, pieces_x, pieces_y, MAX_HOPNUM);
+        ConstructIndexList(graph, entities, minx, miny, maxx, maxy, pieces_x, pieces_y, MAX_HOP);
 
     // ouput whole index
     Util.print("output index to " + outputPath);
     GeoReachIndexUtil.outputGeoReachList(index, outputPath);
 
     // output single index for load
-    ArrayList<ArrayList<Integer>> typesList = generateTypeListForList(index, MAX_HOPNUM, minx, miny,
+    ArrayList<ArrayList<Integer>> typesList = generateTypeListForList(index, MAX_HOP, minx, miny,
         maxx, maxy, pieces_x, pieces_y, MG, MR, MC);
 
     int format = 1;
     suffix = "bitmap";
     outputPath = String.format("%s%d_%d_%d_%d_%d_%d_%s.txt", dir, pieces_x, pieces_y,
-        (int) (MG * 100), (int) (MR * 100), MC, MAX_HOPNUM, suffix);
+        (int) (MG * 100), (int) (MR * 100), MC, MAX_HOP, suffix);
     Util.print("output to " + outputPath);
-    GeoReachIndexUtil.outputGeoReachForList(index, outputPath, typesList, format);
+    GeoReachIndexUtil.outputGeoReachForList(index, outputPath, typesList, GeoReachOutputFormat.BITMAP);
 
     format = 0;
     suffix = "list";
     outputPath = String.format("%s%d_%d_%d_%d_%d_%d_%s.txt", dir, pieces_x, pieces_y,
-        (int) (MG * 100), (int) (MR * 100), MC, MAX_HOPNUM, suffix);
+        (int) (MG * 100), (int) (MR * 100), MC, MAX_HOP, suffix);
     Util.print("output to " + outputPath);
-    GeoReachIndexUtil.outputGeoReachForList(index, outputPath, typesList, format);
+    GeoReachIndexUtil.outputGeoReachForList(index, outputPath, typesList, GeoReachOutputFormat.LIST);
   }
 
   /**
@@ -111,11 +113,11 @@ public class IndexConstruct {
     Util.print("graph size: " + graph.size());
 
     ArrayList<VertexGeoReach> index =
-        ConstructIndex(graph, entities, minx, miny, maxx, maxy, pieces_x, pieces_y, MAX_HOPNUM);
+        ConstructIndex(graph, entities, minx, miny, maxx, maxy, pieces_x, pieces_y, MAX_HOP);
 
     String suffix = "whole";
     String outputPath = String.format("D:\\Ubuntu_shared\\GeoReachHop\\data\\%s\\%d_%d_%d_%s.txt",
-        dataset, pieces_x, pieces_y, MAX_HOPNUM, suffix);
+        dataset, pieces_x, pieces_y, MAX_HOP, suffix);
     Util.print("output index to " + outputPath);
     GeoReachIndexUtil.outputGeoReach(index, outputPath); // output all three types.
 
@@ -168,22 +170,22 @@ public class IndexConstruct {
     ArrayList<VertexGeoReachList> index = GeoReachIndexUtil.readGeoReachWhole(indexPath);
 
     Util.print("generate type list");
-    ArrayList<ArrayList<Integer>> typesList = generateTypeListForList(index, MAX_HOPNUM, minx, miny,
+    ArrayList<ArrayList<Integer>> typesList = generateTypeListForList(index, MAX_HOP, minx, miny,
         maxx, maxy, pieces_x, pieces_y, MG, MR, MC);
 
     int format = 0;
     String suffix = "list";
     String outputPath = String.format("%s%d_%d_%d_%d_%d_%d_%s.txt", dir, pieces_x, pieces_y,
-        (int) (MG * 100), (int) (MR * 100), MC, MAX_HOPNUM, suffix);
+        (int) (MG * 100), (int) (MR * 100), MC, MAX_HOP, suffix);
     Util.print("output to " + outputPath);
-    GeoReachIndexUtil.outputGeoReachForList(index, outputPath, typesList, format);
+    GeoReachIndexUtil.outputGeoReachForList(index, outputPath, typesList, GeoReachOutputFormat.LIST);
 
     format = 1;
     suffix = "bitmap";
     outputPath = String.format("%s%d_%d_%d_%d_%d_%d_%s.txt", dir, pieces_x, pieces_y,
-        (int) (MG * 100), (int) (MR * 100), MC, MAX_HOPNUM, suffix);
+        (int) (MG * 100), (int) (MR * 100), MC, MAX_HOP, suffix);
     Util.print("output to " + outputPath);
-    GeoReachIndexUtil.outputGeoReachForList(index, outputPath, typesList, format);
+    GeoReachIndexUtil.outputGeoReachForList(index, outputPath, typesList, GeoReachOutputFormat.BITMAP);
   }
 
   int pieces_x = 128, pieces_y = 128, MC = 0;
@@ -206,7 +208,7 @@ public class IndexConstruct {
     indexConstruct.maxy = 90;
 
     String dir = args[2];
-    indexConstruct.MAX_HOPNUM = Integer.parseInt(args[3]);
+    indexConstruct.MAX_HOP = Integer.parseInt(args[3]);
     indexConstruct.constructList(dir);
 
     // String dir = args[0];
@@ -245,7 +247,7 @@ public class IndexConstruct {
     systemName = config.getSystemName();
     version = config.GetNeo4jVersion();
     dataset = config.getDatasetName();
-    MAX_HOPNUM = config.getMaxHopNum();
+    MAX_HOP = config.getMaxHopNum();
     switch (systemName) {
       case Ubuntu:
         dbPath = String.format(
@@ -275,6 +277,13 @@ public class IndexConstruct {
       maxx = 1000;
       maxy = 1000;
     }
+  }
+
+  public static ArrayList<VertexGeoReach> ConstructIndex(ArrayList<ArrayList<Integer>> graph,
+      ArrayList<Entity> entities, SpaceManager spaceManager, int MAX_HOP) {
+    return ConstructIndex(graph, entities, spaceManager.getMinx(), spaceManager.getMiny(),
+        spaceManager.getMaxx(), spaceManager.getMaxy(), spaceManager.getPiecesX(),
+        spaceManager.getPiecesY(), MAX_HOP);
   }
 
   /**
@@ -382,6 +391,14 @@ public class IndexConstruct {
     }
 
     return index;
+  }
+
+  public static ArrayList<VertexGeoReachList> ConstructIndexList(
+      ArrayList<ArrayList<Integer>> graph, ArrayList<Entity> entities, SpaceManager spaceManager,
+      int MAX_HOP) {
+    return ConstructIndexList(graph, entities, spaceManager.getMinx(), spaceManager.getMiny(),
+        spaceManager.getMaxx(), spaceManager.getMaxy(), spaceManager.getPiecesX(),
+        spaceManager.getPiecesY(), MAX_HOP);
   }
 
   /**
@@ -500,6 +517,13 @@ public class IndexConstruct {
     return index;
   }
 
+  public static ArrayList<ArrayList<Integer>> generateTypeList(ArrayList<VertexGeoReach> index,
+      int MAX_HOP, SpaceManager spaceManager, double MG, double MR, int MC) {
+    return generateTypeList(index, MAX_HOP, spaceManager.getMinx(), spaceManager.getMiny(),
+        spaceManager.getMaxx(), spaceManager.getMaxy(), spaceManager.getPiecesX(),
+        spaceManager.getPiecesY(), MG, MR, MC);
+  }
+
   /**
    * Generate index type for each vertex
    * 
@@ -577,6 +601,13 @@ public class IndexConstruct {
       Util.print(Util.histogram(types));
 
     return typesList;
+  }
+
+  public static ArrayList<ArrayList<Integer>> generateTypeListForList(SpaceManager spaceManager,
+      ArrayList<VertexGeoReachList> index, int MAX_HOP, double MG, double MR, int MC) {
+    return generateTypeListForList(index, MAX_HOP, spaceManager.getMinx(), spaceManager.getMiny(),
+        spaceManager.getMaxx(), spaceManager.getMaxy(), spaceManager.getPiecesX(),
+        spaceManager.getPiecesY(), MG, MR, MC);
   }
 
   /**
