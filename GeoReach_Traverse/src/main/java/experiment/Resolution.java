@@ -14,6 +14,7 @@ import commons.MyRectangle;
 import commons.Util;
 import commons.VertexGeoReach;
 import commons.EnumVariables.*;
+import commons.GeoReachIndexUtil;
 import construction.IndexConstruct;
 import construction.Loader;
 import query.SpaTraversal;
@@ -80,7 +81,7 @@ public class Resolution {
 			String indexPath = String.format("%s\\%s\\resolution\\%d_%d_%d_%d_%d_%d_%s.txt",
 					dir, dataset, pieces, pieces, (int)(MG * 100), (int) (MR * 100), MC, MAX_HOPNUM, suffix);
 			Util.print("Output index to " + indexPath);
-			Util.outputGeoReach(index, indexPath, typesList, format);
+			GeoReachIndexUtil.outputGeoReach(index, indexPath, typesList, format);
 			
 			//list format
 			format = 0;
@@ -89,7 +90,7 @@ public class Resolution {
 			indexPath = String.format("%s\\%s\\resolution\\%d_%d_%d_%d_%d_%d_%s.txt",
 					dir, dataset, pieces, pieces, (int)(MG * 100), (int) (MR * 100), MC, MAX_HOPNUM, suffix);
 			Util.print("Output index to " + indexPath);
-			Util.outputGeoReach(index, indexPath, typesList, format);
+			GeoReachIndexUtil.outputGeoReach(index, indexPath, typesList, format);
 		}
 	}
 	

@@ -6,6 +6,7 @@ import java.util.TreeSet;
 import commons.Config;
 import commons.Entity;
 import commons.EnumVariables.system;
+import commons.GeoReachIndexUtil;
 import commons.MyRectangle;
 import commons.Util;
 import commons.VertexGeoReach;
@@ -73,7 +74,7 @@ public class IndexConstruct {
 
     // ouput whole index
     Util.print("output index to " + outputPath);
-    Util.outputGeoReachList(index, outputPath);
+    GeoReachIndexUtil.outputGeoReachList(index, outputPath);
 
     // output single index for load
     ArrayList<ArrayList<Integer>> typesList = generateTypeListForList(index, MAX_HOPNUM, minx, miny,
@@ -84,14 +85,14 @@ public class IndexConstruct {
     outputPath = String.format("%s%d_%d_%d_%d_%d_%d_%s.txt", dir, pieces_x, pieces_y,
         (int) (MG * 100), (int) (MR * 100), MC, MAX_HOPNUM, suffix);
     Util.print("output to " + outputPath);
-    Util.outputGeoReachForList(index, outputPath, typesList, format);
+    GeoReachIndexUtil.outputGeoReachForList(index, outputPath, typesList, format);
 
     format = 0;
     suffix = "list";
     outputPath = String.format("%s%d_%d_%d_%d_%d_%d_%s.txt", dir, pieces_x, pieces_y,
         (int) (MG * 100), (int) (MR * 100), MC, MAX_HOPNUM, suffix);
     Util.print("output to " + outputPath);
-    Util.outputGeoReachForList(index, outputPath, typesList, format);
+    GeoReachIndexUtil.outputGeoReachForList(index, outputPath, typesList, format);
   }
 
   /**
@@ -116,7 +117,7 @@ public class IndexConstruct {
     String outputPath = String.format("D:\\Ubuntu_shared\\GeoReachHop\\data\\%s\\%d_%d_%d_%s.txt",
         dataset, pieces_x, pieces_y, MAX_HOPNUM, suffix);
     Util.print("output index to " + outputPath);
-    Util.outputGeoReach(index, outputPath);
+    GeoReachIndexUtil.outputGeoReach(index, outputPath); // output all three types.
 
     // ArrayList<VertexGeoReachList> index = ConstructIndexList(graph, entities,
     // minx, miny, maxx, maxy,
@@ -164,7 +165,7 @@ public class IndexConstruct {
     }
     String indexPath = dir + inputFileName;
     Util.print("read index from " + indexPath);
-    ArrayList<VertexGeoReachList> index = Util.readGeoReachWhole(indexPath);
+    ArrayList<VertexGeoReachList> index = GeoReachIndexUtil.readGeoReachWhole(indexPath);
 
     Util.print("generate type list");
     ArrayList<ArrayList<Integer>> typesList = generateTypeListForList(index, MAX_HOPNUM, minx, miny,
@@ -175,14 +176,14 @@ public class IndexConstruct {
     String outputPath = String.format("%s%d_%d_%d_%d_%d_%d_%s.txt", dir, pieces_x, pieces_y,
         (int) (MG * 100), (int) (MR * 100), MC, MAX_HOPNUM, suffix);
     Util.print("output to " + outputPath);
-    Util.outputGeoReachForList(index, outputPath, typesList, format);
+    GeoReachIndexUtil.outputGeoReachForList(index, outputPath, typesList, format);
 
     format = 1;
     suffix = "bitmap";
     outputPath = String.format("%s%d_%d_%d_%d_%d_%d_%s.txt", dir, pieces_x, pieces_y,
         (int) (MG * 100), (int) (MR * 100), MC, MAX_HOPNUM, suffix);
     Util.print("output to " + outputPath);
-    Util.outputGeoReachForList(index, outputPath, typesList, format);
+    GeoReachIndexUtil.outputGeoReachForList(index, outputPath, typesList, format);
   }
 
   int pieces_x = 128, pieces_y = 128, MC = 0;

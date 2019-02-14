@@ -27,6 +27,12 @@ public class Neo4jGraphUtility {
     return neighbors;
   }
 
+  /**
+   * Get dababase service. Stop the program if dbPath does not exist.
+   *
+   * @param dbPath
+   * @return
+   */
   public static GraphDatabaseService getDatabaseService(String dbPath) {
     if (!Util.pathExist(dbPath)) {
       Util.print(dbPath + "does not exist!");

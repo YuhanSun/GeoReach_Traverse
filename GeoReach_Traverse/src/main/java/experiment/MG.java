@@ -14,6 +14,7 @@ import commons.MyRectangle;
 import commons.Util;
 import commons.VertexGeoReach;
 import commons.EnumVariables.*;
+import commons.GeoReachIndexUtil;
 import construction.IndexConstruct;
 import construction.Loader;
 import query.SpaTraversal;
@@ -77,14 +78,14 @@ public class MG {
 			String indexPath = String.format("%s\\%s\\MG\\%d_%d_%d_%d_%d_%d_%s.txt",
 					dir, dataset, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, suffix);
 			Util.print("Output index to " + indexPath);
-			Util.outputGeoReach(index, indexPath, typesList, format);
+			GeoReachIndexUtil.outputGeoReach(index, indexPath, typesList, format);
 			
 			format = 0;
 			suffix = "list";
 			indexPath = String.format("%s\\%s\\MG\\%d_%d_%d_%d_%d_%d_%s.txt",
 					dir, dataset, pieces_x, pieces_y, MG, MR, MC, MAX_HOPNUM, suffix);
 			Util.print("Output index to " + indexPath);
-			Util.outputGeoReach(index, indexPath, typesList, format);
+			GeoReachIndexUtil.outputGeoReach(index, indexPath, typesList, format);
 		}
 		
 //		for (int MG = 1; MG <= 9; MG += 1) 
