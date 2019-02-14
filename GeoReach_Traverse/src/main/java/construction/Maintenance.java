@@ -3,6 +3,7 @@ package construction;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.roaringbitmap.RoaringBitmap;
@@ -12,7 +13,9 @@ import commons.EnumVariables.BoundaryLocationStatus;
 import commons.EnumVariables.GeoReachType;
 import commons.EnumVariables.UpdateStatus;
 import commons.Labels;
+import commons.Labels.GraphRel;
 import commons.MyRectangle;
+import commons.Neo4jGraphUtility;
 import commons.SpaceManager;
 import commons.Util;
 
@@ -58,14 +61,37 @@ public class Maintenance {
   // MGRatio and MRRatio
   public double MG, MR;
 
+  public String dbPath;
+  public GraphDatabaseService dbservice;
 
   public Maintenance(double minx, double miny, double maxx, double maxy, int piecesX, int piecesY,
-      int MAX_HOP) {
+      int MAX_HOP, String dbPath) {
     spaceManager = new SpaceManager(minx, miny, maxx, maxy, piecesX, piecesY);
     this.MAX_HOP = MAX_HOP;
+    this.dbPath = dbPath;
+    dbservice = Neo4jGraphUtility.getDatabaseService(dbPath);
   }
 
-  public void addEdge(Node src, Node trg) throws Exception {
+  public Maintenance(SpaceManager spaceManager, int MAX_HOP, String dbPath) {
+    this(spaceManager.getMinx(), spaceManager.getMiny(), spaceManager.getMaxx(),
+        spaceManager.getMaxy(), spaceManager.getPiecesX(), spaceManager.getPiecesY(), MAX_HOP,
+        dbPath);
+  }
+
+  public void addEdgeAndUpdateIndex(Node src, Node trg) throws Exception {
+    updateOneDirectionAddEdge(src, trg);
+    // updateOneDirectionAddEdge(trg, src);
+    src.createRelationshipTo(trg, GraphRel.GRAPH_LINK);
+  }
+
+  /**
+   * Update GeoReach index of src using trg.
+   *
+   * @param src
+   * @param trg
+   * @throws Exception
+   */
+  public void updateOneDirectionAddEdge(Node src, Node trg) throws Exception {
     HashMap<Integer, UpdateUnit> updateUnits = createUpdateUnit(trg);
     /**
      * Get the minimum hop that has update potential. It can reduce the neighbor search boundary.
@@ -434,5 +460,12 @@ public class Maintenance {
         throw new Exception(String.format("BoundaryLocationStatus %s does not exist!", cur));
     }
     return status;
+  }
+
+  /**
+   * Always call this to shutdown the dbservice.
+   */
+  public void shutdown() {
+    dbservice.shutdown();
   }
 }
