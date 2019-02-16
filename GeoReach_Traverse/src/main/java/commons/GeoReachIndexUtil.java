@@ -7,13 +7,15 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.TreeSet;
+import org.neo4j.graphdb.Node;
 import org.roaringbitmap.RoaringBitmap;
 import commons.EnumVariables.GeoReachOutputFormat;
 import commons.EnumVariables.GeoReachType;
+import construction.Maintenance;
 
 public class GeoReachIndexUtil {
 
-  public GeoReachType getGeoReachType(int type) throws Exception {
+  public static GeoReachType getGeoReachType(int type) throws Exception {
     switch (type) {
       case 0:
         return GeoReachType.ReachGrid;
@@ -26,15 +28,34 @@ public class GeoReachIndexUtil {
     }
   }
 
-  public static void validateIndexOutputFormat(GeoReachOutputFormat format) throws Exception {
-    if (!format.equals(GeoReachOutputFormat.BITMAP) && !format.equals(GeoReachOutputFormat.LIST)) {
-      throw new Exception(String.format("IndexOutputFormat %s does not exist!", format));
+  /**
+   * Get the GeoReach type of a node for a hop.
+   *
+   * @param node
+   * @param hop
+   * @return
+   * @throws Exception
+   */
+  public static GeoReachType getGeoReachType(Node node, int hop) throws Exception {
+    String typePropertyName = Maintenance.GeoReachTypeName + "_" + hop;
+    if (!node.hasProperty(typePropertyName)) {
+      throw new Exception(String.format("Type property %s is not found!", typePropertyName));
+    }
+    int type = (int) node.getProperty(typePropertyName);
+    switch (type) {
+      case 0:
+        return GeoReachType.ReachGrid;
+      case 1:
+        return GeoReachType.RMBR;
+      case 2:
+        return GeoReachType.GeoB;
+      default:
+        throw new Exception(String.format("type %d does not exist!", type));
     }
   }
 
   public static String getIndexFileNormalName(int pieces_x, int pieces_y, double MG, double MR,
       int MC, int MAX_HOP, GeoReachOutputFormat format) throws Exception {
-    validateIndexOutputFormat(format);
     String suffix = "";
     if (format.equals(GeoReachOutputFormat.BITMAP)) {
       suffix = "bitmap";
@@ -232,7 +253,6 @@ public class GeoReachIndexUtil {
       writer = new FileWriter(filepath);
       writer.write(String.format("%d,%d\n", nodeCount, MAX_HOP));
 
-      validateIndexOutputFormat(format);
       Iterator<VertexGeoReach> iterator1 = index.iterator();
       Iterator<ArrayList<Integer>> iterator2 = typesList.iterator();
 
@@ -291,7 +311,6 @@ public class GeoReachIndexUtil {
     int id = 0;
     FileWriter writer = null;
     try {
-      validateIndexOutputFormat(format);
       int nodeCount = index.size();
       int MAX_HOP = index.get(0).ReachGrids.size();
       writer = new FileWriter(filepath);
