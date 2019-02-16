@@ -9,8 +9,22 @@ import java.util.Iterator;
 import java.util.TreeSet;
 import org.roaringbitmap.RoaringBitmap;
 import commons.EnumVariables.GeoReachOutputFormat;
+import commons.EnumVariables.GeoReachType;
 
 public class GeoReachIndexUtil {
+
+  public GeoReachType getGeoReachType(int type) throws Exception {
+    switch (type) {
+      case 0:
+        return GeoReachType.ReachGrid;
+      case 1:
+        return GeoReachType.RMBR;
+      case 2:
+        return GeoReachType.GeoB;
+      default:
+        throw new Exception(String.format("Type %d does not exist!", type));
+    }
+  }
 
   public static void validateIndexOutputFormat(GeoReachOutputFormat format) throws Exception {
     if (!format.equals(GeoReachOutputFormat.BITMAP) && !format.equals(GeoReachOutputFormat.LIST)) {
