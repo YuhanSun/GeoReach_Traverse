@@ -12,10 +12,10 @@ import commons.Config;
 import commons.EnumVariables.BoundaryLocationStatus;
 import commons.EnumVariables.GeoReachType;
 import commons.EnumVariables.UpdateStatus;
+import commons.GeoReachIndexUtil;
 import commons.Labels;
 import commons.Labels.GraphRel;
 import commons.MyRectangle;
-import commons.Neo4jGraphUtility;
 import commons.SpaceManager;
 import commons.Util;
 
@@ -62,25 +62,24 @@ public class Maintenance {
   public double MG, MR;
 
   public String dbPath;
-  public GraphDatabaseService dbservice;
+  public GraphDatabaseService service;
 
   public Maintenance(double minx, double miny, double maxx, double maxy, int piecesX, int piecesY,
-      int MAX_HOP, String dbPath) {
+      int MAX_HOP, GraphDatabaseService service) {
     spaceManager = new SpaceManager(minx, miny, maxx, maxy, piecesX, piecesY);
     this.MAX_HOP = MAX_HOP;
-    this.dbPath = dbPath;
-    dbservice = Neo4jGraphUtility.getDatabaseService(dbPath);
+    this.service = service;
   }
 
-  public Maintenance(SpaceManager spaceManager, int MAX_HOP, String dbPath) {
+  public Maintenance(SpaceManager spaceManager, int MAX_HOP, GraphDatabaseService service) {
     this(spaceManager.getMinx(), spaceManager.getMiny(), spaceManager.getMaxx(),
         spaceManager.getMaxy(), spaceManager.getPiecesX(), spaceManager.getPiecesY(), MAX_HOP,
-        dbPath);
+        service);
   }
 
   public void addEdgeAndUpdateIndex(Node src, Node trg) throws Exception {
     updateOneDirectionAddEdge(src, trg);
-    // updateOneDirectionAddEdge(trg, src);
+    updateOneDirectionAddEdge(trg, src);
     src.createRelationshipTo(trg, GraphRel.GRAPH_LINK);
   }
 
@@ -146,7 +145,7 @@ public class Maintenance {
     }
     // handle SIP(node, 1) to SIP(node, B-1)
     for (int hop = 1; hop < MAX_HOP; hop++) {
-      GeoReachType type = getGeoReachType(node, hop);
+      GeoReachType type = GeoReachIndexUtil.getGeoReachType(node, hop);
       ImmutableRoaringBitmap immutableRoaringBitmap = null;
       MyRectangle rmbr = null;
       boolean geoB = false;
@@ -161,11 +160,10 @@ public class Maintenance {
           immutableRoaringBitmap = spaceManager.getCoverIdOfRectangle(rmbr);
           geoB = true;
           break;
-        case GeoB:
+        default:
           // No need to set ReachGrid and RMBR because the update does not require.
           geoB = getGeoB(node, hop);
-        default:
-          throw new Exception(String.format("type %d does not exist!", type));
+          break;
       }
       updateUnits.put(hop, new UpdateUnit(GeoReachType.RMBR, immutableRoaringBitmap, rmbr, geoB));
     }
@@ -217,7 +215,7 @@ public class Maintenance {
       throws Exception {
     UpdateStatus status = null;
     int srcUpdateHop = updateHop + 1;
-    GeoReachType geoReachType = getGeoReachType(src, srcUpdateHop);
+    GeoReachType geoReachType = GeoReachIndexUtil.getGeoReachType(src, srcUpdateHop);
     UpdateUnit updateUnit = updateUnits.get(updateHop);
     switch (geoReachType) {
       case ReachGrid:
@@ -258,7 +256,7 @@ public class Maintenance {
             src.setProperty(getGeoReachKey(GeoReachType.RMBR, srcUpdateHop), srcRect.toString());
           }
         }
-      case GeoB:
+      default:
         boolean srcGeoB = getGeoB(src, srcUpdateHop);
         // srcGeoB is true, no update is needed.
         if (srcGeoB) {
@@ -272,8 +270,6 @@ public class Maintenance {
             src.setProperty(getGeoReachKey(GeoReachType.GeoB, srcUpdateHop), true);
           }
         }
-      default:
-        throw new Exception(String.format("Type %s does not exist!", geoReachType.toString()));
     }
     return status;
   }
@@ -316,33 +312,7 @@ public class Maintenance {
     return rectangle.area() > spaceManager.getTotalArea() * MR;
   }
 
-  /**
-   * Get the GeoReach type of a node for a hop.
-   *
-   * @param node
-   * @param hop
-   * @return
-   * @throws Exception
-   */
-  private GeoReachType getGeoReachType(Node node, int hop) throws Exception {
-    String typePropertyName = GeoReachTypeName + "_" + hop;
-    if (!node.hasProperty(typePropertyName)) {
-      throw new Exception(String.format("Type property %s is not found!", typePropertyName));
-    }
-    int type = (int) node.getProperty(typePropertyName);
-    switch (type) {
-      case 0:
-        return GeoReachType.ReachGrid;
-      case 1:
-        return GeoReachType.RMBR;
-      case 2:
-        return GeoReachType.GeoB;
-      default:
-        throw new Exception(String.format("type %d does not exist!", type));
-    }
-  }
-
-  public void setGeoReachType(Node node, int hop, GeoReachType type) throws Exception {
+  public void setGeoReachType(Node node, int hop, GeoReachType type) {
     int setType = 0;
     switch (type) {
       case ReachGrid:
@@ -351,16 +321,14 @@ public class Maintenance {
       case RMBR:
         setType = 1;
         break;
-      case GeoB:
+      default:
         setType = 2;
         break;
-      default:
-        throw new Exception(String.format("Type %s does not exist!", type.toString()));
     }
     node.setProperty(GeoReachTypeName + "_" + hop, setType);
   }
 
-  public void removeGeoReach(Node node, GeoReachType geoReachType, int hop) throws Exception {
+  public void removeGeoReach(Node node, GeoReachType geoReachType, int hop) {
     node.removeProperty(getGeoReachKey(geoReachType, hop));
   }
 
@@ -372,16 +340,14 @@ public class Maintenance {
    * @return
    * @throws Exception
    */
-  public String getGeoReachKey(GeoReachType geoReachType, int hop) throws Exception {
+  public String getGeoReachKey(GeoReachType geoReachType, int hop) {
     switch (geoReachType) {
       case ReachGrid:
         return String.format("%s_%d", reachGridName, hop);
       case RMBR:
         return String.format("%s_%d", rmbrName, hop);
-      case GeoB:
-        return String.format("%s_%d", geoBName, hop);
       default:
-        throw new Exception(String.format("GeoReachType %s does not exist!", geoReachType));
+        return String.format("%s_%d", geoBName, hop);
     }
   }
 
@@ -466,6 +432,6 @@ public class Maintenance {
    * Always call this to shutdown the dbservice.
    */
   public void shutdown() {
-    dbservice.shutdown();
+    service.shutdown();
   }
 }
