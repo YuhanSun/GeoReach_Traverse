@@ -34,6 +34,19 @@ public class Loader {
 
   String GeoReachTypeName, reachGridName, rmbrName, geoBName;
 
+  public Loader(Config config) {
+    this.config = config;
+    initParameters();
+  }
+
+  public Loader() {
+    config = new Config();
+    GeoReachTypeName = config.getGeoReachTypeName();
+    reachGridName = config.getReachGridName();
+    rmbrName = config.getRMBRName();
+    geoBName = config.getGeoBName();
+  }
+
   public static void main(String[] args) {
     // TODO Auto-generated method stub
     // load();
@@ -90,6 +103,82 @@ public class Loader {
     String dbPath = dir + "\\" + dbFolder + "\\data\\databases\\graph.db";
     Util.print("load from " + indexPath + " \nto " + dbPath);
     loader.load(indexPath, dbPath);
+  }
+
+  /**
+   * Load from index file of format BITMAP.
+   *
+   * @param indexPath
+   * @param dbPath
+   */
+  public void load(String indexPath, String dbPath, long[] graph_pos_map_list) {
+    int lineIndex = 0;
+    String line = "";
+    BatchInserter inserter = null;
+    BufferedReader reader = null;
+    int id;
+    try {
+      Map<String, String> config = new HashMap<String, String>();
+      config.put("dbms.pagecache.memory", "100g");
+      if (Util.pathExist(dbPath) == false)
+        throw new Exception(dbPath + " does not exist!");
+      inserter = BatchInserters.inserter(new File(dbPath).getAbsoluteFile(), config);
+
+      reader = new BufferedReader(new FileReader(new File(indexPath)));
+
+      lineIndex++;
+      line = reader.readLine();
+      String[] strList = line.split(",");
+      int nodeCount = Integer.parseInt(strList[0]);
+      int MAX_HOP = Integer.parseInt(strList[1]);
+
+      for (int i = 0; i < nodeCount; i++) {
+        lineIndex++;
+        id = Integer.parseInt(reader.readLine());
+        long neo4j_ID = graph_pos_map_list[id];
+        for (int j = 1; j <= MAX_HOP; j++) {
+          lineIndex++;
+          line = reader.readLine();
+          strList = line.split(":");
+          int type = Integer.parseInt(strList[0]);
+          switch (type) {
+            case 0:
+              inserter.setNodeProperty(neo4j_ID, reachGridName + "_" + j, strList[1]);
+              break;
+            case 1:
+              inserter.setNodeProperty(neo4j_ID, rmbrName + "_" + j, strList[1]);
+              break;
+            case 2:
+              if (strList[1].equals("true"))
+                inserter.setNodeProperty(neo4j_ID, geoBName + "_" + j, true);
+              else {
+                inserter.setNodeProperty(neo4j_ID, geoBName + "_" + j, false);
+              }
+              break;
+            default:
+              throw new Exception(String.format("Vertex %d hop %d has type %d!", id, j, type));
+          }
+          inserter.setNodeProperty(neo4j_ID, GeoReachTypeName + "_" + j, type);
+        }
+      }
+
+      inserter.shutdown();
+
+    } catch (Exception e) {
+      if (reader != null)
+        try {
+          reader.close();
+        } catch (IOException e1) {
+          // TODO Auto-generated catch block
+          e1.printStackTrace();
+        }
+
+      if (inserter != null)
+        inserter.shutdown();
+      Util.print(String.format("line %d: %s", lineIndex, line));
+      e.printStackTrace();
+      System.exit(-1);
+    }
   }
 
   /**
@@ -168,15 +257,6 @@ public class Loader {
     }
   }
 
-
-  public Loader(Config config) {
-    this.config = config;
-    initParameters();
-  }
-
-  public Loader() {
-
-  }
 
   public void initParameters() {
     systemName = config.getSystemName();
