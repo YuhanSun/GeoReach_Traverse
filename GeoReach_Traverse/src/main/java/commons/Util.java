@@ -479,6 +479,23 @@ public class Util {
     return null;
   }
 
+  /**
+   * Read a map to a long[] array. So the key has to be in the [0, count-1].
+   *
+   * @param filename
+   * @return
+   */
+  public static long[] readMapToArray(String filename) {
+    HashMap<String, String> graph_pos_map = Util.ReadMap(filename);
+    long[] graph_pos_map_list = new long[graph_pos_map.size()];
+    for (String key_str : graph_pos_map.keySet()) {
+      int key = Integer.parseInt(key_str);
+      int pos_id = Integer.parseInt(graph_pos_map.get(key_str));
+      graph_pos_map_list[key] = pos_id;
+    }
+    return graph_pos_map_list;
+  }
+
   public static ImmutableRoaringBitmap getImmutableRoaringBitmap(String string) {
     ByteBuffer newbb = ByteBuffer.wrap(Base64.getDecoder().decode(string));
     ImmutableRoaringBitmap immutableRoaringBitmap = new ImmutableRoaringBitmap(newbb);
