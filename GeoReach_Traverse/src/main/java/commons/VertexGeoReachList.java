@@ -1,6 +1,7 @@
 package commons;
 
 import java.util.ArrayList;
+import commons.EnumVariables.GeoReachType;
 
 /**
  * GeoReach index for each vertex ReachGrids is list.
@@ -22,6 +23,17 @@ public class VertexGeoReachList {
       ReachGrids.add(null);
       RMBRs.add(null);
       GeoBs.add(null);
+    }
+  }
+
+  public Object getGeoReach(int hop, GeoReachType type) {
+    switch (type) {
+      case ReachGrid:
+        return ReachGrids.get(hop);
+      case RMBR:
+        return RMBRs.get(hop);
+      default:
+        return GeoBs.get(hop);
     }
   }
 
