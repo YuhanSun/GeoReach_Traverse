@@ -12,6 +12,7 @@
 	<url>http://maven.apache.org</url>
 
 	<properties>
+		<neo4j.version>3.1.1</neo4j.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<maven.compiler.source>1.8</maven.compiler.source>
@@ -184,25 +185,25 @@
 		<dependency>
 			<groupId>org.neo4j</groupId>
 			<artifactId>neo4j-kernel</artifactId>
-			<version>3.1.1</version>
+			<version>${neo4j.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.neo4j</groupId>
 			<artifactId>neo4j-lucene-index</artifactId>
-			<version>3.1.1</version>
+			<version>${neo4j.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.neo4j</groupId>
 			<artifactId>neo4j-cypher</artifactId>
-			<version>3.1.1</version>
+			<version>${neo4j.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.neo4j</groupId>
 			<artifactId>neo4j-spatial</artifactId>
-			<version>0.24-neo4j-3.1.1</version>
+			<version>0.24-neo4j-${neo4j.version}</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.roaringbitmap/RoaringBitmap -->
