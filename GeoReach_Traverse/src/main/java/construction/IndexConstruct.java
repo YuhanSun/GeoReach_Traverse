@@ -406,7 +406,7 @@ public class IndexConstruct {
   }
 
   /**
-   * Generate index where Reachgrid is list.
+   * Generate index where Reachgrid is list. The graph should be a bidirectional format.
    *
    * @param graph
    * @param entities
