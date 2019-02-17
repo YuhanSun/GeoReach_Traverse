@@ -7,11 +7,9 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.TreeSet;
-import org.neo4j.graphdb.Node;
 import org.roaringbitmap.RoaringBitmap;
 import commons.EnumVariables.GeoReachOutputFormat;
 import commons.EnumVariables.GeoReachType;
-import construction.Maintenance;
 
 public class GeoReachIndexUtil {
 
@@ -25,32 +23,6 @@ public class GeoReachIndexUtil {
         return GeoReachType.GeoB;
       default:
         throw new Exception(String.format("Type %d does not exist!", type));
-    }
-  }
-
-  /**
-   * Get the GeoReach type of a node for a hop.
-   *
-   * @param node
-   * @param hop
-   * @return
-   * @throws Exception
-   */
-  public static GeoReachType getGeoReachType(Node node, int hop) throws Exception {
-    String typePropertyName = Maintenance.GeoReachTypeName + "_" + hop;
-    if (!node.hasProperty(typePropertyName)) {
-      throw new Exception(String.format("Type property %s is not found!", typePropertyName));
-    }
-    int type = (int) node.getProperty(typePropertyName);
-    switch (type) {
-      case 0:
-        return GeoReachType.ReachGrid;
-      case 1:
-        return GeoReachType.RMBR;
-      case 2:
-        return GeoReachType.GeoB;
-      default:
-        throw new Exception(String.format("type %d does not exist!", type));
     }
   }
 
