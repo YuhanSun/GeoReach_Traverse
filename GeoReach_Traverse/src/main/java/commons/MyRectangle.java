@@ -120,4 +120,18 @@ public class MyRectangle {
     }
     return status;
   }
+
+  /**
+   * Decide whether other has the same range.
+   *
+   * @param other
+   * @return
+   */
+  public boolean isEqual(MyRectangle other) {
+    if (Double.compare(min_x, other.min_x) != 0 || Double.compare(min_y, other.min_y) != 0
+        || Double.compare(max_x, other.max_x) != 0 || Double.compare(max_y, other.max_y) != 0) {
+      return false;
+    }
+    return true;
+  }
 }

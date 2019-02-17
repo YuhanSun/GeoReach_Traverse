@@ -1,5 +1,7 @@
 package commons;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -62,6 +64,15 @@ public class MyRectangleTest {
     assert (Math.abs(rectangle.min_y - 0) < 0.00000001);
     assert (Math.abs(rectangle.max_x - 3) < 0.00000001);
     assert (Math.abs(rectangle.max_y - 3) < 0.00000001);
+  }
+
+  @Test
+  public void isEqualTest() {
+    MyRectangle rectangle = new MyRectangle(0, 0, 0, 0);
+    assertFalse(rectangle.equals(new MyRectangle(0, 0, 0, 0)));
+    assertTrue(rectangle.isEqual(new MyRectangle(0, 0, 0, 0)));
+    assertFalse(rectangle.isEqual(new MyRectangle(0, 0.1, 0, 0)));
+
   }
 
 }
