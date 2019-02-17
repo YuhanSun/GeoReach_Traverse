@@ -8,7 +8,7 @@ public class ArrayUtil {
 
 
   public static <T extends Comparable<T>> boolean isSortedListEqual(List<T> l1, List<T> l2) {
-    return l1.size() == sortedListIntersect(l1, l2).size();
+    return l1.size() == l2.size() && l1.size() == sortedListIntersect(l1, l2).size();
   }
 
   public static <T> List<T> iterableToList(Iterable<T> iterable) {
