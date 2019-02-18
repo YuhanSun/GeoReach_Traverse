@@ -12,10 +12,10 @@ import commons.Config;
 import commons.EnumVariables.BoundaryLocationStatus;
 import commons.EnumVariables.GeoReachType;
 import commons.EnumVariables.UpdateStatus;
-import commons.GeoReachIndexUtil;
 import commons.Labels;
 import commons.Labels.GraphRel;
 import commons.MyRectangle;
+import commons.Neo4jGraphUtility;
 import commons.SpaceManager;
 import commons.Util;
 
@@ -29,12 +29,16 @@ class UpdateUnit {
   public GeoReachType type;
   public boolean geoB;
   public ImmutableRoaringBitmap reachGrid;
+  public String rbString;
   public MyRectangle rmbr;
 
   public UpdateUnit(GeoReachType type, ImmutableRoaringBitmap ReachGrid, MyRectangle rmbr,
       boolean GeoB) {
     this.type = type;
     this.reachGrid = ReachGrid;
+    if (reachGrid != null) {
+      this.rbString = Util.roarBitmapSerializeToString(new RoaringBitmap(ReachGrid));
+    }
     this.rmbr = rmbr;
     this.geoB = GeoB;
   }
@@ -47,10 +51,10 @@ public class Maintenance {
   public static String lon_name = config.GetLongitudePropertyName();
   public static String lat_name = config.GetLatitudePropertyName();
 
-  public static String GeoReachTypeName = config.getGeoReachTypeName();
-  public static String reachGridName = config.getReachGridName();
-  public static String rmbrName = config.getRMBRName();
-  public static String geoBName = config.getGeoBName();
+  public String GeoReachTypeName = config.getGeoReachTypeName();
+  public String reachGridName = config.getReachGridName();
+  public String rmbrName = config.getRMBRName();
+  public String geoBName = config.getGeoBName();
 
   public double minx, miny, maxx, maxy;
   public int pieces_x, pieces_y;
@@ -60,21 +64,26 @@ public class Maintenance {
 
   // MGRatio and MRRatio
   public double MG, MR;
+  public int MC;
 
   public String dbPath;
   public GraphDatabaseService service;
 
   public Maintenance(double minx, double miny, double maxx, double maxy, int piecesX, int piecesY,
-      int MAX_HOP, GraphDatabaseService service) {
+      int MAX_HOP, double MG, Double MR, int MC, GraphDatabaseService service) {
     spaceManager = new SpaceManager(minx, miny, maxx, maxy, piecesX, piecesY);
     this.MAX_HOP = MAX_HOP;
+    this.MG = MG;
+    this.MR = MR;
+    this.MC = MC;
     this.service = service;
   }
 
-  public Maintenance(SpaceManager spaceManager, int MAX_HOP, GraphDatabaseService service) {
+  public Maintenance(SpaceManager spaceManager, int MAX_HOP, double MG, double MR, int MC,
+      GraphDatabaseService service) {
     this(spaceManager.getMinx(), spaceManager.getMiny(), spaceManager.getMaxx(),
-        spaceManager.getMaxy(), spaceManager.getPiecesX(), spaceManager.getPiecesY(), MAX_HOP,
-        service);
+        spaceManager.getMaxy(), spaceManager.getPiecesX(), spaceManager.getPiecesY(), MAX_HOP, MG,
+        MR, MC, service);
   }
 
   public void addEdgeAndUpdateIndex(Node src, Node trg) throws Exception {
@@ -84,7 +93,8 @@ public class Maintenance {
   }
 
   /**
-   * Update GeoReach index of src using trg.
+   * Update GeoReach index of src using trg. Assume the edge is added from <code>src</code> to
+   * <code>trg</code>.
    *
    * @param src
    * @param trg
@@ -98,37 +108,44 @@ public class Maintenance {
     int minHop = 0;
     for (; minHop <= MAX_HOP - 1; minHop++) {
       UpdateUnit updateUnit = updateUnits.get(minHop);
-      // If the unit contains ReachGrid or RMBR or GeoB = true, continue.
-      if (!updateUnit.type.equals(GeoReachType.GeoB) || updateUnit.geoB) {
-        break;
+      // continue to next hop because it does not have the update potential.
+      if (updateUnit.type.equals(GeoReachType.GeoB) && !updateUnit.geoB) {
+        continue;
       }
+      // this hop has the update potential. It determines that the graph search boundary is B -
+      // minHop - 1
+      break;
     }
 
     HashMap<Node, HashSet<Integer>> currentUpdateNodes = new HashMap<>();
-    // The hop id on trg to be updated on the src
+    // The hop index updated on the src
     HashSet<Integer> srcUpdateHops = new HashSet<>();
-    for (int i = minHop; i <= MAX_HOP - 1; i++) {
+    for (int i = minHop + 1; i <= MAX_HOP; i++) {
       srcUpdateHops.add(i);
     }
     currentUpdateNodes.put(src, srcUpdateHops);
-    for (int hop = MAX_HOP - 1; hop >= minHop; hop--) {
+    int dist = 0;
+    // hop on src to be updated
+    for (int hop = MAX_HOP; hop >= minHop + 1; hop--) {
       HashMap<Node, HashSet<Integer>> nextUpdateNodes = new HashMap<>();
       for (Node node : currentUpdateNodes.keySet()) {
-        HashSet<Integer> updateHops = currentUpdateNodes.get(node);
-        update(node, updateUnits, updateHops, nextUpdateNodes);
+        HashSet<Integer> curSrcupdateHops = currentUpdateNodes.get(node);
+        update(node, updateUnits, curSrcupdateHops, dist, nextUpdateNodes);
       }
       currentUpdateNodes = nextUpdateNodes;
+      dist++;
     }
   }
 
   /**
-   * Create the update unit.
+   * Create the update unit using [0, B-1] GeoReach on <code>node</code>.
    *
    * @param node
    * @throws Exception
    */
   private HashMap<Integer, UpdateUnit> createUpdateUnit(Node node) throws Exception {
     HashMap<Integer, UpdateUnit> updateUnits = new HashMap<>();
+    Neo4jGraphUtility.printNode(node);
     // handle the SIP(node, 0)
     if (node.hasProperty(lon_name)) {
       double lon = (Double) node.getProperty(lon_name);
@@ -138,14 +155,22 @@ public class Maintenance {
       roaringBitmap.add(id);
       MyRectangle rmbr = new MyRectangle(lon, lat, lon, lat);
 
+      GeoReachType geoReachType = GeoReachType.ReachGrid;
+      if (!validateMG(roaringBitmap, spaceManager.getXYBoundary(roaringBitmap))) {
+        geoReachType = GeoReachType.RMBR;
+        if (!validateMR(rmbr)) {
+          geoReachType = GeoReachType.GeoB;
+        }
+      }
+
       updateUnits.put(0,
-          new UpdateUnit(GeoReachType.RMBR, roaringBitmap.toMutableRoaringBitmap(), rmbr, true));
+          new UpdateUnit(geoReachType, roaringBitmap.toMutableRoaringBitmap(), rmbr, true));
     } else {
       updateUnits.put(0, new UpdateUnit(GeoReachType.GeoB, null, null, false));
     }
     // handle SIP(node, 1) to SIP(node, B-1)
     for (int hop = 1; hop < MAX_HOP; hop++) {
-      GeoReachType type = GeoReachIndexUtil.getGeoReachType(node, hop);
+      GeoReachType type = getGeoReachType(node, hop);
       ImmutableRoaringBitmap immutableRoaringBitmap = null;
       MyRectangle rmbr = null;
       boolean geoB = false;
@@ -160,12 +185,12 @@ public class Maintenance {
           immutableRoaringBitmap = spaceManager.getCoverIdOfRectangle(rmbr);
           geoB = true;
           break;
-        default:
+        case GeoB:
           // No need to set ReachGrid and RMBR because the update does not require.
           geoB = getGeoB(node, hop);
           break;
       }
-      updateUnits.put(hop, new UpdateUnit(GeoReachType.RMBR, immutableRoaringBitmap, rmbr, geoB));
+      updateUnits.put(hop, new UpdateUnit(type, immutableRoaringBitmap, rmbr, geoB));
     }
     return updateUnits;
   }
@@ -175,17 +200,16 @@ public class Maintenance {
    *
    * @param node
    * @param updateUnits
-   * @param updateHops the required hops to be updated
+   * @param srcUpdateHops the required hops to be updated on node
    * @param nextUpdateNodes
    * @throws Exception
    */
   public void update(Node node, HashMap<Integer, UpdateUnit> updateUnits,
-      HashSet<Integer> updateHops, HashMap<Node, HashSet<Integer>> nextUpdateNodes)
+      HashSet<Integer> srcUpdateHops, int dist, HashMap<Node, HashSet<Integer>> nextUpdateNodes)
       throws Exception {
-    for (int updateHop : updateHops) {
-      UpdateStatus updateStatus = update(node, updateUnits, updateHop);
-      int nextHop = updateHop + 1;
-      if (!updateStatus.equals(UpdateStatus.UpdateInside) && (nextHop <= MAX_HOP)) {
+    for (int srcUpdateHop : srcUpdateHops) {
+      UpdateStatus updateStatus = update(node, updateUnits, srcUpdateHop, dist);
+      if (!updateStatus.equals(UpdateStatus.NotUpdateInside) && (srcUpdateHop < MAX_HOP)) {
         Iterable<Relationship> iterable = node.getRelationships(Labels.GraphRel.GRAPH_LINK);
         Iterator<Relationship> iterator = iterable.iterator();
         while (iterator.hasNext()) {
@@ -194,8 +218,9 @@ public class Maintenance {
           if (!nextUpdateNodes.containsKey(neighbor)) {
             nextUpdateNodes.put(neighbor, new HashSet<>());
           }
-          if (!nextUpdateNodes.get(neighbor).contains(nextHop)) {
-            nextUpdateNodes.get(neighbor).add(nextHop);
+          int nextUpdateHop = srcUpdateHop + 1;
+          if (!nextUpdateNodes.get(neighbor).contains(nextUpdateHop)) {
+            nextUpdateNodes.get(neighbor).add(nextUpdateHop);
           }
         }
       }
@@ -207,16 +232,17 @@ public class Maintenance {
    *
    * @param src
    * @param updateUnits
-   * @param updateHop
+   * @param srcUpdateHop the hop on <code>src</code>
    * @return
    * @throws Exception
    */
-  public UpdateStatus update(Node src, HashMap<Integer, UpdateUnit> updateUnits, int updateHop)
-      throws Exception {
+  public UpdateStatus update(Node src, HashMap<Integer, UpdateUnit> updateUnits, int srcUpdateHop,
+      int dist) throws Exception {
     UpdateStatus status = null;
-    int srcUpdateHop = updateHop + 1;
-    GeoReachType geoReachType = GeoReachIndexUtil.getGeoReachType(src, srcUpdateHop);
-    UpdateUnit updateUnit = updateUnits.get(updateHop);
+    GeoReachType geoReachType = getGeoReachType(src, srcUpdateHop);
+    int trgHopInUnit = srcUpdateHop - dist - 1;
+    // the hop in unit that is used to update the src
+    UpdateUnit updateUnit = updateUnits.get(trgHopInUnit);
     switch (geoReachType) {
       case ReachGrid:
         ImmutableRoaringBitmap irb = getReachGrid(src, srcUpdateHop);
@@ -226,7 +252,7 @@ public class Maintenance {
         // If any new cell is added, check the MG.
         if (!status.equals(UpdateStatus.NotUpdateInside)
             && !status.equals(UpdateStatus.NotUpdateOnBoundary)) {
-          if (!validateMG(rb, xyBoundary)) {
+          if (validateMG(rb, xyBoundary)) {
             // keep the GeoReach Type but modify ReachGrid value in db
             setReachGrid(src, srcUpdateHop, rb);
           } else {
@@ -235,11 +261,11 @@ public class Maintenance {
             MyRectangle newRMBR = spaceManager.getMbrOfBoundary(xyBoundary);
             // remove ReachGrid, change GeoReachType_hop to GeoB, and set GeoB_hop to true
             if (validateMR(newRMBR)) {
-              setGeoReachType(src, srcUpdateHop, GeoReachType.GeoB);
-              src.setProperty(getGeoReachKey(GeoReachType.GeoB, srcUpdateHop), true);
-            } else {
               setGeoReachType(src, srcUpdateHop, GeoReachType.RMBR);
               src.setProperty(getGeoReachKey(GeoReachType.RMBR, srcUpdateHop), newRMBR.toString());
+            } else {
+              setGeoReachType(src, srcUpdateHop, GeoReachType.GeoB);
+              src.setProperty(getGeoReachKey(GeoReachType.GeoB, srcUpdateHop), true);
             }
           }
         }
@@ -249,27 +275,16 @@ public class Maintenance {
         status = srcRect.MBR(updateUnit.rmbr);
         if (status.equals(UpdateStatus.UpdateOutside)) {
           if (validateMR(srcRect)) {
+            src.setProperty(getGeoReachKey(GeoReachType.RMBR, srcUpdateHop), srcRect.toString());
+          } else {
             removeGeoReach(src, GeoReachType.RMBR, srcUpdateHop);
             setGeoReachType(src, srcUpdateHop, GeoReachType.GeoB);
             src.setProperty(getGeoReachKey(GeoReachType.GeoB, srcUpdateHop), true);
-          } else {
-            src.setProperty(getGeoReachKey(GeoReachType.RMBR, srcUpdateHop), srcRect.toString());
           }
         }
-      default:
-        boolean srcGeoB = getGeoB(src, srcUpdateHop);
-        // srcGeoB is true, no update is needed.
-        if (srcGeoB) {
-          status = UpdateStatus.NotUpdateInside;
-        } else {
-          // updateUnit geoB is false, no update is needed.
-          if (!updateUnit.geoB) {
-            status = UpdateStatus.NotUpdateInside;
-          } else {
-            status = UpdateStatus.UpdateOutside;
-            src.setProperty(getGeoReachKey(GeoReachType.GeoB, srcUpdateHop), true);
-          }
-        }
+        break;
+      case GeoB:
+        status = updateGeoB(src, srcUpdateHop, updateUnit);
     }
     return status;
   }
@@ -284,9 +299,11 @@ public class Maintenance {
     for (int id : irb) {
       int[] xyId = spaceManager.getXYId(id);
       // Check whether cell is contained
-      if (!rb.contains(id) && !hasDiff) {
+      if (!rb.contains(id)) {
         rb.add(id);
-        hasDiff = true;
+        if (!hasDiff) {
+          hasDiff = true;
+        }
       }
       // update spatial relation status
       BoundaryLocationStatus boundaryStatus = Util.locate(boundary, xyId);
@@ -296,7 +313,40 @@ public class Maintenance {
   }
 
   /**
-   * Decide whether <code>rb</code> needs to be replaced by rmbr
+   * Update the GeoB of src.
+   *
+   * @param src
+   * @param srcUpdateHop
+   * @param updateUnit
+   * @return
+   */
+  private UpdateStatus updateGeoB(Node src, int srcUpdateHop, UpdateUnit updateUnit) {
+    boolean srcGeoB = getGeoB(src, srcUpdateHop);
+    if (srcGeoB) { // srcGeoB = true, it never requires update
+      return UpdateStatus.NotUpdateInside;
+    }
+    switch (updateUnit.type) {
+      case GeoB:
+        if (updateUnit.geoB) {
+          src.setProperty(getGeoReachKey(GeoReachType.GeoB, srcUpdateHop), true);
+          return UpdateStatus.UpdateOutside;
+        }
+        break;
+      case RMBR:
+        setGeoReachType(src, srcUpdateHop, GeoReachType.RMBR);
+        src.setProperty(getGeoReachKey(GeoReachType.RMBR, srcUpdateHop),
+            updateUnit.rmbr.toString());
+        break;
+      default:
+        setGeoReachType(src, srcUpdateHop, GeoReachType.ReachGrid);
+        src.setProperty(getGeoReachKey(GeoReachType.ReachGrid, srcUpdateHop), updateUnit.rbString);
+    }
+    removeGeoReach(src, GeoReachType.GeoB, srcUpdateHop);
+    return UpdateStatus.UpdateOutside;
+  }
+
+  /**
+   * Decide whether <code>rb</code> is valid and no need to downgrade to rmbr.
    *
    * @param rb
    * @param boundary
@@ -304,12 +354,38 @@ public class Maintenance {
    */
   public boolean validateMG(RoaringBitmap rb, int[] boundary) {
     // # of cells in rb > # of cells in the coverage MBR * MG
-    return (boundary[4] > (boundary[2] - boundary[0] + 1) * (boundary[3] - boundary[1] + 1) * MG);
+    return (boundary[4] <= (boundary[2] - boundary[0] + 1) * (boundary[3] - boundary[1] + 1) * MG);
   }
 
   public boolean validateMR(MyRectangle rectangle) {
     // area of rectangle > totalArea * MR
-    return rectangle.area() > spaceManager.getTotalArea() * MR;
+    return rectangle.area() <= spaceManager.getTotalArea() * MR;
+  }
+
+  /**
+   * Get the GeoReach type of a node for a hop.
+   *
+   * @param node
+   * @param hop
+   * @return
+   * @throws Exception
+   */
+  public GeoReachType getGeoReachType(Node node, int hop) throws Exception {
+    String typePropertyName = GeoReachTypeName + "_" + hop;
+    if (!node.hasProperty(typePropertyName)) {
+      throw new Exception(String.format("Type property %s is not found!", typePropertyName));
+    }
+    int type = (int) node.getProperty(typePropertyName);
+    switch (type) {
+      case 0:
+        return GeoReachType.ReachGrid;
+      case 1:
+        return GeoReachType.RMBR;
+      case 2:
+        return GeoReachType.GeoB;
+      default:
+        throw new Exception(String.format("type %d does not exist!", type));
+    }
   }
 
   public void setGeoReachType(Node node, int hop, GeoReachType type) {
@@ -321,7 +397,7 @@ public class Maintenance {
       case RMBR:
         setType = 1;
         break;
-      default:
+      case GeoB:
         setType = 2;
         break;
     }
@@ -372,7 +448,7 @@ public class Maintenance {
     return new MyRectangle(node.getProperty(rmbrName + "_" + hop).toString());
   }
 
-  private boolean getGeoB(Node node, int hop) {
+  public boolean getGeoB(Node node, int hop) {
     return (boolean) node.getProperty(geoBName + "_" + hop);
   }
 
@@ -395,19 +471,17 @@ public class Maintenance {
         } else {
           return UpdateStatus.NotUpdateOnBoundary;
         }
-      case INSIDE:
+      default: // INSIDE
         if (hasDiff) {
           return UpdateStatus.UpdateInside;
         } else {
           return UpdateStatus.NotUpdateInside;
         }
-      default:
-        throw new Exception(String.format("Status %s not defined!", status));
     }
   }
 
   private static BoundaryLocationStatus updateBoundaryLocationStatus(BoundaryLocationStatus status,
-      BoundaryLocationStatus cur) throws Exception {
+      BoundaryLocationStatus cur) {
     switch (cur) {
       case ONBOUNDARY:
         if (status.equals(BoundaryLocationStatus.INSIDE)) {
@@ -422,8 +496,6 @@ public class Maintenance {
         break;
       case INSIDE:
         break;
-      default:
-        throw new Exception(String.format("BoundaryLocationStatus %s does not exist!", cur));
     }
     return status;
   }
