@@ -25,6 +25,7 @@ import commons.EnumVariables.GeoReachType;
 import commons.GeoReachIndexUtil;
 import commons.MyRectangle;
 import commons.Neo4jGraphUtility;
+import commons.ReadWriteUtil;
 import commons.SpaceManager;
 import commons.Util;
 import commons.VertexGeoReachList;
@@ -33,7 +34,10 @@ import dataprocess.LoadData;
 public class MaintenanceTest {
   // private String dbPath =
   // "D:\\Ubuntu_shared\\GeoReachHop\\data\\Yelp\\neo4j-community-3.1.1_128_128_1_100_0_3_test\\data\\databases\\graph.db";
-  String dbPath = null, homeDir = null, dataDir = null, mapPath = null;
+  String dataset = "smallGraph";
+  String homeDir = null, dataDir = null;
+  String graphPath = null, entityPath = null, labelListPath = null;
+  String dbPath = null, mapPath = null;
   private GraphDatabaseService dbservice = null;
 
   ArrayList<ArrayList<Integer>> graph = null;
@@ -41,9 +45,13 @@ public class MaintenanceTest {
   ArrayList<Integer> labelList = null;
 
   /**
-   * Initialize the test graph, including variables: graph, entities, labelList.
+   * Initialize the test graph, including variables: graph, entities, labelList and write to file.
+   * It is used only once.
+   * 
+   * @throws Exception
    */
-  public void iniSmallGraph() {
+  @Test
+  public void iniSmallGraph() throws Exception {
     int nodeCount = 7;
     graph = new ArrayList<>(nodeCount);
     entities = new ArrayList<>(nodeCount);
@@ -75,6 +83,25 @@ public class MaintenanceTest {
     graph.get(4).add(2);
     graph.get(5).add(3);
     graph.get(6).add(2);
+
+    // one time running to generate the files for smallGraph.
+    String outputDir =
+        "/Users/zhouyang/Google_Drive/Projects/github_code/GeoReach_Traverse/GeoReach_Traverse/src/test/resources/data/smallGraph";
+    String outputGraphPath = outputDir + "/graph.txt";
+    ReadWriteUtil.writeGraphArrayList(graph, outputGraphPath);
+
+    String outputEntityPath = outputDir + "/entity.txt";
+    ReadWriteUtil.writeEntityToFile(entities, outputEntityPath);
+
+    String outputLabelListPath = outputDir + "/label.txt";
+    ReadWriteUtil.WriteArray(outputLabelListPath, labelList);
+  }
+
+  @Test
+  public void readGraph() {
+    graph = Util.ReadGraph(graphPath);
+    entities = Util.ReadEntity(entityPath);
+    labelList = Util.readIntegerArray(labelListPath);
   }
 
   /**
@@ -88,7 +115,7 @@ public class MaintenanceTest {
       FileUtils.deleteDirectory(new File(dbPath));
     }
 
-    iniSmallGraph();
+    readGraph();
     LoadData loadData = new LoadData();
     loadData.loadAllEntityAndCreateIdMap(entities, labelList, dbPath, mapPath);
     loadData.LoadGraphEdges(mapPath, dbPath, graph);
@@ -104,12 +131,16 @@ public class MaintenanceTest {
     ClassLoader classLoader = getClass().getClassLoader();
     File file = new File(classLoader.getResource("").getFile());
     homeDir = file.getAbsolutePath();
-    dbPath = homeDir + "/smallGraph.db";
+    dataDir = homeDir + "/data/" + dataset;
 
-    dataDir = homeDir + "/smallGraph";
     if (!Util.pathExist(dataDir)) {
       new File(dataDir).mkdirs();
     }
+
+    graphPath = dataDir + "/graph.txt";
+    entityPath = dataDir + "/entity.txt";
+    labelListPath = dataDir + "/label.txt";
+    dbPath = dataDir + "/graph.db";
     mapPath = dataDir + "/node_map_RTree.txt";
 
   }
@@ -242,23 +273,23 @@ public class MaintenanceTest {
     MG = 2;
     MR = 2;
     Util.print(String.format("MG: %f, MR: %f", MG, MR));
-    addEdgeTest();
+    addEdgeSetTest();
 
     // test for RMBR
     MG = -1;
     MR = 2;
     Util.print(String.format("MG: %f, MR: %f", MG, MR));
-    addEdgeTest();
+    addEdgeSetTest();
 
     // test for GeoB
     MG = -1;
     MR = -1;
     Util.print(String.format("MG: %f, MR: %f", MG, MR));
-    addEdgeTest();
+    addEdgeSetTest();
   }
 
   @Test
-  public void addEdgeTest() throws Exception {
+  public void addEdgeSetTest() throws Exception {
     loadGraph();
     constructAndLoadIndex();
     ArrayList<VertexGeoReachList> index = null;
