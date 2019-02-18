@@ -171,7 +171,7 @@ public class Util {
     for (int label : labelList)
       labelListString.add(String.valueOf(label));
 
-    Util.WriteArray(labelListPath, labelListString);
+    ReadWriteUtil.WriteArray(labelListPath, labelListString);
   }
 
   /**
@@ -388,18 +388,6 @@ public class Util {
       if (entity.IsSpatial)
         count++;
     return count;
-  }
-
-  public static void WriteArray(String filename, ArrayList<String> arrayList) {
-    FileWriter fileWriter = null;
-    try {
-      fileWriter = new FileWriter(new File(filename));
-      for (String line : arrayList)
-        fileWriter.write(line + "\n");
-      fileWriter.close();
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
   }
 
   /**
@@ -658,26 +646,5 @@ public class Util {
       System.exit(-1);
     }
     return entities;
-  }
-
-  public static void writeEntity(ArrayList<Entity> entities, String entityPath) {
-    FileWriter writer = null;
-    try {
-      writer = new FileWriter(new File(entityPath));
-      writer.write(entities.size() + "\n");
-      for (Entity entity : entities) {
-        writer.write(entity.id + ",");
-        if (entity.IsSpatial)
-          writer.write(
-              String.format("1,%s,%s\n", String.valueOf(entity.lon), String.valueOf(entity.lat)));
-        else
-          writer.write("0\n");
-      }
-      writer.close();
-    } catch (Exception e) {
-      // TODO: handle exception
-      e.printStackTrace();
-      System.exit(-1);
-    }
   }
 }

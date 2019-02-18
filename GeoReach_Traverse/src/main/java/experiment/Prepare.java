@@ -6,6 +6,7 @@ import java.util.HashSet;
 
 import commons.Config;
 import commons.EnumVariables.*;
+import commons.ReadWriteUtil;
 import commons.Util;
 
 public class Prepare {
@@ -60,7 +61,7 @@ public class Prepare {
 			String outputPath = String.format("%s\\query\\%s\\startID_neo4j.txt", 
 					projectDir, dataset);
 			Util.print("output neo4j ids to " + outputPath);
-			Util.WriteArray(outputPath, startIDNeo4j);
+			ReadWriteUtil.WriteArray(outputPath, startIDNeo4j);
 		}
 	}
 	
@@ -84,7 +85,7 @@ public class Prepare {
 			for (Long id : idSet)
 				idStrings.add(String.valueOf(id));
 			Util.print("Output to " + outputPath);
-			Util.WriteArray(outputPath, idStrings);
+			ReadWriteUtil.WriteArray(outputPath, idStrings);
 		}
 	}
 }

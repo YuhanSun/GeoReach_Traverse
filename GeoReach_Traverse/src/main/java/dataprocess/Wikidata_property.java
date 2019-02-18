@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.TreeSet;
 
 import commons.Entity;
+import commons.ReadWriteUtil;
 import commons.Util;
 
 public class Wikidata_property {
@@ -94,7 +95,7 @@ public class Wikidata_property {
 			ArrayList<String> outputArray = new ArrayList<>(hasLabelVertices.size());
 			for (int id : hasLabelVertices)
 				outputArray.add(String.valueOf(id));
-			Util.WriteArray(filePath, outputArray);
+			ReadWriteUtil.WriteArray(filePath, outputArray);
 			
 			filePath = dir + "\\labels.txt";
 			FileWriter writer = new FileWriter(new File(filePath));
@@ -142,7 +143,7 @@ public class Wikidata_property {
 			}
 		}
 		Util.print(count);
-		Util.writeEntity(entities, entityPath);
+		ReadWriteUtil.writeEntityToFile(entities, entityPath);
 	}
 	
 	public static void removeLocationOutOfEarth()
@@ -170,7 +171,7 @@ public class Wikidata_property {
 				entity.lon = 0;
 				entity.lat = 0;
 			}
-			Util.writeEntity(entities, dir + "\\new_entity.txt");
+			ReadWriteUtil.writeEntityToFile(entities, dir + "\\new_entity.txt");
 		} catch (Exception e) {
 			// TODO: handle exception
 			Util.print(line);
@@ -472,7 +473,7 @@ public class Wikidata_property {
 			}
 			reader.close();
 			
-			Util.writeEntity(entities, entityPath);
+			ReadWriteUtil.writeEntityToFile(entities, entityPath);
 		} catch (Exception e) {
 			Util.print(lineIndex);
 			Util.print(line);
