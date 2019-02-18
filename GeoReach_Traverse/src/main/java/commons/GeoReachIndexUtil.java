@@ -271,8 +271,8 @@ public class GeoReachIndexUtil {
   }
 
   /**
-   * Output index based on type
-   * 
+   * Output index based on type. Will overwrite if the same filename exists.
+   *
    * @param index
    * @param filepath
    * @param types

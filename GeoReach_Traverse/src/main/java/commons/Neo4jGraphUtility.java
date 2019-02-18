@@ -2,7 +2,6 @@ package commons;
 
 import java.io.File;
 import java.util.HashSet;
-import java.util.Map;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -43,8 +42,8 @@ public class Neo4jGraphUtility {
     return dbservice;
   }
 
-  public void printNode(Node node) {
-    Map<String, Object> properties = node.getAllProperties();
+  public static void printNode(Node node) {
+    Util.print(String.format("%s: %s", node, node.getAllProperties()));
   }
 
 }
