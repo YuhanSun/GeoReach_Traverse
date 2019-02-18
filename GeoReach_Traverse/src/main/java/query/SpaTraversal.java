@@ -220,12 +220,12 @@ public class SpaTraversal {
               String.format("%s for %s is %d", GeoReachTypeName + "_" + distance, node, type));
       }
     } catch (Exception e) {
-      Util.print(String.format("Something wrong happen in validate(%s, %d, %s)", node, distance,
+      Util.println(String.format("Something wrong happen in validate(%s, %d, %s)", node, distance,
           queryRectangle));
       e.printStackTrace();
       System.exit(-1);
     }
-    Util.print(String.format("Something wrong happen in validate(%s, %d, %s)", node, distance,
+    Util.println(String.format("Something wrong happen in validate(%s, %d, %s)", node, distance,
         queryRectangle));
     return true;
   }

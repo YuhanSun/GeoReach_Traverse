@@ -148,7 +148,7 @@ public class GeoReachIndexUtil {
       }
       reader.close();
     } catch (Exception e) {
-      Util.print("id: " + id + "\n" + line);
+      Util.println("id: " + id + "\n" + line);
       e.printStackTrace();
       System.exit(-1);
     }
@@ -200,7 +200,7 @@ public class GeoReachIndexUtil {
       reader.close();
       return index;
     } catch (Exception e) {
-      Util.print("id: " + id + "\n" + line);
+      Util.println("id: " + id + "\n" + line);
       e.printStackTrace();
       System.exit(-1);
     }
@@ -263,8 +263,8 @@ public class GeoReachIndexUtil {
       }
       writer.close();
     } catch (Exception e) {
-      Util.print("Error happens when output index for vertex " + id);
-      Util.print("Type List: " + typesList.get(id));
+      Util.println("Error happens when output index for vertex " + id);
+      Util.println("Type List: " + typesList.get(id));
       e.printStackTrace();
       System.exit(-1);
     }
@@ -326,8 +326,8 @@ public class GeoReachIndexUtil {
       }
       writer.close();
     } catch (Exception e) {
-      Util.print("Error happens when output index for vertex " + id);
-      Util.print("Type List: " + typesList.get(id));
+      Util.println("Error happens when output index for vertex " + id);
+      Util.println("Type List: " + typesList.get(id));
       e.printStackTrace();
       System.exit(-1);
     }

@@ -19,7 +19,7 @@ public class UtilTest {
   @Test
   public void pathExistTest() {
     String path = "D:\\Ubuntu_shared\\GeReachHop\\data";
-    Util.print(Util.pathExist(path));
+    Util.println(Util.pathExist(path));
   }
 
   @Test
@@ -31,19 +31,19 @@ public class UtilTest {
     ArrayList<Long> ids = new ArrayList<>();
     ids.add((long) 1299706);
     ArrayList<Node> nodes = Util.getNodesByIDs(databaseService, ids);
-    Util.print(nodes);
+    Util.println(nodes);
     for (Node node : nodes) {
-      Util.print(node);
-      Util.print(node.getAllProperties());
+      Util.println(node);
+      Util.println(node.getAllProperties());
     }
     tx.success();
     tx.close();
 
     tx = databaseService.beginTx();
-    Util.print(nodes);
+    Util.println(nodes);
     for (Node node : nodes) {
-      Util.print(node);
-      Util.print(node.getAllProperties());
+      Util.println(node);
+      Util.println(node.getAllProperties());
     }
     tx.success();
     tx.close();

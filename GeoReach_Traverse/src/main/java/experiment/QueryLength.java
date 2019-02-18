@@ -100,7 +100,7 @@ public class QueryLength {
 //			resultDir = String.format("D:\\Google_Drive\\Experiment_Result\\Riso-Tree\\%s", dataset);
 			break;
 		}
-		Util.print("entity path: " + entityPath);
+		Util.println("entity path: " + entityPath);
 		ArrayList<Entity> entities = Util.ReadEntity(entityPath);
 		spaCount = Util.GetSpatialEntityCount(entities);
 		
@@ -133,9 +133,9 @@ public class QueryLength {
 			
 			//Read start ids
 			String startIDPath = String.format("%s/startID_neo4j.txt", queryLength.queryDir);
-			Util.print("start id path: " + startIDPath);
+			Util.println("start id path: " + startIDPath);
 			ArrayList<Integer> allIDs = Util.readIntegerArray(startIDPath);
-			Util.print(allIDs);
+			Util.println(allIDs);
 			
 			int experimentCount = 500;
 			int groupCount = 1;
@@ -213,8 +213,8 @@ public class QueryLength {
 				queryrect_path = String.format("%s\\queryrect_%d.txt", queryDir, name_suffix);
 				break;
 			}
-			Util.print("query rectangle path: " + queryrect_path);
-			Util.print("queryrect path: " + queryrect_path);
+			Util.println("query rectangle path: " + queryrect_path);
+			Util.println("queryrect path: " + queryrect_path);
 			ArrayList<MyRectangle> queryrect = Util.ReadQueryRectangle(queryrect_path);
 			String head_line = "time\tvisited_count\tGeoReachPruned\tHistoryPruned\tresult_count\n";
 			if(!TEST_FORMAT)
@@ -225,7 +225,7 @@ public class QueryLength {
 				write_line = length + "\n" + head_line;
 				if(!TEST_FORMAT)
 					Util.WriteFile(result_detail_path, true, write_line);
-				Util.print("db path: " + db_path);
+				Util.println("db path: " + db_path);
 				Util.clearAndSleep(password, 5000);
 				spaTraversal = new SpaTraversal(db_path, MAX_HOPNUM, totalRange, pieces_x, pieces_y);
 
@@ -253,8 +253,8 @@ public class QueryLength {
 
 					if(!TEST_FORMAT)
 					{
-						Util.print(String.format("%d : %s", i, rectangle.toString()));
-						Util.print(startIDs);
+						Util.println(String.format("%d : %s", i, rectangle.toString()));
+						Util.println(startIDs);
 						
 						if (clearCacheFlag)
 							Util.clearAndSleep(password, 5000);
@@ -357,7 +357,7 @@ public class QueryLength {
 					queryrect_path = String.format("%s\\queryrect_%d.txt", queryDir, name_suffix);
 					break;
 				}
-				Util.print("query rectangle path: " + queryrect_path);
+				Util.println("query rectangle path: " + queryrect_path);
 
 				write_line = length + "\n" + head_line;
 				if(!TEST_FORMAT)
@@ -375,7 +375,7 @@ public class QueryLength {
 				for ( int i = 0; i < startIDsList.size(); i++)
 				{
 					ArrayList<Long> startIDs = startIDsList.get(i);
-					Util.print("start ids: " + startIDs);
+					Util.println("start ids: " + startIDs);
 					Transaction tx = simpleGraphTraversal.dbservice.beginTx();
 					ArrayList<Node> startNodes = Util.getNodesByIDs(simpleGraphTraversal.dbservice, startIDs);
 					tx.success();
@@ -391,8 +391,8 @@ public class QueryLength {
 
 					if(!TEST_FORMAT)
 					{
-						Util.print(String.format("%d : %s", i, rectangle.toString()));
-						Util.print(startIDs);
+						Util.println(String.format("%d : %s", i, rectangle.toString()));
+						Util.println(startIDs);
 						if (clearCacheFlag)
 							Util.clearAndSleep(password, 5000);
 						

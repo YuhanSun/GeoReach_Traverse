@@ -19,8 +19,8 @@ public class VertexGeoReachTest {
 	@Test
 	public void constructorTest() {
 		VertexGeoReach vertexGeoReach = new VertexGeoReach(3);
-		Util.print(vertexGeoReach.ReachGrids.size());
-		Util.print(vertexGeoReach.ReachGrids.get(1));
+		Util.println(vertexGeoReach.ReachGrids.size());
+		Util.println(vertexGeoReach.ReachGrids.get(1));
 	}
 
 }

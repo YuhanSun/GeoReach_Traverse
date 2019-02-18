@@ -41,13 +41,13 @@ public class Prepare {
 			ArrayList<Integer> startIDs = Util.readIntegerArray(stardIDPath);
 			
 			String graph_pos_map_path = String.format("%s\\%s\\node_map_RTree.txt", dataDir, dataset);
-	    	Util.print("read map from " + graph_pos_map_path);
+	    	Util.println("read map from " + graph_pos_map_path);
 	    	HashMap<String, String> graph_pos_map = Util.ReadMap(graph_pos_map_path);
-	    	Util.print("finish reading");
+	    	Util.println("finish reading");
 	    	
-	    	Util.print("ini array");
+	    	Util.println("ini array");
 			long[] graph_pos_map_list = new long[graph_pos_map.size()];
-			Util.print("finish ini");
+			Util.println("finish ini");
 			for ( String key_str : graph_pos_map.keySet())
 			{
 				int key = Integer.parseInt(key_str);
@@ -60,7 +60,7 @@ public class Prepare {
 				startIDNeo4j.add(String.valueOf(graph_pos_map_list[id]));
 			String outputPath = String.format("%s\\query\\%s\\startID_neo4j.txt", 
 					projectDir, dataset);
-			Util.print("output neo4j ids to " + outputPath);
+			Util.println("output neo4j ids to " + outputPath);
 			ReadWriteUtil.WriteArray(outputPath, startIDNeo4j);
 		}
 	}
@@ -78,13 +78,13 @@ public class Prepare {
 			String graphPath = String.format("%s\\%s\\graph.txt", 
 					dataDir, dataset);
 			
-			Util.print("Get graph node count from " + graphPath);
+			Util.println("Get graph node count from " + graphPath);
 			int nodeCount = Util.GetNodeCountGeneral(graphPath);
 			HashSet<Long> idSet = Util.GenerateRandomInteger(nodeCount, 10000);
 			ArrayList<String> idStrings = new ArrayList<>(idSet.size());
 			for (Long id : idSet)
 				idStrings.add(String.valueOf(id));
-			Util.print("Output to " + outputPath);
+			Util.println("Output to " + outputPath);
 			ReadWriteUtil.WriteArray(outputPath, idStrings);
 		}
 	}

@@ -63,7 +63,7 @@ public class Neo4jCypherTraversal {
         String.valueOf(queryRectangle.max_x), String.valueOf(queryRectangle.min_y), length - 1,
         lat_name, String.valueOf(queryRectangle.max_y));
     query += " return p";
-    Util.print(query);
+    Util.println(query);
     Result result = dbservice.execute(query);
     while (result.hasNext()) {
       resultCount++;

@@ -15,7 +15,7 @@ public class App {
 
     test(status);
 
-    Util.print(status);
+    Util.println(status);
     // for (double x = 0.00001; x < 0.2; x *= 10)
     // {
     // Util.Print(x);
@@ -85,7 +85,7 @@ public class App {
 
   public static void test(UpdateStatus status) {
     status = UpdateStatus.UpdateOutside;
-    Util.print(status);
+    Util.println(status);
   }
 
   public static void test(ArrayList<Integer> arrayList) {

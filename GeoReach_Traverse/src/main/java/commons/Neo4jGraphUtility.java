@@ -34,7 +34,7 @@ public class Neo4jGraphUtility {
    */
   public static GraphDatabaseService getDatabaseService(String dbPath) {
     if (!Util.pathExist(dbPath)) {
-      Util.print(dbPath + "does not exist!");
+      Util.println(dbPath + "does not exist!");
       System.exit(-1);
     }
     GraphDatabaseService dbservice =
@@ -43,7 +43,7 @@ public class Neo4jGraphUtility {
   }
 
   public static void printNode(Node node) {
-    Util.print(String.format("%s: %s", node, node.getAllProperties()));
+    Util.println(String.format("%s: %s", node, node.getAllProperties()));
   }
 
 }

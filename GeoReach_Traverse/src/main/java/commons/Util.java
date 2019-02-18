@@ -61,18 +61,7 @@ public class Util {
     }
   }
 
-
-
-  // public static boolean cellOnBoundary(RoaringBitmap rb, int idX, int idY, int piecesX,
-  // int piecesY) {
-  // for (int id : rb) {
-  //
-  // }
-  //
-  // return false;
-  // }
-
-  public static void print(Object o) {
+  public static void println(Object o) {
     System.out.println(o);
   }
 
@@ -94,13 +83,13 @@ public class Util {
         if (line1.equals(line2))
           continue;
         else {
-          Util.print(line1);
-          Util.print(line2);
+          Util.println(line1);
+          Util.println(line2);
           return false;
         }
       }
       if (line1 != null || line2 != null) {
-        Util.print("line count different!");
+        Util.println("line count different!");
         return false;
       }
       reader1.close();
@@ -165,7 +154,7 @@ public class Util {
       else
         labelList.add(0);
     }
-    Util.print("Write label list to: " + labelListPath);
+    Util.println("Write label list to: " + labelListPath);
 
     ArrayList<String> labelListString = new ArrayList<>(labelList.size());
     for (int label : labelList)
@@ -463,7 +452,7 @@ public class Util {
       // TODO: handle exception
       e.printStackTrace();
     }
-    Util.print("nothing in ReadMap(" + filename + ")");
+    Util.println("nothing in ReadMap(" + filename + ")");
     return null;
   }
 
@@ -593,7 +582,7 @@ public class Util {
         throw new Exception(String.format(
             "first line shows node count is %d, but only has %d lines!", nodeCount, index + 1));
     } catch (Exception e) {
-      print(str);
+      println(str);
       if (reader != null)
         try {
           reader.close();
@@ -641,7 +630,7 @@ public class Util {
       }
       reader.close();
     } catch (Exception e) {
-      Util.print(String.format("error happens in entity id %d", id));
+      Util.println(String.format("error happens in entity id %d", id));
       e.printStackTrace();
       System.exit(-1);
     }

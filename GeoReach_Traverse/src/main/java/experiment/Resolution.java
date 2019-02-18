@@ -63,7 +63,7 @@ public class Resolution {
     String dir = "D:\\Ubuntu_shared\\GeoReachHop\\data";
 
     for (int pieces : piecesArray) {
-      Util.print("\npieces: " + pieces);
+      Util.println("\npieces: " + pieces);
 
       ArrayList<VertexGeoReach> index = IndexConstruct.ConstructIndex(graph, entities, minx, miny,
           maxx, maxy, pieces, pieces, MAX_HOPNUM);
@@ -75,16 +75,16 @@ public class Resolution {
       String suffix = "bitmap";
       String indexPath = String.format("%s\\%s\\resolution\\%d_%d_%d_%d_%d_%d_%s.txt", dir, dataset,
           pieces, pieces, (int) (MG * 100), (int) (MR * 100), MC, MAX_HOPNUM, suffix);
-      Util.print("Output index to " + indexPath);
+      Util.println("Output index to " + indexPath);
       GeoReachIndexUtil.outputGeoReach(index, indexPath, typesList, format);
 
       // list format
       format = GeoReachOutputFormat.LIST;
       suffix = "list";
-      Util.print("\npieces: " + pieces);
+      Util.println("\npieces: " + pieces);
       indexPath = String.format("%s\\%s\\resolution\\%d_%d_%d_%d_%d_%d_%s.txt", dir, dataset,
           pieces, pieces, (int) (MG * 100), (int) (MR * 100), MC, MAX_HOPNUM, suffix);
-      Util.print("Output index to " + indexPath);
+      Util.println("Output index to " + indexPath);
       GeoReachIndexUtil.outputGeoReach(index, indexPath, typesList, format);
     }
   }
@@ -99,7 +99,7 @@ public class Resolution {
 
     String dir = "D:\\Ubuntu_shared\\GeoReachHop\\data";
     for (int pieces : piecesArray) {
-      Util.print("\npieces: " + pieces);
+      Util.println("\npieces: " + pieces);
       Loader loader = new Loader(config);
 
       String indexPath = String.format("%s\\%s\\resolution\\%d_%d_%d_%d_%d_%d_%s.txt", dir, dataset,
@@ -109,7 +109,7 @@ public class Resolution {
           "%s\\%s\\resolution\\%s_%d_%d_%d_%d_%d_%d" + "\\data\\databases\\graph.db", dir, dataset,
           version, pieces, pieces, (int) (MG * 100), (int) (MR * 100), MC, MAX_HOPNUM);
 
-      Util.print(String.format("Load from %s\nto %s", indexPath, dbPath));
+      Util.println(String.format("Load from %s\nto %s", indexPath, dbPath));
       loader.load(indexPath, dbPath);
     }
   }
@@ -128,9 +128,9 @@ public class Resolution {
 
       // Read start ids
       String startIDPath = String.format("%s/startID.txt", queryDir);
-      Util.print("start id path: " + startIDPath);
+      Util.println("start id path: " + startIDPath);
       ArrayList<Integer> allStartIDs = Util.readIntegerArray(startIDPath);
-      Util.print(allStartIDs);
+      Util.println(allStartIDs);
 
       int experimentCount = 500;
       int repeatTime = 1;
@@ -180,19 +180,19 @@ public class Resolution {
               queryrect_path = String.format("%s\\queryrect_%d.txt", queryDir, name_suffix);
               break;
           }
-          Util.print("query rectangle path: " + queryrect_path);
+          Util.println("query rectangle path: " + queryrect_path);
 
           String write_line = pieces + "\n" + head_line;
           Util.WriteFile(result_detail_path, true, write_line);
 
-          Util.print("queryrect path: " + queryrect_path);
+          Util.println("queryrect path: " + queryrect_path);
           ArrayList<MyRectangle> queryrect = Util.ReadQueryRectangle(queryrect_path);
 
           String dbFolder = String.format("%s_%d_%d_%d_%d_%d_%d", version, pieces, pieces,
               (int) (MG * 100), (int) (MR * 100), MC, 3);
           String db_path = String.format("%s/%s/resolution/%s/data/databases/graph.db", dbDir,
               dataset, dbFolder);
-          Util.print("db path: " + db_path);
+          Util.println("db path: " + db_path);
           MyRectangle totalRange = new MyRectangle(minx, miny, maxx, maxy);
 
           Util.clearAndSleep(password, 5000);
@@ -218,8 +218,8 @@ public class Resolution {
                   rectangle.max_x + delta, rectangle.max_y + delta);
             }
 
-            Util.print(String.format("%d : %s", i, rectangle.toString()));
-            Util.print(startIDs);
+            Util.println(String.format("%d : %s", i, rectangle.toString()));
+            Util.println(startIDs);
 
             Util.clearAndSleep(password, 5000);
 
@@ -459,15 +459,15 @@ public class Resolution {
         break;
     }
 
-    Util.print("Read graph from " + graphPath);
+    Util.println("Read graph from " + graphPath);
     graph = Util.ReadGraph(graphPath);
 
-    Util.print("Read entity from " + entityPath);
+    Util.println("Read entity from " + entityPath);
     entities = Util.ReadEntity(entityPath);
 
     spaCount = Util.GetSpatialEntityCount(entities);
 
-    Util.print("Read map from " + graph_pos_map_path);
+    Util.println("Read map from " + graph_pos_map_path);
     HashMap<String, String> graph_pos_map = Util.ReadMap(graph_pos_map_path);
     graph_pos_map_list = new long[graph_pos_map.size()];
     for (String key_str : graph_pos_map.keySet()) {

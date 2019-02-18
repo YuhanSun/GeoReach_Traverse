@@ -105,7 +105,7 @@ public class SpaceManagerTest {
 
     MyRectangle rectangle = new MyRectangle(0, 0, 1.0, 1.0);
     boundary = spaceManager.getXYBoundary(rectangle);
-    Util.print(Arrays.toString(boundary));
+    Util.println(Arrays.toString(boundary));
     assert (boundary[0] == 0);
     assert (boundary[1] == 0);
     assert (boundary[2] == 9);

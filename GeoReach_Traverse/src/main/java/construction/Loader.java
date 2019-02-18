@@ -60,13 +60,13 @@ public class Loader {
     String indexPath = dir + "/128_128_100_100_0_2_bitmap.txt";
     String dbFolder = "neo4j-community-3.1.1";
     String dbPath = dir + "/" + dbFolder + "/data/databases/graph.db";
-    Util.print("load from " + indexPath + " \nto " + dbPath);
+    Util.println("load from " + indexPath + " \nto " + dbPath);
     if (!Util.pathExist(indexPath)) {
-      Util.print(indexPath + " does not exist");
+      Util.println(indexPath + " does not exist");
       System.exit(-1);
     }
     if (!Util.pathExist(dbPath)) {
-      Util.print(dbPath + " does not exist");
+      Util.println(dbPath + " does not exist");
       System.exit(-1);
     }
 
@@ -87,7 +87,7 @@ public class Loader {
       int pos_id = Integer.parseInt(graph_pos_map.get(key_str));
       loader.graph_pos_map_list[key] = pos_id;
     }
-    Util.print("graph pos map size: " + graph_pos_map.size());
+    Util.println("graph pos map size: " + graph_pos_map.size());
 
     loader.load(indexPath, dbPath);
   }
@@ -101,7 +101,7 @@ public class Loader {
     String indexPath = dir + "\\128_128_0_100_0_3_bitmap.txt";
     String dbFolder = "neo4j-community-3.1.1_Gowalla_10_128_128_100_100_0_3";
     String dbPath = dir + "\\" + dbFolder + "\\data\\databases\\graph.db";
-    Util.print("load from " + indexPath + " \nto " + dbPath);
+    Util.println("load from " + indexPath + " \nto " + dbPath);
     loader.load(indexPath, dbPath);
   }
 
@@ -175,7 +175,7 @@ public class Loader {
 
       if (inserter != null)
         inserter.shutdown();
-      Util.print(String.format("line %d: %s", lineIndex, line));
+      Util.println(String.format("line %d: %s", lineIndex, line));
       e.printStackTrace();
       System.exit(-1);
     }
@@ -251,7 +251,7 @@ public class Loader {
 
       if (inserter != null)
         inserter.shutdown();
-      Util.print(String.format("line %d: %s", lineIndex, line));
+      Util.println(String.format("line %d: %s", lineIndex, line));
       e.printStackTrace();
       System.exit(-1);
     }
@@ -310,7 +310,7 @@ public class Loader {
       int pos_id = Integer.parseInt(graph_pos_map.get(key_str));
       graph_pos_map_list[key] = pos_id;
     }
-    Util.print(graph_pos_map.size());
+    Util.println(graph_pos_map.size());
   }
 
 }

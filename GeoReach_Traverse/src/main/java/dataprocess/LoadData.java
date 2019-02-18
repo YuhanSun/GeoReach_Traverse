@@ -96,7 +96,7 @@ public class LoadData {
     //// break;
     //// }
 
-    Util.print("Read entity from: " + entityPath);
+    Util.println("Read entity from: " + entityPath);
     entities = Util.ReadEntity(entityPath);
   }
 
@@ -147,12 +147,12 @@ public class LoadData {
   }
 
   public static void loadGeoReachIndex() {
-    Util.print("loadGeoReachIndex");
+    Util.println("loadGeoReachIndex");
 
     Loader loader = new Loader();
     loader.graph_pos_map_path = dir + "/node_map_RTree.txt";
 
-    Util.print("read graph neo4j id map from " + loader.graph_pos_map_path);
+    Util.println("read graph neo4j id map from " + loader.graph_pos_map_path);
     HashMap<String, String> graph_pos_map = Util.ReadMap(loader.graph_pos_map_path);
     loader.graph_pos_map_list = new long[graph_pos_map.size()];
     for (String key_str : graph_pos_map.keySet()) {
@@ -160,13 +160,13 @@ public class LoadData {
       int pos_id = Integer.parseInt(graph_pos_map.get(key_str));
       loader.graph_pos_map_list[key] = pos_id;
     }
-    Util.print("map size: " + graph_pos_map.size());
+    Util.println("map size: " + graph_pos_map.size());
 
     String dir = "/hdd2/data/ysun138";
     String indexPath = dir + "/128_128_100_100_0_2_bitmap.txt";
     String dbFolder = "neo4j-community-3.1.1";
     String dbPath = dir + "/" + dbFolder + "/data/databases/graph.db";
-    Util.print("load from " + indexPath + " \nto " + dbPath);
+    Util.println("load from " + indexPath + " \nto " + dbPath);
     loader.load(indexPath, dbPath);
   }
 
@@ -234,13 +234,13 @@ public class LoadData {
   // }
 
   public static void LoadGraphEdges() {
-    Util.print("Load graph edges\n");
+    Util.println("Load graph edges\n");
     BatchInserter inserter = null;
     try {
       Map<String, String> id_map = Util.ReadMap(mapPath);
       Map<String, String> config = new HashMap<String, String>();
       config.put("dbms.pagecache.memory", "80g");
-      Util.print("batch insert into: " + dbPath);
+      Util.println("batch insert into: " + dbPath);
       inserter = BatchInserters.inserter(new File(dbPath).getAbsoluteFile(), config);
 
       ArrayList<ArrayList<Integer>> graph = Util.ReadGraph(graphPath);
@@ -275,12 +275,12 @@ public class LoadData {
    */
   public void LoadGraphEdges(String mapPath, String dbPath, ArrayList<ArrayList<Integer>> graph)
       throws Exception {
-    Util.print("Load graph edges\n");
+    Util.println("Load graph edges\n");
     BatchInserter inserter = null;
     Map<String, String> id_map = Util.ReadMap(mapPath);
     Map<String, String> config = new HashMap<String, String>();
     config.put("dbms.pagecache.memory", "80g");
-    Util.print("batch insert into: " + dbPath);
+    Util.println("batch insert into: " + dbPath);
     inserter = BatchInserters.inserter(new File(dbPath).getAbsoluteFile(), config);
 
     for (int i = 0; i < graph.size(); i++) {
@@ -301,7 +301,7 @@ public class LoadData {
    * Attach spatial node map to file node_map.txt
    */
   public static void GetSpatialNodeMap() {
-    Util.print("Get spatial vertices map");
+    Util.println("Get spatial vertices map");
     try {
       Map<Object, Object> id_map = new TreeMap<Object, Object>();
 
@@ -321,7 +321,7 @@ public class LoadData {
       tx.close();
       databaseService.shutdown();
 
-      Util.print("Write spatial node map to " + mapPath + "\n");
+      Util.println("Write spatial node map to " + mapPath + "\n");
       Util.WriteMap(mapPath, true, id_map);
 
     } catch (java.lang.Exception e) {
@@ -335,12 +335,12 @@ public class LoadData {
    */
   public static void LoadNonSpatialEntity() {
     try {
-      Util.print(String.format("LoadNonSpatialEntity\n from %s\n%s\n to %s", entityPath,
+      Util.println(String.format("LoadNonSpatialEntity\n from %s\n%s\n to %s", entityPath,
           labelListPath, dbPath));
 
       if (!Util.pathExist(labelListPath))
         throw new java.lang.Exception(labelListPath + " does not exist");
-      Util.print("Read label list from: " + labelListPath);
+      Util.println("Read label list from: " + labelListPath);
       ArrayList<Integer> labelList = Util.readIntegerArray(labelListPath);
 
       Map<Object, Object> id_map = new TreeMap<Object, Object>();
@@ -348,7 +348,7 @@ public class LoadData {
       Map<String, String> config = new HashMap<String, String>();
       config.put("dbms.pagecache.memory", "80g");
 
-      Util.print("Batch insert into: " + dbPath);
+      Util.println("Batch insert into: " + dbPath);
       BatchInserter inserter = BatchInserters.inserter(new File(dbPath).getAbsoluteFile(), config);
 
       for (int i = 0; i < entities.size(); i++) {
@@ -363,7 +363,7 @@ public class LoadData {
         }
       }
       inserter.shutdown();
-      Util.print("Write non-spatial node map to " + mapPath + "\n");
+      Util.println("Write non-spatial node map to " + mapPath + "\n");
       Util.WriteMap(mapPath, false, id_map);
     } catch (java.lang.Exception e) {
       e.printStackTrace();
@@ -382,7 +382,7 @@ public class LoadData {
    */
   public void loadAllEntityAndCreateIdMap(List<Entity> entities, List<Integer> labelList,
       String dbPath, String mapPath) throws Exception {
-    Util.print("Batch insert into: " + dbPath);
+    Util.println("Batch insert into: " + dbPath);
     Map<Object, Object> id_map = new TreeMap<Object, Object>();
     Map<String, String> config = new HashMap<String, String>();
     config.put("dbms.pagecache.memory", "80g");
@@ -406,8 +406,8 @@ public class LoadData {
 
     }
     inserter.shutdown();
-    Util.print("Write all node map to " + mapPath + "\n");
-    Util.print("map is " + id_map);
+    Util.println("Write all node map to " + mapPath + "\n");
+    Util.println("map is " + id_map);
     Util.WriteMap(mapPath, false, id_map);
   }
 
@@ -427,7 +427,7 @@ public class LoadData {
       Map<String, String> config = new HashMap<String, String>();
       config.put("dbms.pagecache.memory", "80g");
 
-      Util.print("Batch insert into: " + dbPath);
+      Util.println("Batch insert into: " + dbPath);
       BatchInserter inserter = BatchInserters.inserter(new File(dbPath).getAbsoluteFile(), config);
 
       for (int i = 0; i < entities.size(); i++) {
@@ -442,7 +442,7 @@ public class LoadData {
         }
       }
       inserter.shutdown();
-      Util.print("Write non-spatial node map to " + mapPath + "\n");
+      Util.println("Write non-spatial node map to " + mapPath + "\n");
       Util.WriteMap(mapPath, false, id_map);
     } catch (java.lang.Exception e) {
       e.printStackTrace();
@@ -507,23 +507,23 @@ public class LoadData {
    * be 1 and non-spatial will 0.
    */
   public static void generateLabelList() {
-    Util.print("Generate the label list based on entity file\n");
+    Util.println("Generate the label list based on entity file\n");
     Util.getLabelListFromEntity(entityPath, labelListPath);
   }
 
   public static void batchRTreeInsert() {
-    Util.print("Batch insert RTree");
+    Util.println("Batch insert RTree");
     try {
       String layerName = dataset;
-      Util.print("Connect to dbPath: " + dbPath);
+      Util.println("Connect to dbPath: " + dbPath);
       GraphDatabaseService databaseService =
           new GraphDatabaseFactory().newEmbeddedDatabase(new File(dbPath));
-      Util.print("dataset:" + dataset + "\ndatabase:" + dbPath + "\n");
+      Util.println("dataset:" + dataset + "\ndatabase:" + dbPath + "\n");
 
       SpatialDatabaseService spatialDatabaseService = new SpatialDatabaseService(databaseService);
 
       Transaction tx = databaseService.beginTx();
-      Util.print(String.format("create point layer %s with lonName:%s and latName:%s", layerName,
+      Util.println(String.format("create point layer %s with lonName:%s and latName:%s", layerName,
           lon_name, lat_name));
       // SimplePointLayer simplePointLayer =
       // spatialDatabaseService.createSimplePointLayer(layerName);
@@ -531,7 +531,7 @@ public class LoadData {
           spatialDatabaseService.getOrCreatePointLayer(layerName, lon_name, lat_name);
       // org.neo4j.gis.spatial.Layer layer = spatialDatabaseService.getLayer(layerName);
 
-      Util.print("add node to list");
+      Util.println("add node to list");
       ArrayList<Node> geomNodes = new ArrayList<Node>(entities.size());
       for (Entity entity : entities) {
         if (entity.IsSpatial) {
@@ -543,7 +543,7 @@ public class LoadData {
         }
       }
 
-      Util.print("add node list to layer");
+      Util.println("add node list to layer");
       layer.addAll(geomNodes);
 
       tx.success();
@@ -557,11 +557,11 @@ public class LoadData {
   }
 
   public long batchRTreeInsertTime() {
-    Util.print("Get Batch insert RTree time");
+    Util.println("Get Batch insert RTree time");
     String layerName = dataset;
     GraphDatabaseService databaseService =
         new GraphDatabaseFactory().newEmbeddedDatabase(new File(dbPath));
-    Util.print("dataset:" + dataset + "\ndatabase:" + dbPath + "\n");
+    Util.println("dataset:" + dataset + "\ndatabase:" + dbPath + "\n");
 
     SpatialDatabaseService spatialDatabaseService = new SpatialDatabaseService(databaseService);
 
@@ -586,19 +586,19 @@ public class LoadData {
       }
     }
     long time = System.currentTimeMillis() - start;
-    Util.print("create node time:" + time);
-    Util.print("number of spatial objects:" + spaCount);
+    Util.println("create node time:" + time);
+    Util.println("number of spatial objects:" + spaCount);
 
     start = System.currentTimeMillis();
     layer.addAll(geomNodes);
     long constructionTime = System.currentTimeMillis() - start;
-    Util.print("construct RTree time:" + constructionTime);
+    Util.println("construct RTree time:" + constructionTime);
 
     start = System.currentTimeMillis();
     tx.success();
     tx.close();
     time = System.currentTimeMillis() - start;
-    Util.print("load into db time:" + time);
+    Util.println("load into db time:" + time);
     spatialDatabaseService.getDatabase().shutdown();
     return constructionTime;
   }

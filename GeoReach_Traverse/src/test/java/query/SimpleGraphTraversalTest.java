@@ -53,14 +53,14 @@ public class SimpleGraphTraversalTest {
 	@Test
 	public void Neo4jTraversalHardCodeTest() {
 		try {
-			Util.print(db_path);
+			Util.println(db_path);
 			SimpleGraphTraversal simpleGraphTraversal = new SimpleGraphTraversal(db_path);
 			GraphDatabaseService dbservice = simpleGraphTraversal.dbservice;
 			Transaction tx = dbservice.beginTx();
 			Node node = dbservice.getNodeById(startID);
-			Util.print(node);
-			Util.print(node.getLabels());
-			Util.print(node.getAllProperties());
+			Util.println(node);
+			Util.println(node.getLabels());
+			Util.println(node.getAllProperties());
 			String query = String.format("profile match p = (s)-[:GRAPH_LINK]-(a)-[:GRAPH_LINK]-(c)-[:GRAPH_LINK]-(b) "
 					+ "where id(s) = %d and %s < b.lon < %s and "
 					+ "%s < b.lat < %s "
@@ -80,10 +80,10 @@ public class SimpleGraphTraversalTest {
 //				Util.Print(result.next());
 				count++;
 			}
-			Util.print(count);
+			Util.println(count);
 			
 			long hits = Util.GetTotalDBHits(result.getExecutionPlanDescription());
-			Util.print("DB hits: " + hits);
+			Util.println("DB hits: " + hits);
 			
 			tx.success();
 			tx.close();
@@ -99,18 +99,18 @@ public class SimpleGraphTraversalTest {
 	public void Neo4jTraversalTest()
 	{
 		try {
-			Util.print(db_path);
+			Util.println(db_path);
 			Neo4jCypherTraversal neo4jCypherTraversal = new Neo4jCypherTraversal(db_path);
 			GraphDatabaseService dbservice = neo4jCypherTraversal.dbservice;
 			Transaction tx = dbservice.beginTx();
-			Util.print("start ids: " + startID);
+			Util.println("start ids: " + startID);
 			neo4jCypherTraversal.traverse(startIDs, Length, queryRectangle);
 			
 			long count = neo4jCypherTraversal.resultCount;
-			Util.print("result count: " + count);
+			Util.println("result count: " + count);
 			
 			long pageAccess = neo4jCypherTraversal.pageAccessCount;
-			Util.print("Page access: " + pageAccess);
+			Util.println("Page access: " + pageAccess);
 			
 			tx.success();
 			tx.close();
@@ -123,7 +123,7 @@ public class SimpleGraphTraversalTest {
 	@Test
 	public void TraversalTest() {
 		try {
-			Util.print(db_path);
+			Util.println(db_path);
 			SimpleGraphTraversal simpleGraphTraversal = new SimpleGraphTraversal(db_path);
 			GraphDatabaseService dbservice = simpleGraphTraversal.dbservice;
 			Transaction tx = dbservice.beginTx();
@@ -133,10 +133,10 @@ public class SimpleGraphTraversalTest {
 			simpleGraphTraversal.traverse(startNodes, Length, queryRectangle);
 			
 			long count = simpleGraphTraversal.resultCount;
-			Util.print(count);
+			Util.println(count);
 			
 			long visitedCount = simpleGraphTraversal.visitedCount;
-			Util.print("Visited Count: " + visitedCount);
+			Util.println("Visited Count: " + visitedCount);
 			
 			tx.success();
 			tx.close();
@@ -158,7 +158,7 @@ public class SimpleGraphTraversalTest {
 	@Test
 	public void spaTreversalTest() {
 		try {
-			Util.print(db_path);
+			Util.println(db_path);
 			SpaTraversal spaTraversal = new SpaTraversal(db_path, 2, 
 					new MyRectangle(-180, -90, 180, 90), 128, 128);
 			GraphDatabaseService dbservice = spaTraversal.dbservice;
@@ -173,10 +173,10 @@ public class SimpleGraphTraversalTest {
 			
 			spaTraversal.traverse(startNodes, Length, queryRectangle);
 			
-			Util.print(spaTraversal.resultCount);
-			Util.print("Visited Count: " + spaTraversal.visitedCount);
-			Util.print("GeoReachPrunedCount: " + spaTraversal.GeoReachPruneCount);
-			Util.print("PrunedVerticesWorkCount: " + spaTraversal.PrunedVerticesWorkCount);
+			Util.println(spaTraversal.resultCount);
+			Util.println("Visited Count: " + spaTraversal.visitedCount);
+			Util.println("GeoReachPrunedCount: " + spaTraversal.GeoReachPruneCount);
+			Util.println("PrunedVerticesWorkCount: " + spaTraversal.PrunedVerticesWorkCount);
 			
 			tx.success();
 			tx.close();

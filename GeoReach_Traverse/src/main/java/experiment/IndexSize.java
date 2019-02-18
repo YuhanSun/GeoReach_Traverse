@@ -30,34 +30,34 @@ public class IndexSize {
       int pieces_x = 128, pieces_y = 128, MAX_HOP = 3;
       double MG = 1.0, MR = 1.0;
       int MC = 0;
-      Util.print(String.format("MG=%f, MR=%f, MAX_HOP=%d, MC=%d", MG, MR, MAX_HOP, MC));
+      Util.println(String.format("MG=%f, MR=%f, MAX_HOP=%d, MC=%d", MG, MR, MAX_HOP, MC));
 
       dataset = "Yelp";
-      Util.print(dataset);
+      Util.println(dataset);
       dir = String.format("D:\\Ubuntu_shared\\GeoMinHop\\data\\%s", dataset);
       graphPath = dir + "\\graph.txt";
       entityPath = dir + "\\entity.txt";
       getIndexSize(graphPath, entityPath, minx, miny, maxx, maxy, pieces_x, pieces_y, MAX_HOP, MG,
           MR, MC);
-      Util.print("\n");
+      Util.println("\n");
 
       dataset = "foursquare";
-      Util.print(dataset);
+      Util.println(dataset);
       dir = String.format("D:\\Ubuntu_shared\\GeoMinHop\\data\\%s", dataset);
       graphPath = dir + "\\graph.txt";
       entityPath = dir + "\\entity.txt";
       getIndexSize(graphPath, entityPath, minx, miny, maxx, maxy, pieces_x, pieces_y, MAX_HOP, MG,
           MR, MC);
-      Util.print("\n");
+      Util.println("\n");
 
       dataset = "Gowalla";
-      Util.print(dataset);
+      Util.println(dataset);
       dir = String.format("D:\\Ubuntu_shared\\GeoMinHop\\data\\%s", dataset);
       graphPath = dir + "\\graph.txt";
       entityPath = dir + "\\entity.txt";
       getIndexSize(graphPath, entityPath, minx, miny, maxx, maxy, pieces_x, pieces_y, MAX_HOP, MG,
           MR, MC);
-      Util.print("\n");
+      Util.println("\n");
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -68,16 +68,16 @@ public class IndexSize {
   public static void getIndexSize(String graphPath, String entityPath, double minx, double miny,
       double maxx, double maxy, int pieces_x, int pieces_y, int MAX_HOP, double MG, double MR,
       int MC) {
-    Util.print("Read graph from " + graphPath);
+    Util.println("Read graph from " + graphPath);
     if (!Util.pathExist(graphPath)) {
-      Util.print(graphPath + " does not exist!");
+      Util.println(graphPath + " does not exist!");
       System.exit(-1);
     }
     ArrayList<ArrayList<Integer>> graph = Util.ReadGraph(graphPath);
 
-    Util.print("Read entities from " + entityPath);
+    Util.println("Read entities from " + entityPath);
     if (!Util.pathExist(entityPath)) {
-      Util.print(entityPath + " does not exist!");
+      Util.println(entityPath + " does not exist!");
       System.exit(-1);
     }
     ArrayList<Entity> entities = Util.ReadEntity(entityPath);
@@ -118,7 +118,7 @@ public class IndexSize {
         }
 
       }
-      Util.print(String.format("%d-hop index size: %d", i + 1, size));
+      Util.println(String.format("%d-hop index size: %d", i + 1, size));
     }
   }
 

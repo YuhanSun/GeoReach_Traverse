@@ -153,7 +153,7 @@ public class MaintenanceTest {
     Transaction tx = dbservice.beginTx();
     ResourceIterable<Node> nodes = dbservice.getAllNodes();
     for (Node node : nodes) {
-      Util.print(String.format("%s: %s", node, node.getAllProperties()));
+      Util.println(String.format("%s: %s", node, node.getAllProperties()));
     }
     tx.close();
     tx.success();
@@ -163,7 +163,7 @@ public class MaintenanceTest {
   public void printDbInTransaction() {
     ResourceIterable<Node> nodes = dbservice.getAllNodes();
     for (Node node : nodes) {
-      Util.print(String.format("%s: %s", node, node.getAllProperties()));
+      Util.println(String.format("%s: %s", node, node.getAllProperties()));
     }
   }
 
@@ -183,12 +183,12 @@ public class MaintenanceTest {
       testNode = testNodes.next();
       break;
     }
-    Util.print(testNode);
+    Util.println(testNode);
 
-    Util.print("before modification: " + testNode.hasProperty("test"));
+    Util.println("before modification: " + testNode.hasProperty("test"));
 
     testNode.setProperty("test", "first");
-    Util.print("after modification: " + testNode.hasProperty("test"));
+    Util.println("after modification: " + testNode.hasProperty("test"));
 
     tx.success();
     tx.close();
@@ -198,13 +198,13 @@ public class MaintenanceTest {
   public void readTest() throws Exception {
     ClassLoader classLoader = getClass().getClassLoader();
     File dir = new File(classLoader.getResource("").getFile());
-    Util.print(dir.toString());
+    Util.println(dir.toString());
     File file = new File(classLoader.getResource("test/test.txt").getFile());
-    Util.print(file.getAbsolutePath());
+    Util.println(file.getAbsolutePath());
     BufferedReader reader = new BufferedReader(new FileReader(file));
     String line = null;
     while ((line = reader.readLine()) != null) {
-      Util.print(line);
+      Util.println(line);
     }
     reader.close();
   }
@@ -272,19 +272,19 @@ public class MaintenanceTest {
     // test for ReachGrid
     MG = 2;
     MR = 2;
-    Util.print(String.format("MG: %f, MR: %f", MG, MR));
+    Util.println(String.format("MG: %f, MR: %f", MG, MR));
     addEdgeSetTest();
 
     // test for RMBR
     MG = -1;
     MR = 2;
-    Util.print(String.format("MG: %f, MR: %f", MG, MR));
+    Util.println(String.format("MG: %f, MR: %f", MG, MR));
     addEdgeSetTest();
 
     // test for GeoB
     MG = -1;
     MR = -1;
-    Util.print(String.format("MG: %f, MR: %f", MG, MR));
+    Util.println(String.format("MG: %f, MR: %f", MG, MR));
     addEdgeSetTest();
   }
 
@@ -303,7 +303,7 @@ public class MaintenanceTest {
     // add edge (0, 3)
     srcId = 0;
     trgId = 3;
-    Util.print(String.format("add edge (%d, %d)", srcId, trgId));
+    Util.println(String.format("add edge (%d, %d)", srcId, trgId));
     graph.get(srcId).add(trgId);
     graph.get(trgId).add(srcId);
     index = IndexConstruct.ConstructIndexList(graph, entities, spaceManager, MAX_HOP);
@@ -317,7 +317,7 @@ public class MaintenanceTest {
     // add edge (0, 1)
     srcId = 0;
     trgId = 1;
-    Util.print(String.format("add edge (%d, %d)", srcId, trgId));
+    Util.println(String.format("add edge (%d, %d)", srcId, trgId));
     graph.get(srcId).add(trgId);
     graph.get(trgId).add(srcId);
     index = IndexConstruct.ConstructIndexList(graph, entities, spaceManager, MAX_HOP);
@@ -330,7 +330,7 @@ public class MaintenanceTest {
     // add edge (0, 5)
     srcId = 0;
     trgId = 5;
-    Util.print(String.format("add edge (%d, %d)", srcId, trgId));
+    Util.println(String.format("add edge (%d, %d)", srcId, trgId));
     graph.get(srcId).add(trgId);
     graph.get(trgId).add(srcId);
     index = IndexConstruct.ConstructIndexList(graph, entities, spaceManager, MAX_HOP);
@@ -343,7 +343,7 @@ public class MaintenanceTest {
     // add edge (2, 5)
     srcId = 2;
     trgId = 5;
-    Util.print(String.format("add edge (%d, %d)", srcId, trgId));
+    Util.println(String.format("add edge (%d, %d)", srcId, trgId));
     graph.get(srcId).add(trgId);
     graph.get(trgId).add(srcId);
     index = IndexConstruct.ConstructIndexList(graph, entities, spaceManager, MAX_HOP);
@@ -356,7 +356,7 @@ public class MaintenanceTest {
     // add edge (4, 5)
     srcId = 4;
     trgId = 5;
-    Util.print(String.format("add edge (%d, %d)", srcId, trgId));
+    Util.println(String.format("add edge (%d, %d)", srcId, trgId));
     graph.get(srcId).add(trgId);
     graph.get(trgId).add(srcId);
     index = IndexConstruct.ConstructIndexList(graph, entities, spaceManager, MAX_HOP);
@@ -418,7 +418,7 @@ public class MaintenanceTest {
       GeoReachType typeOnNode = maintenance.getGeoReachType(node, hop);
       GeoReachType typeOnIndex = GeoReachIndexUtil.getGeoReachType(types.get(i));
       if (!typeOnIndex.equals(typeOnNode)) {
-        Util.print(String.format(
+        Util.println(String.format(
             "GeoReachType on %d hop of %s inconsistency. Type on node is %s while on index is %s!",
             hop, node, typeOnNode, typeOnIndex));
         return false;
@@ -430,7 +430,7 @@ public class MaintenanceTest {
 
           List<Integer> reachGridIndex = nodeIndex.ReachGrids.get(i);
           if (!ArrayUtil.isSortedListEqual(reachGridIndex, reachGridNode)) {
-            Util.print(String.format(
+            Util.println(String.format(
                 "ReachGrid on %d hop of %s inconsistency! On node is %s, on index is %s!", hop,
                 node, reachGridNode, reachGridIndex));
             return false;
@@ -440,7 +440,7 @@ public class MaintenanceTest {
           MyRectangle rmbrNode = maintenance.getRMBR(node, hop);
           MyRectangle rmbrIndex = nodeIndex.RMBRs.get(i);
           if (!rmbrNode.isEqual(rmbrIndex)) {
-            Util.print(
+            Util.println(
                 String.format("RMBR on %d hop of %s inconsistency! On node is %s, on index is %s!",
                     hop, node, rmbrNode, rmbrIndex));
             return false;
@@ -450,7 +450,7 @@ public class MaintenanceTest {
           boolean geoBNode = maintenance.getGeoB(node, hop);
           boolean geoBIndex = nodeIndex.GeoBs.get(i);
           if (geoBNode != geoBIndex) {
-            Util.print(
+            Util.println(
                 String.format("GeoB on %d hop of %s inconsistency! On node is %s, on index is %s!",
                     hop, node, geoBNode, geoBIndex));
             return false;

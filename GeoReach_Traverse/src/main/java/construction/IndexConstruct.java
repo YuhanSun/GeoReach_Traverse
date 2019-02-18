@@ -38,16 +38,16 @@ public class IndexConstruct {
    */
   public void constructList(String dir) {
     if (Util.pathExist(graphPath))
-      Util.print(graphPath);
+      Util.println(graphPath);
     else {
-      Util.print(graphPath + " not exist");
+      Util.println(graphPath + " not exist");
       System.exit(-1);
     }
 
     if (Util.pathExist(entityPath))
-      Util.print(entityPath);
+      Util.println(entityPath);
     else {
-      Util.print(entityPath + " not exist");
+      Util.println(entityPath + " not exist");
       System.exit(-1);
     }
 
@@ -55,27 +55,27 @@ public class IndexConstruct {
     String outputPath =
         String.format("%s%d_%d_%d_%s.txt", dir, pieces_x, pieces_y, MAX_HOP, suffix);
     if (Util.pathExist(dir))
-      Util.print(dir);
+      Util.println(dir);
     else {
-      Util.print(outputPath + " not exist");
+      Util.println(outputPath + " not exist");
       System.exit(-1);
     }
 
-    Util.print("Read entities from " + entityPath);
+    Util.println("Read entities from " + entityPath);
     if (entities == null)
       entities = Util.ReadEntity(entityPath);
-    Util.print("entities size: " + entities.size() + "\n");
+    Util.println("entities size: " + entities.size() + "\n");
 
-    Util.print("Read graph from " + graphPath);
+    Util.println("Read graph from " + graphPath);
     if (graph == null)
       graph = Util.ReadGraph(graphPath);
-    Util.print("graph size: " + graph.size());
+    Util.println("graph size: " + graph.size());
 
     ArrayList<VertexGeoReachList> index =
         ConstructIndexList(graph, entities, minx, miny, maxx, maxy, pieces_x, pieces_y, MAX_HOP);
 
     // ouput whole index
-    Util.print("output index to " + outputPath);
+    Util.println("output index to " + outputPath);
     GeoReachIndexUtil.outputGeoReachList(index, outputPath);
 
     // output single index for load
@@ -86,7 +86,7 @@ public class IndexConstruct {
     suffix = "bitmap";
     outputPath = String.format("%s%d_%d_%d_%d_%d_%d_%s.txt", dir, pieces_x, pieces_y,
         (int) (MG * 100), (int) (MR * 100), MC, MAX_HOP, suffix);
-    Util.print("output to " + outputPath);
+    Util.println("output to " + outputPath);
     GeoReachIndexUtil.outputGeoReachForList(index, outputPath, typesList,
         GeoReachOutputFormat.BITMAP);
 
@@ -94,7 +94,7 @@ public class IndexConstruct {
     suffix = "list";
     outputPath = String.format("%s%d_%d_%d_%d_%d_%d_%s.txt", dir, pieces_x, pieces_y,
         (int) (MG * 100), (int) (MR * 100), MC, MAX_HOP, suffix);
-    Util.print("output to " + outputPath);
+    Util.println("output to " + outputPath);
     GeoReachIndexUtil.outputGeoReachForList(index, outputPath, typesList,
         GeoReachOutputFormat.LIST);
   }
@@ -104,15 +104,15 @@ public class IndexConstruct {
    */
   public void construct() {
     // TODO Auto-generated method stub
-    Util.print("Read entities from " + entityPath);
+    Util.println("Read entities from " + entityPath);
     if (entities == null)
       entities = Util.ReadEntity(entityPath);
-    Util.print("entities size: " + entities.size() + "\n");
+    Util.println("entities size: " + entities.size() + "\n");
 
-    Util.print("Read graph from " + graphPath);
+    Util.println("Read graph from " + graphPath);
     if (graph == null)
       graph = Util.ReadGraph(graphPath);
-    Util.print("graph size: " + graph.size());
+    Util.println("graph size: " + graph.size());
 
     ArrayList<VertexGeoReach> index =
         ConstructIndex(graph, entities, minx, miny, maxx, maxy, pieces_x, pieces_y, MAX_HOP);
@@ -120,7 +120,7 @@ public class IndexConstruct {
     String suffix = "whole";
     String outputPath = String.format("D:\\Ubuntu_shared\\GeoReachHop\\data\\%s\\%d_%d_%d_%s.txt",
         dataset, pieces_x, pieces_y, MAX_HOP, suffix);
-    Util.print("output index to " + outputPath);
+    Util.println("output index to " + outputPath);
     GeoReachIndexUtil.outputGeoReach(index, outputPath); // output all three types.
 
     // ArrayList<VertexGeoReachList> index = ConstructIndexList(graph, entities,
@@ -162,16 +162,16 @@ public class IndexConstruct {
    */
   public void constructFromFile(String dir, String inputFileName) {
     if (Util.pathExist(dir))
-      Util.print("directory is " + dir);
+      Util.println("directory is " + dir);
     else {
-      Util.print(dir + " does not exist");
+      Util.println(dir + " does not exist");
       System.exit(-1);
     }
     String indexPath = dir + inputFileName;
-    Util.print("read index from " + indexPath);
+    Util.println("read index from " + indexPath);
     ArrayList<VertexGeoReachList> index = GeoReachIndexUtil.readGeoReachWhole(indexPath);
 
-    Util.print("generate type list");
+    Util.println("generate type list");
     ArrayList<ArrayList<Integer>> typesList = generateTypeListForList(index, MAX_HOP, minx, miny,
         maxx, maxy, pieces_x, pieces_y, MG, MR, MC);
 
@@ -179,7 +179,7 @@ public class IndexConstruct {
     String suffix = "list";
     String outputPath = String.format("%s%d_%d_%d_%d_%d_%d_%s.txt", dir, pieces_x, pieces_y,
         (int) (MG * 100), (int) (MR * 100), MC, MAX_HOP, suffix);
-    Util.print("output to " + outputPath);
+    Util.println("output to " + outputPath);
     GeoReachIndexUtil.outputGeoReachForList(index, outputPath, typesList,
         GeoReachOutputFormat.LIST);
 
@@ -187,7 +187,7 @@ public class IndexConstruct {
     suffix = "bitmap";
     outputPath = String.format("%s%d_%d_%d_%d_%d_%d_%s.txt", dir, pieces_x, pieces_y,
         (int) (MG * 100), (int) (MR * 100), MC, MAX_HOP, suffix);
-    Util.print("output to " + outputPath);
+    Util.println("output to " + outputPath);
     GeoReachIndexUtil.outputGeoReachForList(index, outputPath, typesList,
         GeoReachOutputFormat.BITMAP);
   }
@@ -197,10 +197,10 @@ public class IndexConstruct {
 
   public static void main(String[] args) {
 
-    Util.print(args[0]);
-    Util.print(args[1]);
-    Util.print(args[2]);
-    Util.print(args[3]);
+    Util.println(args[0]);
+    Util.println(args[1]);
+    Util.println(args[2]);
+    Util.println(args[3]);
 
     IndexConstruct indexConstruct = new IndexConstruct();
     indexConstruct.graphPath = args[0];
@@ -321,7 +321,7 @@ public class IndexConstruct {
     /**
      * Construct the 1-hop GeoReach. It will be stored at index 0.
      */
-    Util.print("Construct 1-hop");
+    Util.println("Construct 1-hop");
     int id = 0;
     for (ArrayList<Integer> neighbors : graph) {
       VertexGeoReach vertexGeoReach = index.get(id);
@@ -354,13 +354,13 @@ public class IndexConstruct {
       id++;
     }
 
-    Util.print("1-hop time: " + (System.currentTimeMillis() - start) + "\n");
+    Util.println("1-hop time: " + (System.currentTimeMillis() - start) + "\n");
     start = System.currentTimeMillis();
     /**
      * 2-hop and more hops
      */
     for (int i = 1; i < MAX_HOP; i++) {
-      Util.print(String.format("Construct %d-hop", i + 1));
+      Util.println(String.format("Construct %d-hop", i + 1));
       id = 0;
       for (ArrayList<Integer> neighbors : graph) {
         VertexGeoReach vertexGeoReach = index.get(id);
@@ -390,7 +390,7 @@ public class IndexConstruct {
         }
         id++;
       }
-      Util.print(String.format("%d-hop time: %d\n", i + 1, System.currentTimeMillis() - start));
+      Util.println(String.format("%d-hop time: %d\n", i + 1, System.currentTimeMillis() - start));
       start = System.currentTimeMillis();
     }
 
@@ -436,7 +436,7 @@ public class IndexConstruct {
     /**
      * Construct the 1-hop GeoReach. It will be stored at index 0.
      */
-    Util.print("Construct 1-hop");
+    Util.println("Construct 1-hop");
     int id = 0;
     for (ArrayList<Integer> neighbors : graph) {
       VertexGeoReachList vertexGeoReach = index.get(id);
@@ -475,13 +475,13 @@ public class IndexConstruct {
       id++;
     }
 
-    Util.print("1-hop time: " + (System.currentTimeMillis() - start) + "\n");
+    Util.println("1-hop time: " + (System.currentTimeMillis() - start) + "\n");
     start = System.currentTimeMillis();
     /**
      * 2-hop and more hops
      */
     for (int i = 1; i < MAX_HOP; i++) {
-      Util.print(String.format("Construct %d-hop", i + 1));
+      Util.println(String.format("Construct %d-hop", i + 1));
       id = 0;
 
       for (ArrayList<Integer> neighbors : graph) {
@@ -514,7 +514,7 @@ public class IndexConstruct {
 
         id++;
       }
-      Util.print(String.format("%d-hop time: %d\n", i + 1, System.currentTimeMillis() - start));
+      Util.println(String.format("%d-hop time: %d\n", i + 1, System.currentTimeMillis() - start));
       start = System.currentTimeMillis();
     }
 
@@ -588,7 +588,7 @@ public class IndexConstruct {
       typesList.add(types);
     }
 
-    Util.print("\nConstruct types time: " + (System.currentTimeMillis() - start));
+    Util.println("\nConstruct types time: " + (System.currentTimeMillis() - start));
 
     ArrayList<ArrayList<Integer>> statis = new ArrayList<>(MAX_HOP);
     for (int i = 0; i < MAX_HOP; i++)
@@ -602,7 +602,7 @@ public class IndexConstruct {
     }
 
     for (ArrayList<Integer> types : statis)
-      Util.print(Util.histogram(types));
+      Util.println(Util.histogram(types));
 
     return typesList;
   }
@@ -674,7 +674,7 @@ public class IndexConstruct {
       typesList.add(types);
     }
 
-    Util.print("\nConstruct types time: " + (System.currentTimeMillis() - start));
+    Util.println("\nConstruct types time: " + (System.currentTimeMillis() - start));
 
     // Compute statis of types. Should be outside the function.
     // ArrayList<ArrayList<Integer>> statis = new ArrayList<>(MAX_HOP);
@@ -715,20 +715,20 @@ public class IndexConstruct {
     HashSet<Integer> curList = new HashSet<>(), nextList = new HashSet<>();
     curList.add(startID);
     for (int i = 0; i < hops; i++) {
-      Util.print("hop: " + (i + 1));
+      Util.println("hop: " + (i + 1));
       for (int id : curList) {
         ArrayList<Integer> neighbors = graph.get(id);
         for (int neighborID : neighbors)
           nextList.add(neighborID);
       }
 
-      Util.print(String.format("reachable vertices size:\t%d\t%s", nextList.size(), nextList));
+      Util.println(String.format("reachable vertices size:\t%d\t%s", nextList.size(), nextList));
 
       TreeSet<Integer> spatialVertices = new TreeSet<>();
       for (int id : nextList)
         if (entities.get(id).IsSpatial)
           spatialVertices.add(id);
-      Util.print(String.format("reachable spatial vertices size:\t%d\t%s", spatialVertices.size(),
+      Util.println(String.format("reachable spatial vertices size:\t%d\t%s", spatialVertices.size(),
           spatialVertices));
 
       TreeSet<Integer> reachgrids = new TreeSet<>();
@@ -741,7 +741,7 @@ public class IndexConstruct {
         int gridID = idX * pieces_y + idY;
         reachgrids.add(gridID);
       }
-      Util.print(String.format("reachable grids size:\t%d\t%s", reachgrids.size(), reachgrids));
+      Util.println(String.format("reachable grids size:\t%d\t%s", reachgrids.size(), reachgrids));
 
       curList = nextList;
       nextList = new HashSet<>();

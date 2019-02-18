@@ -66,11 +66,11 @@ public class Wikidata {
 		for (int id : propertySet)
 		{
 			if (idMap.containsKey(id)) {
-				Util.print(String.format("%d,%d", id, idMap.get(id)));
+				Util.println(String.format("%d,%d", id, idMap.get(id)));
 				count++;
 			}
 		}
-		Util.print("count: " + count);
+		Util.println("count: " + count);
 	}
 	
 	public static void extractPropertyID()
@@ -96,7 +96,7 @@ public class Wikidata {
 					idSet.add(id);
 				
 				if (lineIndex % 10000000 == 0)
-					Util.print(lineIndex);
+					Util.println(lineIndex);
 			}
 			reader.close();
 			ArrayList<String> output = new ArrayList<>(idSet.size());
@@ -142,7 +142,7 @@ public class Wikidata {
 					labels.get(labelID).add(graphID);
 					
 					if (count % 1000000 == 0)
-						Util.print(count);
+						Util.println(count);
 				}
 			}
 			
@@ -166,7 +166,7 @@ public class Wikidata {
 			writer.close();
 			
 		} catch (Exception e) {
-			Util.print(line);
+			Util.println(line);
 			e.printStackTrace();
 		}
 	}
@@ -177,7 +177,7 @@ public class Wikidata {
 		int edgeCount = 0;
 		for (ArrayList<Integer> neighbors : graph)
 			edgeCount += neighbors.size();
-		Util.print(edgeCount);
+		Util.println(edgeCount);
 	}
 	
 	public static void removeLocationOutOfBound()
@@ -197,7 +197,7 @@ public class Wikidata {
 				}
 			}
 		}
-		Util.print(count);
+		Util.println(count);
 		ReadWriteUtil.writeEntityToFile(entities, entityPath);
 	}
 	
@@ -229,7 +229,7 @@ public class Wikidata {
 			ReadWriteUtil.writeEntityToFile(entities, dir + "\\new_entity.txt");
 		} catch (Exception e) {
 			// TODO: handle exception
-			Util.print(line);
+			Util.println(line);
 			e.printStackTrace();
 		}
 	}
@@ -270,7 +270,7 @@ public class Wikidata {
 						}
 					}
 					if (predicateCount % 10000000 == 0)
-						Util.print(predicateCount);
+						Util.println(predicateCount);
 				}
 			}
 			reader.close();
@@ -295,19 +295,19 @@ public class Wikidata {
 			{
 				if (entity.lon < -180 || entity.lon > 180 || entity.lat < -90 || entity.lat > 90)
 				{
-					Util.print(entity + " " + map.get("" + entity.id));
+					Util.println(entity + " " + map.get("" + entity.id));
 					count++;
 				}
 			}
 		}
-		Util.print(count);
+		Util.println(count);
 	}
 	
 	public static void getRange()
 	{
 		ArrayList<Entity> entities = Util.ReadEntity(entityPath);
 //		ArrayList<Entity> entities = Util.ReadEntity(dir + "\\new_entity.txt");
-		Util.print(Util.GetEntityRange(entities));
+		Util.println(Util.GetEntityRange(entities));
 	}
 	
 	public static void readGraphTest()
@@ -325,7 +325,7 @@ public class Wikidata {
 			reader = new BufferedReader(new FileReader(new File(graphPath)));
 			String line = reader.readLine();
 			int nodeCount = Integer.parseInt(line);
-			Util.print(nodeCount);
+			Util.println(nodeCount);
 			
 			int index = 0;
 			
@@ -334,7 +334,7 @@ public class Wikidata {
 				index++;
 			}
 			reader.close();
-			Util.print(index);
+			Util.println(index);
 		}catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
@@ -395,13 +395,13 @@ public class Wikidata {
 				
 				lineIndex++;
 				if (lineIndex % 10000000 == 0)
-					Util.print(lineIndex);
+					Util.println(lineIndex);
 				
 				if (lineIndex == 10000000)
 					break;
 			}
 			
-			Util.print("leaf count: " + leafVerticesSet.size());
+			Util.println("leaf count: " + leafVerticesSet.size());
 			for (long key : leafVerticesSet)
 				map.add(key);
 			
@@ -417,7 +417,7 @@ public class Wikidata {
 			logWriter.close();
 			
 		} catch (Exception e) {
-			Util.print(String.format("line %d:\n%s", lineIndex, line));
+			Util.println(String.format("line %d:\n%s", lineIndex, line));
 			e.printStackTrace();
 		}
 	}
@@ -432,7 +432,7 @@ public class Wikidata {
 		
 		try {
 			HashMap<Long, Integer> idMap = readMap(entityMapPath);
-			Util.print(idMap.size());
+			Util.println(idMap.size());
 			
 			reader = new BufferedReader(new FileReader(new File(fullfilePath)));
 			writer = new FileWriter(graphPath);
@@ -471,7 +471,7 @@ public class Wikidata {
 
 				lineIndex++;
 				if (lineIndex % 10000000 == 0)
-					Util.print(lineIndex);
+					Util.println(lineIndex);
 				
 //				if (lineIndex == 10000000)
 //					break;
@@ -487,7 +487,7 @@ public class Wikidata {
 			logWriter.close();
 			
 		} catch (Exception e) {
-			Util.print(String.format("line %d:\n%s", lineIndex, line));
+			Util.println(String.format("line %d:\n%s", lineIndex, line));
 			e.printStackTrace();
 		}
 	}
@@ -499,14 +499,14 @@ public class Wikidata {
 		int lineIndex = 0;
 		String line = "";
 		try {
-			Util.print("read map from " + entityMapPath);
+			Util.println("read map from " + entityMapPath);
 			HashMap<Long, Integer> idMap = readMap(entityMapPath);
-			Util.print("initialize entities");
+			Util.println("initialize entities");
 			ArrayList<Entity> entities = new ArrayList<>(idMap.size());
 			for (int i = 0; i < idMap.size(); i++)
 				entities.add(new Entity(i));
 			
-			Util.print("read locations from " + locationPath);
+			Util.println("read locations from " + locationPath);
 			reader = new BufferedReader(new FileReader(new File(locationPath)));
 			while ((line = reader.readLine()) != null)
 			{
@@ -530,8 +530,8 @@ public class Wikidata {
 			
 			ReadWriteUtil.writeEntityToFile(entities, entityPath);
 		} catch (Exception e) {
-			Util.print(lineIndex);
-			Util.print(line);
+			Util.println(lineIndex);
+			Util.println(line);
 			e.printStackTrace();
 		}
 	}
@@ -574,7 +574,7 @@ public class Wikidata {
 				index++;
 				
 				if (index % 10000000 == 0)
-					Util.print(index);
+					Util.println(index);
 				
 //				if (index == 100000)
 //					break;
@@ -583,9 +583,9 @@ public class Wikidata {
 			writer.close();
 			logWriter.close();
 			
-			Util.print("p625Count: " + p625Count);
+			Util.println("p625Count: " + p625Count);
 		} catch (Exception e) {
-			Util.print(String.format("line %d:\n%s", index, line));
+			Util.println(String.format("line %d:\n%s", index, line));
 			e.printStackTrace();
 		}
 	}
@@ -623,7 +623,7 @@ public class Wikidata {
 	{
 		if (!string.contains("http://www.wikidata.org/prop/direct/P"))
 		{
-			Util.print(string + " does not match property format");
+			Util.println(string + " does not match property format");
 			System.exit(-1);
 		}
 		String tempString = string.replace("<", "").replace(">", "");
@@ -643,7 +643,7 @@ public class Wikidata {
 	{
 		if (!string.contains("http://www.wikidata.org/entity/"))
 		{
-			Util.print(string + " does not match entity format");
+			Util.println(string + " does not match entity format");
 			System.exit(-1);
 		}
 		String tempString = string.replace("<", "").replace(">", "");
