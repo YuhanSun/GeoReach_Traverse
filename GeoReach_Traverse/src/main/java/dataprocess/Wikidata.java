@@ -183,7 +183,7 @@ public class Wikidata {
 	
 	public static void removeLocationOutOfBound()
 	{
-		ArrayList<Entity> entities = Util.ReadEntity(entityPath);
+		ArrayList<Entity> entities = GraphUtil.ReadEntity(entityPath);
 		int count = 0;
 		for (Entity entity : entities)
 		{
@@ -199,14 +199,14 @@ public class Wikidata {
 			}
 		}
 		Util.println(count);
-		ReadWriteUtil.writeEntityToFile(entities, entityPath);
+		GraphUtil.writeEntityToFile(entities, entityPath);
 	}
 	
 	public static void removeLocationOutOfEarth()
 	{
 		BufferedReader reader = null;
 		HashMap<Long, Integer> idMap = readMap(entityMapPath);
-		ArrayList<Entity> entities = Util.ReadEntity(entityPath);
+		ArrayList<Entity> entities = GraphUtil.ReadEntity(entityPath);
 		String outearthPath = dir + "\\outofearth_local.csv";
 		String line = "";
 		try {
@@ -227,7 +227,7 @@ public class Wikidata {
 				entity.lon = 0;
 				entity.lat = 0;
 			}
-			ReadWriteUtil.writeEntityToFile(entities, dir + "\\new_entity.txt");
+			GraphUtil.writeEntityToFile(entities, dir + "\\new_entity.txt");
 		} catch (Exception e) {
 			// TODO: handle exception
 			Util.println(line);
@@ -287,7 +287,7 @@ public class Wikidata {
 	 */
 	public static void checkLocation()
 	{
-		ArrayList<Entity> entities = Util.ReadEntity(entityPath);
+		ArrayList<Entity> entities = GraphUtil.ReadEntity(entityPath);
 		HashMap<String, String> map = Util.ReadMap(entityMapPath);
 		int count = 0;
 		for (Entity entity : entities)
@@ -306,7 +306,7 @@ public class Wikidata {
 	
 	public static void getRange()
 	{
-		ArrayList<Entity> entities = Util.ReadEntity(entityPath);
+		ArrayList<Entity> entities = GraphUtil.ReadEntity(entityPath);
 //		ArrayList<Entity> entities = Util.ReadEntity(dir + "\\new_entity.txt");
 		Util.println(Util.GetEntityRange(entities));
 	}
@@ -529,7 +529,7 @@ public class Wikidata {
 			}
 			reader.close();
 			
-			ReadWriteUtil.writeEntityToFile(entities, entityPath);
+			GraphUtil.writeEntityToFile(entities, entityPath);
 		} catch (Exception e) {
 			Util.println(lineIndex);
 			Util.println(line);

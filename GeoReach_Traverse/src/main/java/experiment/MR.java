@@ -304,7 +304,7 @@ public class MR {
     graph = GraphUtil.ReadGraph(graphPath);
 
     Util.println("Read entity from " + entityPath);
-    entities = Util.ReadEntity(entityPath);
+    entities = GraphUtil.ReadEntity(entityPath);
 
     spaCount = Util.GetSpatialEntityCount(entities);
 

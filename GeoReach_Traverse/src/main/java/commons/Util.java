@@ -146,7 +146,7 @@ public class Util {
    * @param labelListPath
    */
   public static void getLabelListFromEntity(String entityPath, String labelListPath) {
-    ArrayList<Entity> entities = Util.ReadEntity(entityPath);
+    ArrayList<Entity> entities = GraphUtil.ReadEntity(entityPath);
     ArrayList<Integer> labelList = new ArrayList<Integer>(entities.size());
     for (Entity entity : entities) {
       if (entity.IsSpatial)
@@ -539,46 +539,5 @@ public class Util {
       return false;
     }
     return true;
-  }
-
-  /**
-   * Read entities
-   * 
-   * @param entity_path
-   * @return
-   */
-  public static ArrayList<Entity> ReadEntity(String entity_path) {
-    ArrayList<Entity> entities = null;
-    BufferedReader reader = null;
-    String str = null;
-    int id = 0;
-    try {
-      if (!Util.pathExist(entity_path))
-        throw new Exception(entity_path + " does not exist");
-
-      reader = new BufferedReader(new FileReader(new File(entity_path)));
-      str = reader.readLine();
-      int node_count = Integer.parseInt(str);
-      entities = new ArrayList<Entity>(node_count);
-      while ((str = reader.readLine()) != null) {
-        Entity entity;
-        String[] str_l = str.split(",");
-        int flag = Integer.parseInt(str_l[1]);
-        if (flag == 0) {
-          entity = new Entity(id);
-          entities.add(entity);
-        } else {
-          entity = new Entity(id, Double.parseDouble(str_l[2]), Double.parseDouble(str_l[3]));
-          entities.add(entity);
-        }
-        ++id;
-      }
-      reader.close();
-    } catch (Exception e) {
-      Util.println(String.format("error happens in entity id %d", id));
-      e.printStackTrace();
-      System.exit(-1);
-    }
-    return entities;
   }
 }

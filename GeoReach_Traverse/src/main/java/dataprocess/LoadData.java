@@ -98,7 +98,7 @@ public class LoadData {
     //// }
 
     Util.println("Read entity from: " + entityPath);
-    entities = Util.ReadEntity(entityPath);
+    entities = GraphUtil.ReadEntity(entityPath);
   }
 
   // public void LoadDataNoOSM()
@@ -572,7 +572,7 @@ public class LoadData {
         spatialDatabaseService.getOrCreatePointLayer(layerName, lon_name, lat_name);
     // org.neo4j.gis.spatial.Layer layer = spatialDatabaseService.getLayer(layerName);
 
-    ArrayList<Entity> entities = Util.ReadEntity(entityPath);
+    ArrayList<Entity> entities = GraphUtil.ReadEntity(entityPath);
     ArrayList<Node> geomNodes = new ArrayList<Node>(entities.size());
     int spaCount = 0;
     long start = System.currentTimeMillis();

@@ -91,10 +91,10 @@ public class MaintenanceTest {
     String outputDir =
         "/Users/zhouyang/Google_Drive/Projects/github_code/GeoReach_Traverse/GeoReach_Traverse/src/test/resources/data/smallGraph";
     String outputGraphPath = outputDir + "/graph.txt";
-    ReadWriteUtil.writeGraphArrayList(graph, outputGraphPath);
+    GraphUtil.writeGraphArrayList(graph, outputGraphPath);
 
     String outputEntityPath = outputDir + "/entity.txt";
-    ReadWriteUtil.writeEntityToFile(entities, outputEntityPath);
+    GraphUtil.writeEntityToFile(entities, outputEntityPath);
 
     String outputLabelListPath = outputDir + "/label.txt";
     ReadWriteUtil.WriteArray(outputLabelListPath, labelList);
@@ -103,7 +103,7 @@ public class MaintenanceTest {
   @Test
   public void readGraph() {
     graph = GraphUtil.ReadGraph(graphPath);
-    entities = Util.ReadEntity(entityPath);
+    entities = GraphUtil.ReadEntity(entityPath);
     labelList = Util.readIntegerArray(labelListPath);
   }
 

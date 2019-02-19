@@ -17,6 +17,7 @@ import query.Neo4jCypherTraversal;
 import query.SimpleGraphTraversal;
 import query.SpaTraversal;
 import commons.EnumVariables.*;
+import commons.GraphUtil;
 
 public class QueryLength {
 
@@ -101,7 +102,7 @@ public class QueryLength {
 			break;
 		}
 		Util.println("entity path: " + entityPath);
-		ArrayList<Entity> entities = Util.ReadEntity(entityPath);
+		ArrayList<Entity> entities = GraphUtil.ReadEntity(entityPath);
 		spaCount = Util.GetSpatialEntityCount(entities);
 		
 //		HashMap<String, String> graph_pos_map = Util.ReadMap(graph_pos_map_path);

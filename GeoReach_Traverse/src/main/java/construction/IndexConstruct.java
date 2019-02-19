@@ -64,7 +64,7 @@ public class IndexConstruct {
 
     Util.println("Read entities from " + entityPath);
     if (entities == null)
-      entities = Util.ReadEntity(entityPath);
+      entities = GraphUtil.ReadEntity(entityPath);
     Util.println("entities size: " + entities.size() + "\n");
 
     Util.println("Read graph from " + graphPath);
@@ -107,7 +107,7 @@ public class IndexConstruct {
     // TODO Auto-generated method stub
     Util.println("Read entities from " + entityPath);
     if (entities == null)
-      entities = Util.ReadEntity(entityPath);
+      entities = GraphUtil.ReadEntity(entityPath);
     Util.println("entities size: " + entities.size() + "\n");
 
     Util.println("Read graph from " + graphPath);
@@ -711,7 +711,7 @@ public class IndexConstruct {
     if (graph == null)
       graph = GraphUtil.ReadGraph(graphPath);
     if (entities == null)
-      entities = Util.ReadEntity(entityPath);
+      entities = GraphUtil.ReadEntity(entityPath);
 
     HashSet<Integer> curList = new HashSet<>(), nextList = new HashSet<>();
     curList.add(startID);

@@ -26,7 +26,7 @@ public class IniTime {
       Util.println(entityPath + " does not exist!");
       System.exit(-1);
     }
-    ArrayList<Entity> entities = Util.ReadEntity(entityPath);
+    ArrayList<Entity> entities = GraphUtil.ReadEntity(entityPath);
 
     ArrayList<VertexGeoReachList> index = IndexConstruct.ConstructIndexList(graph, entities, minx,
         miny, maxx, maxy, pieces_x, pieces_y, MAX_HOP);
