@@ -48,6 +48,36 @@ public class Config {
   private String rmbrName = "RMBR";
   private String geoBName = "GeoB";
 
+  private String graphFileName = "graph.txt";
+
+  public String getGraphFileName() {
+    return graphFileName;
+  }
+
+  public void setGraphFileName(String graphFileName) {
+    this.graphFileName = graphFileName;
+  }
+
+  public String getEntityFileName() {
+    return entityFileName;
+  }
+
+  public void setEntityFileName(String entityFileName) {
+    this.entityFileName = entityFileName;
+  }
+
+  public String getLabelListFileName() {
+    return labelListFileName;
+  }
+
+  public void setLabelListFileName(String labelListFileName) {
+    this.labelListFileName = labelListFileName;
+  }
+
+  private String entityFileName = "enitty.txt";
+  private String labelListFileName = "labe.txt";
+
+
   public void setDatasetName(String pName) {
     this.dataset = pName;
   }
