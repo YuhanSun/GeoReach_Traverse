@@ -20,6 +20,7 @@ import org.neo4j.unsafe.batchinsert.BatchInserters;
 import commons.Config;
 import commons.Entity;
 import commons.EnumVariables.Datasets;
+import commons.GraphUtil;
 import commons.Labels.GraphLabel;
 import commons.Labels.GraphRel;
 import commons.Util;
@@ -243,7 +244,7 @@ public class LoadData {
       Util.println("batch insert into: " + dbPath);
       inserter = BatchInserters.inserter(new File(dbPath).getAbsoluteFile(), config);
 
-      ArrayList<ArrayList<Integer>> graph = Util.ReadGraph(graphPath);
+      ArrayList<ArrayList<Integer>> graph = GraphUtil.ReadGraph(graphPath);
       for (int i = 0; i < graph.size(); i++) {
         ArrayList<Integer> neighbors = graph.get(i);
         int start_neo4j_id = Integer.parseInt(id_map.get(String.valueOf(i)));

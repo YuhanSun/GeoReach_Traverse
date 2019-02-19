@@ -23,6 +23,7 @@ import commons.Entity;
 import commons.EnumVariables.GeoReachOutputFormat;
 import commons.EnumVariables.GeoReachType;
 import commons.GeoReachIndexUtil;
+import commons.GraphUtil;
 import commons.MyRectangle;
 import commons.Neo4jGraphUtility;
 import commons.ReadWriteUtil;
@@ -101,7 +102,7 @@ public class MaintenanceTest {
 
   @Test
   public void readGraph() {
-    graph = Util.ReadGraph(graphPath);
+    graph = GraphUtil.ReadGraph(graphPath);
     entities = Util.ReadEntity(entityPath);
     labelList = Util.readIntegerArray(labelListPath);
   }

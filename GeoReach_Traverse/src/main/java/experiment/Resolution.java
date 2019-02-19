@@ -12,6 +12,7 @@ import commons.EnumVariables.Datasets;
 import commons.EnumVariables.GeoReachOutputFormat;
 import commons.EnumVariables.system;
 import commons.GeoReachIndexUtil;
+import commons.GraphUtil;
 import commons.MyRectangle;
 import commons.Util;
 import commons.VertexGeoReach;
@@ -460,7 +461,7 @@ public class Resolution {
     }
 
     Util.println("Read graph from " + graphPath);
-    graph = Util.ReadGraph(graphPath);
+    graph = GraphUtil.ReadGraph(graphPath);
 
     Util.println("Read entity from " + entityPath);
     entities = Util.ReadEntity(entityPath);

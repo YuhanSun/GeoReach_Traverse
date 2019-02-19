@@ -8,6 +8,7 @@ import commons.Entity;
 import commons.EnumVariables.GeoReachOutputFormat;
 import commons.EnumVariables.system;
 import commons.GeoReachIndexUtil;
+import commons.GraphUtil;
 import commons.MyRectangle;
 import commons.SpaceManager;
 import commons.Util;
@@ -68,7 +69,7 @@ public class IndexConstruct {
 
     Util.println("Read graph from " + graphPath);
     if (graph == null)
-      graph = Util.ReadGraph(graphPath);
+      graph = GraphUtil.ReadGraph(graphPath);
     Util.println("graph size: " + graph.size());
 
     ArrayList<VertexGeoReachList> index =
@@ -111,7 +112,7 @@ public class IndexConstruct {
 
     Util.println("Read graph from " + graphPath);
     if (graph == null)
-      graph = Util.ReadGraph(graphPath);
+      graph = GraphUtil.ReadGraph(graphPath);
     Util.println("graph size: " + graph.size());
 
     ArrayList<VertexGeoReach> index =
@@ -708,7 +709,7 @@ public class IndexConstruct {
 
     int startID = 0, hops = 1;
     if (graph == null)
-      graph = Util.ReadGraph(graphPath);
+      graph = GraphUtil.ReadGraph(graphPath);
     if (entities == null)
       entities = Util.ReadEntity(entityPath);
 

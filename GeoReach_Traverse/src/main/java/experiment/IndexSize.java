@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import org.roaringbitmap.RoaringBitmap;
 import commons.Entity;
+import commons.GraphUtil;
 import commons.Util;
 import commons.VertexGeoReachList;
 import construction.IndexConstruct;
@@ -73,7 +74,7 @@ public class IndexSize {
       Util.println(graphPath + " does not exist!");
       System.exit(-1);
     }
-    ArrayList<ArrayList<Integer>> graph = Util.ReadGraph(graphPath);
+    ArrayList<ArrayList<Integer>> graph = GraphUtil.ReadGraph(graphPath);
 
     Util.println("Read entities from " + entityPath);
     if (!Util.pathExist(entityPath)) {
@@ -129,7 +130,7 @@ public class IndexSize {
    * @return
    */
   public static int getGraphDBSize(String graphPath, boolean bidirectional) {
-    ArrayList<ArrayList<Integer>> graph = Util.ReadGraph(graphPath);
+    ArrayList<ArrayList<Integer>> graph = GraphUtil.ReadGraph(graphPath);
     int nodeCount = graph.size();
     int edgeCount = 0;
     for (ArrayList<Integer> neighbors : graph) {

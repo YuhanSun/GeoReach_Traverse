@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.TreeSet;
 
 import commons.Entity;
+import commons.GraphUtil;
 import commons.ReadWriteUtil;
 import commons.Util;
 
@@ -173,7 +174,7 @@ public class Wikidata {
 	
 	public static void getEdgeCount()
 	{
-		ArrayList<ArrayList<Integer>> graph = Util.ReadGraph(graphPath);
+		ArrayList<ArrayList<Integer>> graph = GraphUtil.ReadGraph(graphPath);
 		int edgeCount = 0;
 		for (ArrayList<Integer> neighbors : graph)
 			edgeCount += neighbors.size();
@@ -312,7 +313,7 @@ public class Wikidata {
 	
 	public static void readGraphTest()
 	{
-		ArrayList<ArrayList<Integer>> graph = Util.ReadGraph(graphPath);
+		ArrayList<ArrayList<Integer>> graph = GraphUtil.ReadGraph(graphPath);
 	}
 	
 	/**
