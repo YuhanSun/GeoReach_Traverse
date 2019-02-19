@@ -6,10 +6,19 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.TreeSet;
 
 public class GraphUtil {
+
+  public static int getEdgeCount(List<Collection<Integer>> graph) {
+    int count = 0;
+    for (Collection<Integer> neighbors : graph) {
+      count += neighbors.size();
+    }
+    return count;
+  }
 
   /**
    * Read graph from a file.
@@ -72,9 +81,9 @@ public class GraphUtil {
    * @param listGraph
    * @return
    */
-  public static List<TreeSet<Integer>> convertListGraphToTreeSetGraph(
+  public static List<Collection<Integer>> convertListGraphToTreeSetGraph(
       ArrayList<ArrayList<Integer>> listGraph) {
-    List<TreeSet<Integer>> graph = new ArrayList<>(listGraph.size());
+    List<Collection<Integer>> graph = new ArrayList<>(listGraph.size());
     for (List<Integer> neighbors : listGraph) {
       graph.add(new TreeSet<>(neighbors));
     }
@@ -95,7 +104,7 @@ public class GraphUtil {
     try {
       if (!Util.pathExist(entity_path))
         throw new Exception(entity_path + " does not exist");
-  
+
       reader = new BufferedReader(new FileReader(new File(entity_path)));
       str = reader.readLine();
       int node_count = Integer.parseInt(str);
