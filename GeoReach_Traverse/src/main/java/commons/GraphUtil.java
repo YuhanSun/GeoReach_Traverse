@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.TreeSet;
 
 public class GraphUtil {
 
@@ -59,6 +61,21 @@ public class GraphUtil {
         }
       e.printStackTrace();
       System.exit(-1);
+    }
+    return graph;
+  }
+
+  /**
+   * Convert from a list graph to treeset graph.
+   *
+   * @param listGraph
+   * @return
+   */
+  public static List<TreeSet<Integer>> convertListGraphToTreeSetGraph(
+      List<List<Integer>> listGraph) {
+    List<TreeSet<Integer>> graph = new ArrayList<>(listGraph.size());
+    for (List<Integer> neighbors : listGraph) {
+      graph.add(new TreeSet<>(neighbors));
     }
     return graph;
   }
