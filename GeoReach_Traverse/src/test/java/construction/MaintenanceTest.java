@@ -104,7 +104,7 @@ public class MaintenanceTest {
   public void readGraph() {
     graph = GraphUtil.ReadGraph(graphPath);
     entities = GraphUtil.ReadEntity(entityPath);
-    labelList = Util.readIntegerArray(labelListPath);
+    labelList = ReadWriteUtil.readIntegerArray(labelListPath);
   }
 
   /**
@@ -122,7 +122,7 @@ public class MaintenanceTest {
     LoadData loadData = new LoadData();
     loadData.loadAllEntityAndCreateIdMap(entities, labelList, dbPath, mapPath);
     loadData.LoadGraphEdges(mapPath, dbPath, graph);
-    graph_pos_map_list = Util.readMapToArray(mapPath);
+    graph_pos_map_list = ReadWriteUtil.readMapToArray(mapPath);
   }
 
   /**
@@ -252,7 +252,7 @@ public class MaintenanceTest {
 
     // Load the Index into db
     Loader loader = new Loader();
-    long[] graph_pos_map_list = Util.readMapToArray(mapPath);
+    long[] graph_pos_map_list = ReadWriteUtil.readMapToArray(mapPath);
     loader.load(outputPath, dbPath, graph_pos_map_list);
 
     if (dbservice == null) {

@@ -13,6 +13,7 @@ import commons.Config;
 import commons.Entity;
 import commons.EnumVariables.Datasets;
 import commons.EnumVariables.system;
+import commons.ReadWriteUtil;
 import commons.Util;
 
 /**
@@ -80,7 +81,7 @@ public class Loader {
      * set graph id to neo4j id map
      */
     String graph_pos_map_path = dir + "/node_map_RTree.txt";
-    HashMap<String, String> graph_pos_map = Util.ReadMap(graph_pos_map_path);
+    HashMap<String, String> graph_pos_map = ReadWriteUtil.ReadMap(graph_pos_map_path);
     loader.graph_pos_map_list = new long[graph_pos_map.size()];
     for (String key_str : graph_pos_map.keySet()) {
       int key = Integer.parseInt(key_str);
@@ -303,7 +304,7 @@ public class Loader {
     /**
      * set graph id to neo4j id map
      */
-    HashMap<String, String> graph_pos_map = Util.ReadMap(graph_pos_map_path);
+    HashMap<String, String> graph_pos_map = ReadWriteUtil.ReadMap(graph_pos_map_path);
     graph_pos_map_list = new long[graph_pos_map.size()];
     for (String key_str : graph_pos_map.keySet()) {
       int key = Integer.parseInt(key_str);

@@ -62,7 +62,7 @@ public class Wikidata {
 	public static void checkPropertyEntityID()
 	{
 		HashMap<Long, Integer> idMap = readMap(entityMapPath);
-		ArrayList<Integer> propertySet = Util.readIntegerArray(dir + "\\propertyID.txt");
+		ArrayList<Integer> propertySet = ReadWriteUtil.readIntegerArray(dir + "\\propertyID.txt");
 		int count = 0;
 		for (int id : propertySet)
 		{
@@ -288,7 +288,7 @@ public class Wikidata {
 	public static void checkLocation()
 	{
 		ArrayList<Entity> entities = GraphUtil.ReadEntity(entityPath);
-		HashMap<String, String> map = Util.ReadMap(entityMapPath);
+		HashMap<String, String> map = ReadWriteUtil.ReadMap(entityMapPath);
 		int count = 0;
 		for (Entity entity : entities)
 		{

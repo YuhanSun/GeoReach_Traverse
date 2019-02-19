@@ -38,11 +38,11 @@ public class Prepare {
 		{
 			String stardIDPath = String.format("%s\\query\\%s\\startID.txt", 
 					projectDir, dataset);
-			ArrayList<Integer> startIDs = Util.readIntegerArray(stardIDPath);
+			ArrayList<Integer> startIDs = ReadWriteUtil.readIntegerArray(stardIDPath);
 			
 			String graph_pos_map_path = String.format("%s\\%s\\node_map_RTree.txt", dataDir, dataset);
 	    	Util.println("read map from " + graph_pos_map_path);
-	    	HashMap<String, String> graph_pos_map = Util.ReadMap(graph_pos_map_path);
+	    	HashMap<String, String> graph_pos_map = ReadWriteUtil.ReadMap(graph_pos_map_path);
 	    	Util.println("finish reading");
 	    	
 	    	Util.println("ini array");

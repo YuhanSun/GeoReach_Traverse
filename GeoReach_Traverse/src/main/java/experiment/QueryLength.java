@@ -12,6 +12,7 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import commons.Config;
 import commons.Entity;
 import commons.MyRectangle;
+import commons.ReadWriteUtil;
 import commons.Util;
 import query.Neo4jCypherTraversal;
 import query.SimpleGraphTraversal;
@@ -135,7 +136,7 @@ public class QueryLength {
 			//Read start ids
 			String startIDPath = String.format("%s/startID_neo4j.txt", queryLength.queryDir);
 			Util.println("start id path: " + startIDPath);
-			ArrayList<Integer> allIDs = Util.readIntegerArray(startIDPath);
+			ArrayList<Integer> allIDs = ReadWriteUtil.readIntegerArray(startIDPath);
 			Util.println(allIDs);
 			
 			int experimentCount = 500;
@@ -199,8 +200,8 @@ public class QueryLength {
 					String.valueOf(clearCacheFlag), String.valueOf(hotDB));
 			if(!TEST_FORMAT)
 			{
-				Util.WriteFile(result_detail_path, true, write_line);
-				Util.WriteFile(result_avg_path, true, write_line);
+				ReadWriteUtil.WriteFile(result_detail_path, true, write_line);
+				ReadWriteUtil.WriteFile(result_avg_path, true, write_line);
 			}
 			
 			int name_suffix = (int) (selectivity * spaCount);
@@ -216,16 +217,16 @@ public class QueryLength {
 			}
 			Util.println("query rectangle path: " + queryrect_path);
 			Util.println("queryrect path: " + queryrect_path);
-			ArrayList<MyRectangle> queryrect = Util.ReadQueryRectangle(queryrect_path);
+			ArrayList<MyRectangle> queryrect = ReadWriteUtil.ReadQueryRectangle(queryrect_path);
 			String head_line = "time\tvisited_count\tGeoReachPruned\tHistoryPruned\tresult_count\n";
 			if(!TEST_FORMAT)
-				Util.WriteFile(result_avg_path, true, "length\t" + head_line);
+				ReadWriteUtil.WriteFile(result_avg_path, true, "length\t" + head_line);
 			
 			for (int length = startLength; length <= endLength; length++)
 			{
 				write_line = length + "\n" + head_line;
 				if(!TEST_FORMAT)
-					Util.WriteFile(result_detail_path, true, write_line);
+					ReadWriteUtil.WriteFile(result_detail_path, true, write_line);
 				Util.println("db path: " + db_path);
 				Util.clearAndSleep(password, 5000);
 				spaTraversal = new SpaTraversal(db_path, MAX_HOPNUM, totalRange, pieces_x, pieces_y);
@@ -275,7 +276,7 @@ public class QueryLength {
 						write_line += String.format("%d\t%d\t", GeoReachPrunedCount.get(i), HistoryPrunedCount.get(i));
 						write_line += String.format("%d\n", resultCount.get(i));
 						if(!TEST_FORMAT)
-							Util.WriteFile(result_detail_path, true, write_line);
+							ReadWriteUtil.WriteFile(result_detail_path, true, write_line);
 					}
 					if (clearCacheFlag)
 					{
@@ -302,10 +303,10 @@ public class QueryLength {
 				write_line += String.format("%d\t%d\t%d\n", Util.Average(GeoReachPrunedCount), 
 						Util.Average(HistoryPrunedCount), Util.Average(resultCount));
 				if(!TEST_FORMAT)
-					Util.WriteFile(result_avg_path, true, write_line);
+					ReadWriteUtil.WriteFile(result_avg_path, true, write_line);
 			}
-			Util.WriteFile(result_detail_path, true, "\n");
-			Util.WriteFile(result_avg_path, true, "\n");
+			ReadWriteUtil.WriteFile(result_detail_path, true, "\n");
+			ReadWriteUtil.WriteFile(result_avg_path, true, "\n");
 		} catch (Exception e) {
 			e.printStackTrace();
 			if (spaTraversal.dbservice != null)
@@ -337,13 +338,13 @@ public class QueryLength {
 					String.valueOf(clearCacheFlag), String.valueOf(hotDB));
 			if(!TEST_FORMAT)
 			{
-				Util.WriteFile(result_detail_path, true, write_line);
-				Util.WriteFile(result_avg_path, true, write_line);
+				ReadWriteUtil.WriteFile(result_detail_path, true, write_line);
+				ReadWriteUtil.WriteFile(result_avg_path, true, write_line);
 			}
 
 			String head_line = "time\tvisited_count\tresult_count\n";
 			if(!TEST_FORMAT)
-				Util.WriteFile(result_avg_path, true, "length\t" + head_line);
+				ReadWriteUtil.WriteFile(result_avg_path, true, "length\t" + head_line);
 
 			for (int length = startLength; length <= endLength; length++)
 			{
@@ -362,9 +363,9 @@ public class QueryLength {
 
 				write_line = length + "\n" + head_line;
 				if(!TEST_FORMAT)
-					Util.WriteFile(result_detail_path, true, write_line);
+					ReadWriteUtil.WriteFile(result_detail_path, true, write_line);
 
-				ArrayList<MyRectangle> queryrect = Util.ReadQueryRectangle(queryrect_path);
+				ArrayList<MyRectangle> queryrect = ReadWriteUtil.ReadQueryRectangle(queryrect_path);
 				
 				Util.clearAndSleep(password, 5000);
 				SimpleGraphTraversal simpleGraphTraversal = new SimpleGraphTraversal(db_path);
@@ -408,7 +409,7 @@ public class QueryLength {
 						write_line = String.format("%d\t%d\t", total_time.get(i), visitedcount.get(i));
 						write_line += String.format("%d\n", resultCount.get(i));
 						if(!TEST_FORMAT)
-							Util.WriteFile(result_detail_path, true, write_line);
+							ReadWriteUtil.WriteFile(result_detail_path, true, write_line);
 					}
 
 					if (clearCacheFlag)
@@ -433,10 +434,10 @@ public class QueryLength {
 				write_line += String.format("%d\t%d\t", Util.Average(total_time), Util.Average(visitedcount));
 				write_line += String.format("%d\n", Util.Average(resultCount));
 				if(!TEST_FORMAT)
-					Util.WriteFile(result_avg_path, true, write_line);
+					ReadWriteUtil.WriteFile(result_avg_path, true, write_line);
 			}
-			Util.WriteFile(result_detail_path, true, "\n");
-			Util.WriteFile(result_avg_path, true, "\n");
+			ReadWriteUtil.WriteFile(result_detail_path, true, "\n");
+			ReadWriteUtil.WriteFile(result_avg_path, true, "\n");
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(-1);

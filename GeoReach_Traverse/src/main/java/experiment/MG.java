@@ -11,6 +11,7 @@ import commons.EnumVariables.system;
 import commons.GeoReachIndexUtil;
 import commons.GraphUtil;
 import commons.MyRectangle;
+import commons.ReadWriteUtil;
 import commons.Util;
 import commons.VertexGeoReach;
 import construction.IndexConstruct;
@@ -138,7 +139,7 @@ public class MG {
       // Read start ids
       String startIDPath = String.format("%s/startID.txt", queryDir);
       Util.println("start id path: " + startIDPath);
-      ArrayList<Integer> allIDs = Util.readIntegerArray(startIDPath);
+      ArrayList<Integer> allIDs = ReadWriteUtil.readIntegerArray(startIDPath);
       Util.println(allIDs);
 
       int experimentCount = 500;
@@ -182,12 +183,12 @@ public class MG {
       }
 
       String write_line = String.format("%s\t%d\n", dataset, length);
-      Util.WriteFile(result_detail_path, true, write_line);
-      Util.WriteFile(result_avg_path, true, write_line);
+      ReadWriteUtil.WriteFile(result_detail_path, true, write_line);
+      ReadWriteUtil.WriteFile(result_avg_path, true, write_line);
 
       String head_line = "time\tdbTime\tcheckTime\t"
           + "visited_count\tGeoReachPruned\tHistoryPruned\tresult_count\n";
-      Util.WriteFile(result_avg_path, true, "MG\t" + head_line);
+      ReadWriteUtil.WriteFile(result_avg_path, true, "MG\t" + head_line);
 
       // for ( double MG = 0; MG < 1.01; MG += 0.25) //Gowalla
       for (int MGint : MGs) {
@@ -211,9 +212,9 @@ public class MG {
           Util.println("query rectangle path: " + queryrect_path);
 
           write_line = selectivity + "\n" + head_line;
-          Util.WriteFile(result_detail_path, true, write_line);
+          ReadWriteUtil.WriteFile(result_detail_path, true, write_line);
 
-          ArrayList<MyRectangle> queryrect = Util.ReadQueryRectangle(queryrect_path);
+          ArrayList<MyRectangle> queryrect = ReadWriteUtil.ReadQueryRectangle(queryrect_path);
 
           ArrayList<Long> total_time = new ArrayList<Long>();
           ArrayList<Long> dbTime = new ArrayList<>();
@@ -262,7 +263,7 @@ public class MG {
             write_line +=
                 String.format("%d\t%d\t", GeoReachPrunedCount.get(i), HistoryPrunedCount.get(i));
             write_line += String.format("%d\n", resultCount.get(i));
-            Util.WriteFile(result_detail_path, true, write_line);
+            ReadWriteUtil.WriteFile(result_detail_path, true, write_line);
 
             spaTraversal.dbservice.shutdown();
           }
@@ -272,12 +273,12 @@ public class MG {
               Util.Average(dbTime), Util.Average(checkTime), Util.Average(visitedcount));
           write_line += String.format("%d\t%d\t%d\n", Util.Average(GeoReachPrunedCount),
               Util.Average(HistoryPrunedCount), Util.Average(resultCount));
-          Util.WriteFile(result_avg_path, true, write_line);
+          ReadWriteUtil.WriteFile(result_avg_path, true, write_line);
 
         }
       }
-      Util.WriteFile(result_detail_path, true, "\n");
-      Util.WriteFile(result_avg_path, true, "\n");
+      ReadWriteUtil.WriteFile(result_detail_path, true, "\n");
+      ReadWriteUtil.WriteFile(result_avg_path, true, "\n");
     } catch (Exception e) {
     }
 
@@ -344,7 +345,7 @@ public class MG {
       maxy = 1000;
     }
 
-    HashMap<String, String> graph_pos_map = Util.ReadMap(graph_pos_map_path);
+    HashMap<String, String> graph_pos_map = ReadWriteUtil.ReadMap(graph_pos_map_path);
     graph_pos_map_list = new long[graph_pos_map.size()];
     for (String key_str : graph_pos_map.keySet()) {
       int key = Integer.parseInt(key_str);

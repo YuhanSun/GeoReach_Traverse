@@ -12,6 +12,7 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import commons.Config;
 import commons.Entity;
 import commons.MyRectangle;
+import commons.ReadWriteUtil;
 import commons.Util;
 import query.Neo4jCypherTraversal;
 import query.SimpleGraphTraversal;
@@ -130,7 +131,7 @@ public class SelectivityNumber {
 		ArrayList<Entity> entities = GraphUtil.ReadEntity(entityPath);
 		spaCount = Util.GetSpatialEntityCount(entities);
 		
-		HashMap<String, String> graph_pos_map = Util.ReadMap(graph_pos_map_path);
+		HashMap<String, String> graph_pos_map = ReadWriteUtil.ReadMap(graph_pos_map_path);
 		graph_pos_map_list = new long[graph_pos_map.size()];
 		for ( String key_str : graph_pos_map.keySet())
 		{
@@ -161,7 +162,7 @@ public class SelectivityNumber {
 			//Read start ids
 			String startIDPath = String.format("%s/startID.txt", selectivityNumber.queryDir);
 			Util.println("start id path: " + startIDPath);
-			ArrayList<Integer> allIDs = Util.readIntegerArray(startIDPath);
+			ArrayList<Integer> allIDs = ReadWriteUtil.readIntegerArray(startIDPath);
 			Util.println(allIDs);
 			
 			int experimentCount = 500;
@@ -222,17 +223,17 @@ public class SelectivityNumber {
 			String write_line = String.format("%s\tlength:%d\n", dataset, length);
 			if(!TEST_FORMAT)
 			{
-				Util.WriteFile(result_detail_path, true, write_line);
-				Util.WriteFile(result_avg_path, true, write_line);
+				ReadWriteUtil.WriteFile(result_detail_path, true, write_line);
+				ReadWriteUtil.WriteFile(result_avg_path, true, write_line);
 			}
 			
 			write_line = String.format("MAXHOP=%d, pieces=%d, MG=%f", MAX_HOPNUM, pieces_x, MG);
 			write_line = "MAXHOP = " + MAX_HOPNUM + ", pieces = " + pieces_x;
-			Util.WriteFile(result_avg_path, true, write_line + "\n");
+			ReadWriteUtil.WriteFile(result_avg_path, true, write_line + "\n");
 
 			String head_line = "time\tvisited_count\tGeoReachPruned\tHistoryPruned\tresult_count\n";
 			if(!TEST_FORMAT)
-				Util.WriteFile(result_avg_path, true, "selectivity\t" + head_line);
+				ReadWriteUtil.WriteFile(result_avg_path, true, "selectivity\t" + head_line);
 
 			double selectivity = startSelectivity;
 			while ( selectivity <= endSelectivity)
@@ -252,10 +253,10 @@ public class SelectivityNumber {
 
 				write_line = df.format(selectivity) + "\n" + head_line;
 				if(!TEST_FORMAT)
-					Util.WriteFile(result_detail_path, true, write_line);
+					ReadWriteUtil.WriteFile(result_detail_path, true, write_line);
 
 				Util.println("queryrect path: " + queryrect_path);
-				ArrayList<MyRectangle> queryrect = Util.ReadQueryRectangle(queryrect_path);
+				ArrayList<MyRectangle> queryrect = ReadWriteUtil.ReadQueryRectangle(queryrect_path);
 				
 				Util.println("db path: " + db_path);
 				spaTraversal = new SpaTraversal(db_path, MAX_HOPNUM, totalRange, pieces_x, pieces_y);
@@ -304,7 +305,7 @@ public class SelectivityNumber {
 						write_line += String.format("%d\t%d\t", GeoReachPrunedCount.get(i), HistoryPrunedCount.get(i));
 						write_line += String.format("%d\n", resultCount.get(i));
 						if(!TEST_FORMAT)
-							Util.WriteFile(result_detail_path, true, write_line);
+							ReadWriteUtil.WriteFile(result_detail_path, true, write_line);
 					}
 
 					spaTraversal.dbservice.shutdown();
@@ -327,13 +328,13 @@ public class SelectivityNumber {
 				write_line += String.format("%d\t%d\t%d\n", Util.Average(GeoReachPrunedCount), 
 						Util.Average(HistoryPrunedCount), Util.Average(resultCount));
 				if(!TEST_FORMAT)
-					Util.WriteFile(result_avg_path, true, write_line);
+					ReadWriteUtil.WriteFile(result_avg_path, true, write_line);
 
 				selectivity *= times;
 				Util.clearAndSleep(password, 5000);
 			}
-			Util.WriteFile(result_detail_path, true, "\n");
-			Util.WriteFile(result_avg_path, true, "\n");
+			ReadWriteUtil.WriteFile(result_detail_path, true, "\n");
+			ReadWriteUtil.WriteFile(result_avg_path, true, "\n");
 		} catch (Exception e) {
 			e.printStackTrace();
 			if (spaTraversal.dbservice != null)
@@ -363,13 +364,13 @@ public class SelectivityNumber {
 			String write_line = String.format("%s\t%d\n", dataset, length);
 			if(!TEST_FORMAT)
 			{
-				Util.WriteFile(result_detail_path, true, write_line);
-				Util.WriteFile(result_avg_path, true, write_line);
+				ReadWriteUtil.WriteFile(result_detail_path, true, write_line);
+				ReadWriteUtil.WriteFile(result_avg_path, true, write_line);
 			}
 
 			String head_line = "time\tvisited_count\tresult_count\n";
 			if(!TEST_FORMAT)
-				Util.WriteFile(result_avg_path, true, "selectivity\t" + head_line);
+				ReadWriteUtil.WriteFile(result_avg_path, true, "selectivity\t" + head_line);
 
 			double selectivity = startSelectivity;
 			while ( selectivity <= endSelectivity)
@@ -389,9 +390,9 @@ public class SelectivityNumber {
 
 				write_line = df.format(selectivity) + "\n" + head_line;
 				if(!TEST_FORMAT)
-					Util.WriteFile(result_detail_path, true, write_line);
+					ReadWriteUtil.WriteFile(result_detail_path, true, write_line);
 
-				ArrayList<MyRectangle> queryrect = Util.ReadQueryRectangle(queryrect_path);
+				ArrayList<MyRectangle> queryrect = ReadWriteUtil.ReadQueryRectangle(queryrect_path);
 				
 				SimpleGraphTraversal simpleGraphTraversal = new SimpleGraphTraversal(db_path);
 
@@ -435,7 +436,7 @@ public class SelectivityNumber {
 						write_line = String.format("%d\t%d\t", total_time.get(i), visitedcount.get(i));
 						write_line += String.format("%d\n", resultCount.get(i));
 						if(!TEST_FORMAT)
-							Util.WriteFile(result_detail_path, true, write_line);
+							ReadWriteUtil.WriteFile(result_detail_path, true, write_line);
 					}
 
 					simpleGraphTraversal.dbservice.shutdown();
@@ -454,13 +455,13 @@ public class SelectivityNumber {
 				write_line += String.format("%d\t%d\t", Util.Average(total_time), Util.Average(visitedcount));
 				write_line += String.format("%d\n", Util.Average(resultCount));
 				if(!TEST_FORMAT)
-					Util.WriteFile(result_avg_path, true, write_line);
+					ReadWriteUtil.WriteFile(result_avg_path, true, write_line);
 
 				selectivity *= times;
 				Util.clearAndSleep(password, 5000);
 			}
-			Util.WriteFile(result_detail_path, true, "\n");
-			Util.WriteFile(result_avg_path, true, "\n");
+			ReadWriteUtil.WriteFile(result_detail_path, true, "\n");
+			ReadWriteUtil.WriteFile(result_avg_path, true, "\n");
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(-1);
@@ -488,13 +489,13 @@ public class SelectivityNumber {
 			String write_line = String.format("%s\t%d\n", dataset, length);
 			if(!TEST_FORMAT)
 			{
-				Util.WriteFile(result_detail_path, true, write_line);
-				Util.WriteFile(result_avg_path, true, write_line);
+				ReadWriteUtil.WriteFile(result_detail_path, true, write_line);
+				ReadWriteUtil.WriteFile(result_avg_path, true, write_line);
 			}
 
 			String head_line = "time\tpage_access\tresult_count\n";
 			if(!TEST_FORMAT)
-				Util.WriteFile(result_avg_path, true, "selectivity\t" + head_line);
+				ReadWriteUtil.WriteFile(result_avg_path, true, "selectivity\t" + head_line);
 
 			double selectivity = startSelectivity;
 			int times = 10;
@@ -515,9 +516,9 @@ public class SelectivityNumber {
 
 				write_line = selectivity + "\n" + head_line;
 				if(!TEST_FORMAT)
-					Util.WriteFile(result_detail_path, true, write_line);
+					ReadWriteUtil.WriteFile(result_detail_path, true, write_line);
 
-				ArrayList<MyRectangle> queryrect = Util.ReadQueryRectangle(queryrect_path);
+				ArrayList<MyRectangle> queryrect = ReadWriteUtil.ReadQueryRectangle(queryrect_path);
 				
 				Neo4jCypherTraversal neo4jCypherTraversal = new Neo4jCypherTraversal(db_path);
 
@@ -554,7 +555,7 @@ public class SelectivityNumber {
 						write_line = String.format("%d\t%d\t", total_time.get(i), pageAccessCount.get(i));
 						write_line += String.format("%d\n", resultCount.get(i));
 						if(!TEST_FORMAT)
-							Util.WriteFile(result_detail_path, true, write_line);
+							ReadWriteUtil.WriteFile(result_detail_path, true, write_line);
 					}
 
 					neo4jCypherTraversal.dbservice.shutdown();
@@ -570,12 +571,12 @@ public class SelectivityNumber {
 				write_line += String.format("%d\t%d\t", Util.Average(total_time), Util.Average(pageAccessCount));
 				write_line += String.format("%d\n", Util.Average(resultCount));
 				if(!TEST_FORMAT)
-					Util.WriteFile(result_avg_path, true, write_line);
+					ReadWriteUtil.WriteFile(result_avg_path, true, write_line);
 
 				selectivity *= times;
 			}
-			Util.WriteFile(result_detail_path, true, "\n");
-			Util.WriteFile(result_avg_path, true, "\n");
+			ReadWriteUtil.WriteFile(result_detail_path, true, "\n");
+			ReadWriteUtil.WriteFile(result_avg_path, true, "\n");
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(-1);

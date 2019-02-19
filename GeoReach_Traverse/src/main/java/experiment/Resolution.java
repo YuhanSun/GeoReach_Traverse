@@ -14,6 +14,7 @@ import commons.EnumVariables.system;
 import commons.GeoReachIndexUtil;
 import commons.GraphUtil;
 import commons.MyRectangle;
+import commons.ReadWriteUtil;
 import commons.Util;
 import commons.VertexGeoReach;
 import construction.IndexConstruct;
@@ -130,7 +131,7 @@ public class Resolution {
       // Read start ids
       String startIDPath = String.format("%s/startID.txt", queryDir);
       Util.println("start id path: " + startIDPath);
-      ArrayList<Integer> allStartIDs = Util.readIntegerArray(startIDPath);
+      ArrayList<Integer> allStartIDs = ReadWriteUtil.readIntegerArray(startIDPath);
       Util.println(allStartIDs);
 
       int experimentCount = 500;
@@ -163,11 +164,11 @@ public class Resolution {
           break;
       }
       while (selectivity <= endSelectivity) {
-        Util.WriteFile(result_avg_path, true, selectivity + "\n");
+        ReadWriteUtil.WriteFile(result_avg_path, true, selectivity + "\n");
         String head_line =
             "time\tdbTime\tcheckTime\tvisited_count\tGeoReachPruned\tHistoryPruned\tresult_count\n";
-        Util.WriteFile(result_avg_path, true, "resolution\t" + head_line);
-        Util.WriteFile(result_detail_path, true, selectivity + "\n");
+        ReadWriteUtil.WriteFile(result_avg_path, true, "resolution\t" + head_line);
+        ReadWriteUtil.WriteFile(result_detail_path, true, selectivity + "\n");
         for (int pieces : piecesArray) {
           long start;
           long time;
@@ -184,10 +185,10 @@ public class Resolution {
           Util.println("query rectangle path: " + queryrect_path);
 
           String write_line = pieces + "\n" + head_line;
-          Util.WriteFile(result_detail_path, true, write_line);
+          ReadWriteUtil.WriteFile(result_detail_path, true, write_line);
 
           Util.println("queryrect path: " + queryrect_path);
-          ArrayList<MyRectangle> queryrect = Util.ReadQueryRectangle(queryrect_path);
+          ArrayList<MyRectangle> queryrect = ReadWriteUtil.ReadQueryRectangle(queryrect_path);
 
           String dbFolder = String.format("%s_%d_%d_%d_%d_%d_%d", version, pieces, pieces,
               (int) (MG * 100), (int) (MR * 100), MC, 3);
@@ -239,7 +240,7 @@ public class Resolution {
             write_line +=
                 String.format("%d\t%d\t", GeoReachPrunedCount.get(i), HistoryPrunedCount.get(i));
             write_line += String.format("%d\n", resultCount.get(i));
-            Util.WriteFile(result_detail_path, true, write_line);
+            ReadWriteUtil.WriteFile(result_detail_path, true, write_line);
 
             spaTraversal.dbservice.shutdown();
 
@@ -256,12 +257,12 @@ public class Resolution {
               String.format("%d\t%d\t", Util.Average(total_time), Util.Average(visitedcount));
           write_line += String.format("%d\t%d\t%d\n", Util.Average(GeoReachPrunedCount),
               Util.Average(HistoryPrunedCount), Util.Average(resultCount));
-          Util.WriteFile(result_avg_path, true, write_line);
+          ReadWriteUtil.WriteFile(result_avg_path, true, write_line);
 
         }
         selectivity *= times;
-        Util.WriteFile(result_detail_path, true, "\n");
-        Util.WriteFile(result_avg_path, true, "\n");
+        ReadWriteUtil.WriteFile(result_detail_path, true, "\n");
+        ReadWriteUtil.WriteFile(result_avg_path, true, "\n");
       }
     } catch (Exception e) {
       e.printStackTrace();
@@ -469,7 +470,7 @@ public class Resolution {
     spaCount = Util.GetSpatialEntityCount(entities);
 
     Util.println("Read map from " + graph_pos_map_path);
-    HashMap<String, String> graph_pos_map = Util.ReadMap(graph_pos_map_path);
+    HashMap<String, String> graph_pos_map = ReadWriteUtil.ReadMap(graph_pos_map_path);
     graph_pos_map_list = new long[graph_pos_map.size()];
     for (String key_str : graph_pos_map.keySet()) {
       int key = Integer.parseInt(key_str);

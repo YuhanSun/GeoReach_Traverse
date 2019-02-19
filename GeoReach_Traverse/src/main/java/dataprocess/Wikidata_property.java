@@ -233,7 +233,7 @@ public class Wikidata_property {
 	public static void checkLocation()
 	{
 		ArrayList<Entity> entities = GraphUtil.ReadEntity(entityPath);
-		HashMap<String, String> map = Util.ReadMap(entityMapPath);
+		HashMap<String, String> map = ReadWriteUtil.ReadMap(entityMapPath);
 		int count = 0;
 		for (Entity entity : entities)
 		{

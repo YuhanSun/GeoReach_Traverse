@@ -23,6 +23,7 @@ import commons.EnumVariables.Datasets;
 import commons.GraphUtil;
 import commons.Labels.GraphLabel;
 import commons.Labels.GraphRel;
+import commons.ReadWriteUtil;
 import commons.Util;
 import construction.Loader;
 
@@ -154,7 +155,7 @@ public class LoadData {
     loader.graph_pos_map_path = dir + "/node_map_RTree.txt";
 
     Util.println("read graph neo4j id map from " + loader.graph_pos_map_path);
-    HashMap<String, String> graph_pos_map = Util.ReadMap(loader.graph_pos_map_path);
+    HashMap<String, String> graph_pos_map = ReadWriteUtil.ReadMap(loader.graph_pos_map_path);
     loader.graph_pos_map_list = new long[graph_pos_map.size()];
     for (String key_str : graph_pos_map.keySet()) {
       int key = Integer.parseInt(key_str);
@@ -238,7 +239,7 @@ public class LoadData {
     Util.println("Load graph edges\n");
     BatchInserter inserter = null;
     try {
-      Map<String, String> id_map = Util.ReadMap(mapPath);
+      Map<String, String> id_map = ReadWriteUtil.ReadMap(mapPath);
       Map<String, String> config = new HashMap<String, String>();
       config.put("dbms.pagecache.memory", "80g");
       Util.println("batch insert into: " + dbPath);
@@ -278,7 +279,7 @@ public class LoadData {
       throws Exception {
     Util.println("Load graph edges\n");
     BatchInserter inserter = null;
-    Map<String, String> id_map = Util.ReadMap(mapPath);
+    Map<String, String> id_map = ReadWriteUtil.ReadMap(mapPath);
     Map<String, String> config = new HashMap<String, String>();
     config.put("dbms.pagecache.memory", "80g");
     Util.println("batch insert into: " + dbPath);
@@ -323,7 +324,7 @@ public class LoadData {
       databaseService.shutdown();
 
       Util.println("Write spatial node map to " + mapPath + "\n");
-      Util.WriteMap(mapPath, true, id_map);
+      ReadWriteUtil.WriteMap(mapPath, true, id_map);
 
     } catch (java.lang.Exception e) {
       e.printStackTrace();
@@ -342,7 +343,7 @@ public class LoadData {
       if (!Util.pathExist(labelListPath))
         throw new java.lang.Exception(labelListPath + " does not exist");
       Util.println("Read label list from: " + labelListPath);
-      ArrayList<Integer> labelList = Util.readIntegerArray(labelListPath);
+      ArrayList<Integer> labelList = ReadWriteUtil.readIntegerArray(labelListPath);
 
       Map<Object, Object> id_map = new TreeMap<Object, Object>();
 
@@ -365,7 +366,7 @@ public class LoadData {
       }
       inserter.shutdown();
       Util.println("Write non-spatial node map to " + mapPath + "\n");
-      Util.WriteMap(mapPath, false, id_map);
+      ReadWriteUtil.WriteMap(mapPath, false, id_map);
     } catch (java.lang.Exception e) {
       e.printStackTrace();
       System.exit(-1);
@@ -409,7 +410,7 @@ public class LoadData {
     inserter.shutdown();
     Util.println("Write all node map to " + mapPath + "\n");
     Util.println("map is " + id_map);
-    Util.WriteMap(mapPath, false, id_map);
+    ReadWriteUtil.WriteMap(mapPath, false, id_map);
   }
 
   /**
@@ -444,7 +445,7 @@ public class LoadData {
       }
       inserter.shutdown();
       Util.println("Write non-spatial node map to " + mapPath + "\n");
-      Util.WriteMap(mapPath, false, id_map);
+      ReadWriteUtil.WriteMap(mapPath, false, id_map);
     } catch (java.lang.Exception e) {
       e.printStackTrace();
       System.exit(-1);
