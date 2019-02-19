@@ -49,6 +49,8 @@ public class Config {
   private String geoBName = "GeoB";
 
   private String graphFileName = "graph.txt";
+  private String entityFileName = "entity.txt";
+  private String labelListFileName = "label.txt";
 
   public String getGraphFileName() {
     return graphFileName;
@@ -73,9 +75,6 @@ public class Config {
   public void setLabelListFileName(String labelListFileName) {
     this.labelListFileName = labelListFileName;
   }
-
-  private String entityFileName = "enitty.txt";
-  private String labelListFileName = "labe.txt";
 
 
   public void setDatasetName(String pName) {
