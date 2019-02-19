@@ -44,6 +44,8 @@ public class MaintenanceTest {
   ArrayList<Entity> entities = null;
   ArrayList<Integer> labelList = null;
 
+  long[] graph_pos_map_list;
+
   /**
    * Initialize the test graph, including variables: graph, entities, labelList and write to file.
    * It is used only once.
@@ -119,6 +121,7 @@ public class MaintenanceTest {
     LoadData loadData = new LoadData();
     loadData.loadAllEntityAndCreateIdMap(entities, labelList, dbPath, mapPath);
     loadData.LoadGraphEdges(mapPath, dbPath, graph);
+    graph_pos_map_list = Util.readMapToArray(mapPath);
   }
 
   /**
@@ -292,84 +295,37 @@ public class MaintenanceTest {
   public void addEdgeSetTest() throws Exception {
     loadGraph();
     constructAndLoadIndex();
-    ArrayList<VertexGeoReachList> index = null;
-    ArrayList<ArrayList<Integer>> typesList = null;
+    // ArrayList<VertexGeoReachList> index = null;
+    // ArrayList<ArrayList<Integer>> typesList = null;
     Transaction tx = dbservice.beginTx();
     Maintenance maintenance = new Maintenance(spaceManager, MAX_HOP, MG, MR, MC, dbservice);
-    Node src = null, trg = null;
-    long[] graph_pos_map_list = Util.readMapToArray(mapPath);
-    int srcId, trgId;
+    // Node src = null, trg = null;
+    // int srcId, trgId;
 
-    // add edge (0, 3)
-    srcId = 0;
-    trgId = 3;
-    Util.println(String.format("add edge (%d, %d)", srcId, trgId));
-    graph.get(srcId).add(trgId);
-    graph.get(trgId).add(srcId);
-    index = IndexConstruct.ConstructIndexList(graph, entities, spaceManager, MAX_HOP);
-    typesList = IndexConstruct.generateTypeListForList(index, MAX_HOP, spaceManager, MG, MR, MC);
-    src = dbservice.getNodeById(srcId);
-    trg = dbservice.getNodeById(trgId);
-    maintenance.addEdgeAndUpdateIndex(src, trg);
-    validateAllNodeIndex(maintenance, index, typesList, graph_pos_map_list);
-
-
-    // add edge (0, 1)
-    srcId = 0;
-    trgId = 1;
-    Util.println(String.format("add edge (%d, %d)", srcId, trgId));
-    graph.get(srcId).add(trgId);
-    graph.get(trgId).add(srcId);
-    index = IndexConstruct.ConstructIndexList(graph, entities, spaceManager, MAX_HOP);
-    typesList = IndexConstruct.generateTypeListForList(index, MAX_HOP, spaceManager, MG, MR, MC);
-    src = dbservice.getNodeById(srcId);
-    trg = dbservice.getNodeById(trgId);
-    maintenance.addEdgeAndUpdateIndex(src, trg);
-    validateAllNodeIndex(maintenance, index, typesList, graph_pos_map_list);
-
-    // add edge (0, 5)
-    srcId = 0;
-    trgId = 5;
-    Util.println(String.format("add edge (%d, %d)", srcId, trgId));
-    graph.get(srcId).add(trgId);
-    graph.get(trgId).add(srcId);
-    index = IndexConstruct.ConstructIndexList(graph, entities, spaceManager, MAX_HOP);
-    typesList = IndexConstruct.generateTypeListForList(index, MAX_HOP, spaceManager, MG, MR, MC);
-    src = dbservice.getNodeById(srcId);
-    trg = dbservice.getNodeById(trgId);
-    maintenance.addEdgeAndUpdateIndex(src, trg);
-    validateAllNodeIndex(maintenance, index, typesList, graph_pos_map_list);
-
-    // add edge (2, 5)
-    srcId = 2;
-    trgId = 5;
-    Util.println(String.format("add edge (%d, %d)", srcId, trgId));
-    graph.get(srcId).add(trgId);
-    graph.get(trgId).add(srcId);
-    index = IndexConstruct.ConstructIndexList(graph, entities, spaceManager, MAX_HOP);
-    typesList = IndexConstruct.generateTypeListForList(index, MAX_HOP, spaceManager, MG, MR, MC);
-    src = dbservice.getNodeById(srcId);
-    trg = dbservice.getNodeById(trgId);
-    maintenance.addEdgeAndUpdateIndex(src, trg);
-    validateAllNodeIndex(maintenance, index, typesList, graph_pos_map_list);
-
-    // add edge (4, 5)
-    srcId = 4;
-    trgId = 5;
-    Util.println(String.format("add edge (%d, %d)", srcId, trgId));
-    graph.get(srcId).add(trgId);
-    graph.get(trgId).add(srcId);
-    index = IndexConstruct.ConstructIndexList(graph, entities, spaceManager, MAX_HOP);
-    typesList = IndexConstruct.generateTypeListForList(index, MAX_HOP, spaceManager, MG, MR, MC);
-    src = dbservice.getNodeById(srcId);
-    trg = dbservice.getNodeById(trgId);
-    maintenance.addEdgeAndUpdateIndex(src, trg);
-    validateAllNodeIndex(maintenance, index, typesList, graph_pos_map_list);
+    addEdgeSingleTest(0, 3, maintenance);
+    addEdgeSingleTest(0, 1, maintenance);
+    addEdgeSingleTest(0, 5, maintenance);
+    addEdgeSingleTest(2, 5, maintenance);
+    addEdgeSingleTest(4, 5, maintenance);
 
     tx.success();
     tx.close();
     maintenance.shutdown();
     dbservice = null;
+  }
+
+  public void addEdgeSingleTest(int srcId, int trgId, Maintenance maintenance) throws Exception {
+    Util.println(String.format("add edge (%d, %d)", srcId, trgId));
+    graph.get(srcId).add(trgId);
+    graph.get(trgId).add(srcId);
+    ArrayList<VertexGeoReachList> index =
+        IndexConstruct.ConstructIndexList(graph, entities, spaceManager, MAX_HOP);
+    ArrayList<ArrayList<Integer>> typesList =
+        IndexConstruct.generateTypeListForList(index, MAX_HOP, spaceManager, MG, MR, MC);
+    Node src = dbservice.getNodeById(srcId);
+    Node trg = dbservice.getNodeById(trgId);
+    maintenance.addEdgeAndUpdateIndex(src, trg);
+    validateAllNodeIndex(maintenance, index, typesList, graph_pos_map_list);
   }
 
   /**
