@@ -1,10 +1,10 @@
 package commons;
 
 public class Edge {
-  int start;
-  int end;
+  long start;
+  long end;
 
-  public Edge(int start, int end) {
+  public Edge(long start, long end) {
     this.start = start;
     this.end = end;
   }
