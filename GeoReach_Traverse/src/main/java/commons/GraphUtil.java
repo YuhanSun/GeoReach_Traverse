@@ -7,10 +7,26 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeSet;
 
 public class GraphUtil {
+
+  public static List<Edge> readEdges(String edgePath) throws Exception {
+    List<Edge> edges = new LinkedList<>();
+    BufferedReader reader = new BufferedReader(new FileReader(new File(edgePath)));
+    String string = null;
+    while ((string = reader.readLine()) != null) {
+      String[] strings = string.split(",");
+      long start = Long.parseLong(strings[0]);
+      long end = Long.parseLong(strings[1]);
+      Edge edge = new Edge(start, end);
+      edges.add(edge);
+    }
+    reader.close();
+    return edges;
+  }
 
   public static int getEdgeCount(List<Collection<Integer>> graph) {
     int count = 0;
