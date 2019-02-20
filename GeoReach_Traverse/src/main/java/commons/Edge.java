@@ -1,8 +1,8 @@
 package commons;
 
 public class Edge {
-  long start;
-  long end;
+  public long start;
+  public long end;
 
   public Edge(long start, long end) {
     this.start = start;
