@@ -11,6 +11,21 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 public class Neo4jGraphUtility {
 
   /**
+   * Get the normal db directory name.
+   *
+   * @param piecesX
+   * @param piecesY
+   * @param MG
+   * @param MR
+   * @param MC
+   * @return
+   */
+  public static String getDbNormalName(int piecesX, int piecesY, double MG, double MR, int MC) {
+    return String.format("graph_%d_%d_%d_%d_%d.db", piecesX, piecesY, (int) MG * 100,
+        (int) MR * 100, MC);
+  }
+
+  /**
    * Return all the graph neighbors for the given node. Only consider "GRAPH_LINK". RTree-related
    * edges are not included.
    * 
