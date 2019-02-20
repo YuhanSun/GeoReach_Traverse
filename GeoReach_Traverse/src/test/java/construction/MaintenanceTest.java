@@ -252,7 +252,6 @@ public class MaintenanceTest {
 
     // Load the Index into db
     Loader loader = new Loader();
-    long[] graph_pos_map_list = ReadWriteUtil.readMapToArray(mapPath);
     loader.load(outputPath, dbPath, graph_pos_map_list);
 
     if (dbservice == null) {
