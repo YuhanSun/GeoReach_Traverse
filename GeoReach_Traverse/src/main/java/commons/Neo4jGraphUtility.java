@@ -21,8 +21,17 @@ public class Neo4jGraphUtility {
    * @return
    */
   public static String getDbNormalName(int piecesX, int piecesY, double MG, double MR, int MC) {
-    return String.format("graph_%d_%d_%d_%d_%d.db", piecesX, piecesY, (int) MG * 100,
-        (int) MR * 100, MC);
+    return String.format("graph_%s.db",
+        getNormalName(piecesX, piecesY, (int) MG * 100, (int) MR * 100, MC));
+  }
+
+  public static String getGraphNeo4jIdMapNormalName(int piecesX, int piecesY, double MG, double MR,
+      int MC) {
+    return String.format("node_map_RTree_%s.txt", getNormalName(piecesX, piecesY, MG, MR, MC));
+  }
+
+  public static String getNormalName(int piecesX, int piecesY, double MG, double MR, int MC) {
+    return String.format("%d_%d_%d_%d_%d", piecesX, piecesY, (int) MG * 100, (int) MR * 100, MC);
   }
 
   /**
