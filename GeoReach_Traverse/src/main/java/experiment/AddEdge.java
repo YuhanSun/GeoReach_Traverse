@@ -45,6 +45,8 @@ public class AddEdge {
   public String experimentDir;// root dir of queryDir and resultDir
   public String queryDir; // contains the edges
   public String resultDir;// contains the result
+  public String edgePath;
+  public String testDir;
 
   ArrayList<ArrayList<Integer>> graph = null;
   ArrayList<Entity> entities = null;
@@ -58,8 +60,14 @@ public class AddEdge {
     AddEdge addEdge = new AddEdge();
     addEdge.iniPaths();
 
+    // run once to generate the inserted edges
     // addEdge.generateEdges();
-    addEdge.evaluate();
+
+    // evaluate three set-up of MG, MR and test the run time of edge insertion
+    // addEdge.evaluate();
+
+    addEdge.generateAccurateDbAfterAddEdge();
+
   }
 
   public void iniPaths() {
@@ -81,6 +89,8 @@ public class AddEdge {
     experimentDir = "D:\\Google_Drive\\Projects\\GeoReachHop";
     queryDir = String.format("%s/query/%s", experimentDir, dataset);
     resultDir = experimentDir + "/add_edge";
+    edgePath = queryDir + "/edges.txt";
+    testDir = dataDir + "/test";
   }
 
   public static int piecesX = 128, piecesY = 128;
@@ -89,8 +99,75 @@ public class AddEdge {
   public static double minx = -180, miny = -90, maxx = 180, maxy = 90;
   SpaceManager spaceManager = new SpaceManager(minx, miny, maxx, maxy, piecesX, piecesY);
 
+  /**
+   * Generate the accurate SIP for comparison.
+   *
+   * @throws Exception
+   */
+  public void generateAccurateDbAfterAddEdge() throws Exception {
+    readGraph();
+    addEdgesToGraph();
+    dataDir += "/after_add";
+    if (Util.pathExist(dataDir)) {
+      new File(dataDir).mkdirs();
+    }
+
+    double MG, MR;
+
+    MG = 2;
+    MR = 2;
+    generateAccurateDbAfterAddEdges(MG, MR);
+
+    MG = -1;
+    MR = 2;
+    generateAccurateDbAfterAddEdges(MG, MR);
+
+    MG = -1;
+    MR = -1;
+    generateAccurateDbAfterAddEdges(MG, MR);
+  }
+
+  public void generateAccurateDbAfterAddEdges(double MG, double MR) throws Exception {
+    String dbFileName = Neo4jGraphUtility.getDbNormalName(piecesX, piecesY, MG, MR, MC, MAX_HOP);
+
+    dbPath = dataDir + "/" + dbFileName;
+    // mapPath is initialized before loadGraphAndIndex because its value will be used.
+    mapPath = dataDir + "/"
+        + Neo4jGraphUtility.getGraphNeo4jIdMapNormalName(piecesX, piecesY, MG, MR, MC, MAX_HOP);
+    loadGraphAndIndex(MG, MR);
+  }
+
+  public void reIniPaths() {
+    graphPath = dataDir + "/" + config.getGraphFileName();
+    entityPath = dataDir + "/" + config.getEntityFileName();
+    labelListPath = dataDir + "/" + config.getLabelListFileName();
+  }
+
+  /**
+   * Add all the edges in edge.txt to the original graph.
+   *
+   * @throws Exception
+   */
+  public void addEdgesToGraph() throws Exception {
+    List<Edge> edges = GraphUtil.readEdges(edgePath);
+    List<Collection<Integer>> treeSetGraph = GraphUtil.convertListGraphToTreeSetGraph(graph);
+    for (Edge edge : edges) {
+      int start = (int) edge.start;
+      int end = (int) edge.end;
+      treeSetGraph.get(start).add(end);
+    }
+    graph = GraphUtil.convertCollectionGraphToArrayList(treeSetGraph);
+  }
+
   public void evaluate() throws Exception {
     double MG, MR;
+    readGraph();
+    if (!Util.pathExist(dataDir)) {
+      new File(dataDir).mkdirs();
+    }
+    if (Util.pathExist(testDir)) {
+      new File(testDir).mkdirs();
+    }
 
     MG = 2;
     MR = 2;
@@ -107,32 +184,13 @@ public class AddEdge {
 
   public void evaluate(double MG, double MR, int testCount) throws Exception {
     String dbFileName = Neo4jGraphUtility.getDbNormalName(piecesX, piecesY, MG, MR, MC, MAX_HOP);
-    if (!Util.pathExist(dataDir)) {
-      new File(dataDir).mkdirs();
-    }
 
     dbPath = dataDir + "/" + dbFileName;
     // mapPath is initialized before loadGraphAndIndex because its value will be used.
     mapPath = dataDir + "/"
         + Neo4jGraphUtility.getGraphNeo4jIdMapNormalName(piecesX, piecesY, MG, MR, MC, MAX_HOP);
-    if (!Util.pathExist(dbPath)) {
-      Util.println(String.format("load graph into %s...", dbPath));
-      loadGraph();
+    loadGraphAndIndex(MG, MR);
 
-      Util.println("Read map from " + mapPath);
-      graph_pos_map_list = ReadWriteUtil.readMapToArray(mapPath);
-
-      Util.println("Construct and load index...");
-      constructAndLoadIndex(MG, MR);
-    } else {
-      Util.println("Read map from " + mapPath);
-      graph_pos_map_list = ReadWriteUtil.readMapToArray(mapPath);
-    }
-
-    String testDir = dataDir + "/test";
-    if (Util.pathExist(testDir)) {
-      new File(testDir).mkdirs();
-    }
     String testDbPath = testDir + "/" + dbFileName;
     // If the testDb dir exists, remove it.
     // Because it was inserted edges and is different from the original graph.
@@ -147,7 +205,7 @@ public class AddEdge {
     GraphDatabaseService service = Neo4jGraphUtility.getDatabaseService(testDbPath);
     SpaceManager spaceManager = new SpaceManager(minx, miny, maxx, maxy, piecesX, piecesY);
     Maintenance maintenance = new Maintenance(spaceManager, MAX_HOP, MG, MR, MC, service);
-    List<Edge> edges = GraphUtil.readEdges(queryDir + "/edges.txt");
+    List<Edge> edges = GraphUtil.readEdges(edgePath);
     if (testCount == 0) {
       testCount = edges.size();
     }
@@ -163,6 +221,22 @@ public class AddEdge {
     }
     addEdgeMaintenance(edgesNeo4j, maintenance);
     service.shutdown();
+  }
+
+  public void loadGraphAndIndex(double MG, double MR) throws Exception {
+    if (!Util.pathExist(dbPath)) {
+      Util.println(String.format("load graph into %s...", dbPath));
+      loadGraph();
+
+      Util.println("Read map from " + mapPath);
+      graph_pos_map_list = ReadWriteUtil.readMapToArray(mapPath);
+
+      Util.println("Construct and load index...");
+      constructAndLoadIndex(MG, MR);
+    } else {
+      Util.println("Read map from " + mapPath);
+      graph_pos_map_list = ReadWriteUtil.readMapToArray(mapPath);
+    }
   }
 
   /**
@@ -197,7 +271,6 @@ public class AddEdge {
   }
 
   private void loadGraph() throws Exception {
-    readGraph();
     LoadData loadData = new LoadData();
     loadData.loadAllEntityAndCreateIdMap(entities, labelList, dbPath, mapPath);
     loadData.LoadGraphEdges(mapPath, dbPath, graph);
