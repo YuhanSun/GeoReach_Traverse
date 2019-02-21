@@ -92,6 +92,21 @@ public class GraphUtil {
   }
 
   /**
+   * Convert from a Collection graph to ArrayList.
+   *
+   * @param graph
+   * @return
+   */
+  public static ArrayList<ArrayList<Integer>> convertCollectionGraphToArrayList(
+      List<Collection<Integer>> graph) {
+    ArrayList<ArrayList<Integer>> res = new ArrayList<>(graph.size());
+    for (Collection<Integer> neighbors : graph) {
+      res.add(new ArrayList<>(neighbors));
+    }
+    return res;
+  }
+
+  /**
    * Convert from a list graph to treeset graph.
    *
    * @param listGraph
