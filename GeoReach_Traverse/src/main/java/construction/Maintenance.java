@@ -145,7 +145,7 @@ public class Maintenance {
    */
   private HashMap<Integer, UpdateUnit> createUpdateUnit(Node node) throws Exception {
     HashMap<Integer, UpdateUnit> updateUnits = new HashMap<>();
-    Neo4jGraphUtility.printNode(node);
+    // Neo4jGraphUtility.printNode(node);
     // handle the SIP(node, 0)
     if (node.hasProperty(lon_name)) {
       double lon = (Double) node.getProperty(lon_name);
@@ -319,8 +319,10 @@ public class Maintenance {
    * @param srcUpdateHop
    * @param updateUnit
    * @return
+   * @throws Exception
    */
-  private UpdateStatus updateGeoB(Node src, int srcUpdateHop, UpdateUnit updateUnit) {
+  private UpdateStatus updateGeoB(Node src, int srcUpdateHop, UpdateUnit updateUnit)
+      throws Exception {
     boolean srcGeoB = getGeoB(src, srcUpdateHop);
     if (srcGeoB) { // srcGeoB = true, it never requires update
       return UpdateStatus.NotUpdateInside;
@@ -336,12 +338,13 @@ public class Maintenance {
         setGeoReachType(src, srcUpdateHop, GeoReachType.RMBR);
         src.setProperty(getGeoReachKey(GeoReachType.RMBR, srcUpdateHop),
             updateUnit.rmbr.toString());
+        removeGeoReach(src, GeoReachType.GeoB, srcUpdateHop);
         break;
       default:
         setGeoReachType(src, srcUpdateHop, GeoReachType.ReachGrid);
         src.setProperty(getGeoReachKey(GeoReachType.ReachGrid, srcUpdateHop), updateUnit.rbString);
+        removeGeoReach(src, GeoReachType.GeoB, srcUpdateHop);
     }
-    removeGeoReach(src, GeoReachType.GeoB, srcUpdateHop);
     return UpdateStatus.UpdateOutside;
   }
 
@@ -433,9 +436,11 @@ public class Maintenance {
    * @param node
    * @param hop
    * @return
+   * @throws Exception
    */
-  public ImmutableRoaringBitmap getReachGrid(Node node, int hop) {
-    String rbString = (String) node.getProperty(reachGridName + "_" + hop);
+  public ImmutableRoaringBitmap getReachGrid(Node node, int hop) throws Exception {
+    String property = reachGridName + "_" + hop;
+    String rbString = (String) Neo4jGraphUtility.getNodeProperty(node, property);
     return Util.getImmutableRoaringBitmap(rbString);
   }
 
@@ -444,12 +449,14 @@ public class Maintenance {
     node.setProperty(getGeoReachKey(GeoReachType.ReachGrid, hop), string);
   }
 
-  public MyRectangle getRMBR(Node node, int hop) {
-    return new MyRectangle(node.getProperty(rmbrName + "_" + hop).toString());
+  public MyRectangle getRMBR(Node node, int hop) throws Exception {
+    String property = rmbrName + "_" + hop;
+    return new MyRectangle(Neo4jGraphUtility.getNodeProperty(node, property).toString());
   }
 
-  public boolean getGeoB(Node node, int hop) {
-    return (boolean) node.getProperty(geoBName + "_" + hop);
+  public boolean getGeoB(Node node, int hop) throws Exception {
+    String property = geoBName + "_" + hop;
+    return (boolean) Neo4jGraphUtility.getNodeProperty(node, property);
   }
 
   /**
