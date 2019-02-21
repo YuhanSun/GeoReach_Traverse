@@ -11,6 +11,21 @@ public class ArrayUtil {
     return l1.size() == l2.size() && l1.size() == sortedListIntersect(l1, l2).size();
   }
 
+  public static int[] iterableToIntArray(Iterable<Integer> iterable) {
+    List<Integer> list = iterableToList(iterable);
+    return listToArrayInt(list);
+  }
+
+  public static int[] listToIntArray(List<Integer> list) {
+    int[] array = new int[list.size()];
+    int i = 0;
+    for (int element : list) {
+      array[i] = element;
+      i++;
+    }
+    return array;
+  }
+
   public static <T> List<T> iterableToList(Iterable<T> iterable) {
     List<T> res = new LinkedList<>();
     for (T t : iterable) {
