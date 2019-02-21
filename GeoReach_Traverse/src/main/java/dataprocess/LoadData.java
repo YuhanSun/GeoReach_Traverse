@@ -409,7 +409,6 @@ public class LoadData {
     }
     inserter.shutdown();
     Util.println("Write all node map to " + mapPath + "\n");
-    Util.println("map is " + id_map);
     ReadWriteUtil.WriteMap(mapPath, false, id_map);
   }
 
