@@ -14,11 +14,16 @@ import org.neo4j.graphdb.Transaction;
 import commons.Config;
 import commons.Edge;
 import commons.Entity;
+import commons.EnumVariables.GeoReachOutputFormat;
+import commons.GeoReachIndexUtil;
 import commons.GraphUtil;
 import commons.Neo4jGraphUtility;
 import commons.ReadWriteUtil;
 import commons.SpaceManager;
 import commons.Util;
+import commons.VertexGeoReachList;
+import construction.IndexConstruct;
+import construction.Loader;
 import construction.Maintenance;
 import dataprocess.LoadData;
 
@@ -53,15 +58,16 @@ public class AddEdge {
     AddEdge addEdge = new AddEdge();
     addEdge.iniPaths();
 
-    // generateEdges();
+    // addEdge.generateEdges();
     addEdge.evaluate();
   }
 
   public void iniPaths() {
     // Only need to modify homeDir.
-    ClassLoader classLoader = new AddEdge().getClass().getClassLoader();
-    File file = new File(classLoader.getResource("").getFile());
-    homeDir = file.getAbsolutePath();
+    // ClassLoader classLoader = new AddEdge().getClass().getClassLoader();
+    // File file = new File(classLoader.getResource("").getFile());
+    // homeDir = file.getAbsolutePath();
+    homeDir = "D:\\Ubuntu_shared\\GeoReachHop";
 
     // data dirs
     dataset = "Yelp";
@@ -71,24 +77,36 @@ public class AddEdge {
     labelListPath = dataDir + "/" + config.getLabelListFileName();
 
     // experiment dirs
-    experimentDir = "/Users/zhouyang/Google_Drive/Projects";
+    // experimentDir = "/Users/zhouyang/Google_Drive/Projects/GeoReachHop";
+    experimentDir = "D:\\Google_Drive\\Projects\\GeoReachHop";
     queryDir = String.format("%s/query/%s", experimentDir, dataset);
     resultDir = experimentDir + "/add_edge";
   }
 
   public static int piecesX = 128, piecesY = 128;
   public static int MC = 0;
-  public static int MAX_HOP = 1;
+  public static int MAX_HOP = 3;
   public static double minx = -180, miny = -90, maxx = 180, maxy = 90;
+  SpaceManager spaceManager = new SpaceManager(minx, miny, maxx, maxy, piecesX, piecesY);
 
   public void evaluate() throws Exception {
-    double MG = 2.0, MR = 2.0;
-    evaluate(MG, MR, MC);
+    double MG, MR;
 
+    MG = 2;
+    MR = 2;
+    evaluate(MG, MR, 0);
+
+    MG = -1;
+    MR = 2;
+    evaluate(MG, MR, 0);
+
+    MG = -1;
+    MR = -1;
+    evaluate(MG, MR, 0);
   }
 
-  public void evaluate(double MG, double MR, int MC) throws Exception {
-    String dbFileName = Neo4jGraphUtility.getDbNormalName(piecesX, piecesY, MG, MR, MC);
+  public void evaluate(double MG, double MR, int testCount) throws Exception {
+    String dbFileName = Neo4jGraphUtility.getDbNormalName(piecesX, piecesY, MG, MR, MC, MAX_HOP);
     if (!Util.pathExist(dataDir)) {
       new File(dataDir).mkdirs();
     }
@@ -96,31 +114,89 @@ public class AddEdge {
     dbPath = dataDir + "/" + dbFileName;
     // mapPath is initialized before loadGraphAndIndex because its value will be used.
     mapPath = dataDir + "/"
-        + Neo4jGraphUtility.getGraphNeo4jIdMapNormalName(piecesX, piecesY, MG, MR, MC);
+        + Neo4jGraphUtility.getGraphNeo4jIdMapNormalName(piecesX, piecesY, MG, MR, MC, MAX_HOP);
     if (!Util.pathExist(dbPath)) {
-      loadGraphAndIndex();
-    }
-    graph_pos_map_list = ReadWriteUtil.readMapToArray(mapPath);
+      Util.println(String.format("load graph into %s...", dbPath));
+      loadGraph();
 
-    String testDbFileName = "test_" + dbFileName;
-    String testDbPath = dataDir + "/" + testDbFileName;
+      Util.println("Read map from " + mapPath);
+      graph_pos_map_list = ReadWriteUtil.readMapToArray(mapPath);
+
+      Util.println("Construct and load index...");
+      constructAndLoadIndex(MG, MR);
+    } else {
+      Util.println("Read map from " + mapPath);
+      graph_pos_map_list = ReadWriteUtil.readMapToArray(mapPath);
+    }
+
+    String testDir = dataDir + "/test";
+    if (Util.pathExist(testDir)) {
+      new File(testDir).mkdirs();
+    }
+    String testDbPath = testDir + "/" + dbFileName;
     // If the testDb dir exists, remove it.
     // Because it was inserted edges and is different from the original graph.
     if (Util.pathExist(testDbPath)) {
-      FileUtils.deleteDirectory(new File(dbPath));
+      Util.println(String.format("Delete %s...", testDbPath));
+      FileUtils.deleteDirectory(new File(testDbPath));
     }
-    // Copy the original db to the test db dir.
-    FileUtils.copyDirectoryToDirectory(new File(dbPath), new File(testDbPath));
+    // Copy the original db to the test dir.
+    Util.println(String.format("Copy %s to %s...", dbPath, testDir));
+    FileUtils.copyDirectoryToDirectory(new File(dbPath), new File(testDir));
 
     GraphDatabaseService service = Neo4jGraphUtility.getDatabaseService(testDbPath);
     SpaceManager spaceManager = new SpaceManager(minx, miny, maxx, maxy, piecesX, piecesY);
     Maintenance maintenance = new Maintenance(spaceManager, MAX_HOP, MG, MR, MC, service);
     List<Edge> edges = GraphUtil.readEdges(queryDir + "/edges.txt");
-    addEdgeMaintenance(edges, maintenance);
+    if (testCount == 0) {
+      testCount = edges.size();
+    }
+    List<Edge> edgesNeo4j = new ArrayList<>(testCount);
+    int i = 0;
+    for (Edge edge : edges) {
+      edgesNeo4j
+          .add(new Edge(graph_pos_map_list[(int) edge.start], graph_pos_map_list[(int) edge.end]));
+      i++;
+      if (i == testCount) {
+        break;
+      }
+    }
+    addEdgeMaintenance(edgesNeo4j, maintenance);
     service.shutdown();
   }
 
-  private void loadGraphAndIndex() throws Exception {
+  /**
+   * Construct and load the index.
+   *
+   * @throws Exception
+   */
+  public void constructAndLoadIndex(double MG, double MR) throws Exception {
+    ArrayList<VertexGeoReachList> index =
+        IndexConstruct.ConstructIndexList(graph, entities, spaceManager, MAX_HOP);
+
+    ArrayList<ArrayList<Integer>> typesList =
+        IndexConstruct.generateTypeListForList(index, MAX_HOP, spaceManager, MG, MR, MC);
+
+    // Generate the List format index.
+    GeoReachOutputFormat format = GeoReachOutputFormat.LIST;
+    String filename =
+        GeoReachIndexUtil.getIndexFileNormalName(piecesX, piecesY, MG, MR, MC, MAX_HOP, format);
+    String outputPath = dataDir + "/" + filename;
+    GeoReachIndexUtil.outputGeoReachForList(index, outputPath, typesList, format);
+
+    // Output to BIGMAP format.
+    format = GeoReachOutputFormat.BITMAP;
+    filename =
+        GeoReachIndexUtil.getIndexFileNormalName(piecesX, piecesY, MG, MR, MC, MAX_HOP, format);
+    outputPath = dataDir + "/" + filename;
+    GeoReachIndexUtil.outputGeoReachForList(index, outputPath, typesList, format);
+
+    // Load the Index into db
+    Loader loader = new Loader();
+    loader.load(outputPath, dbPath, graph_pos_map_list);
+  }
+
+  private void loadGraph() throws Exception {
     readGraph();
     LoadData loadData = new LoadData();
     loadData.loadAllEntityAndCreateIdMap(entities, labelList, dbPath, mapPath);
@@ -144,13 +220,23 @@ public class AddEdge {
       throws Exception {
     GraphDatabaseService service = maintenance.service;
     Transaction tx = service.beginTx();
+    long time = System.currentTimeMillis();
     for (Edge edge : edges) {
+      // Util.println(edge.toString());
       Node src = service.getNodeById(edge.start);
       Node trg = service.getNodeById(edge.end);
       maintenance.addEdgeAndUpdateIndex(src, trg);
     }
+    long totalTime = System.currentTimeMillis() - time;
+    Util.println(String.format("MG = %s, MR = %s", String.valueOf(maintenance.MG),
+        String.valueOf(maintenance.MR)));
+    Util.println("total time: " + totalTime);
+    double avgTime = (double) totalTime / edges.size();
+    Util.println("average time: " + avgTime);
+    time = System.currentTimeMillis();
     tx.success();
     tx.close();
+    Util.println("commit time: " + String.valueOf(System.currentTimeMillis() - time));
   }
 
   /**
@@ -159,8 +245,7 @@ public class AddEdge {
    * @throws Exception
    */
   public void generateEdges() throws Exception {
-    String outputPath =
-        "/Users/zhouyang/Google_Drive/Projects/GeoReachHop/query/" + dataset + "/edges.txt";
+    String outputPath = queryDir + "/" + config.getEdgeFileName();
     generateEdges(graphPath, entityPath, labelListPath, 0.05, outputPath);
   }
 
@@ -206,6 +291,7 @@ public class AddEdge {
             graph.get(id2).add(id1);
             writer.write(String.format("%d,%d\n", id1, id2));
             count++;
+            break;
           }
         }
       }
