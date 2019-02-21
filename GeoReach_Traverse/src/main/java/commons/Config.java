@@ -47,6 +47,15 @@ public class Config {
   private String reachGridName = "ReachGrid";
   private String rmbrName = "RMBR";
   private String geoBName = "GeoB";
+  private String reachGridListName = "ReachGridList"; // debug
+
+  public String getReachGridListName() {
+    return reachGridListName;
+  }
+
+  public void setReachGridListName(String reachGridListName) {
+    this.reachGridListName = reachGridListName;
+  }
 
   private String graphFileName = "graph.txt";
   private String entityFileName = "entity.txt";
