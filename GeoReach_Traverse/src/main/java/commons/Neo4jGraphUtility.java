@@ -10,6 +10,14 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
 public class Neo4jGraphUtility {
 
+  public static Object getNodeProperty(Node node, String property) throws Exception {
+    if (!node.hasProperty(property)) {
+      Neo4jGraphUtility.printNode(node);
+      throw new Exception(String.format("%s does not have property %s!", node, property));
+    }
+    return node.getProperty(property);
+  }
+
   /**
    * Get the normal db directory name.
    *
@@ -20,18 +28,21 @@ public class Neo4jGraphUtility {
    * @param MC
    * @return
    */
-  public static String getDbNormalName(int piecesX, int piecesY, double MG, double MR, int MC) {
-    return String.format("graph_%s.db",
-        getNormalName(piecesX, piecesY, (int) MG * 100, (int) MR * 100, MC));
+  public static String getDbNormalName(int piecesX, int piecesY, double MG, double MR, int MC,
+      int MAX_HOP) {
+    return String.format("graph_%s.db", getNormalName(piecesX, piecesY, MG, MR, MC, MAX_HOP));
   }
 
   public static String getGraphNeo4jIdMapNormalName(int piecesX, int piecesY, double MG, double MR,
-      int MC) {
-    return String.format("node_map_RTree_%s.txt", getNormalName(piecesX, piecesY, MG, MR, MC));
+      int MC, int MAX_HOP) {
+    return String.format("node_map_RTree_%s.txt",
+        getNormalName(piecesX, piecesY, MG, MR, MC, MAX_HOP));
   }
 
-  public static String getNormalName(int piecesX, int piecesY, double MG, double MR, int MC) {
-    return String.format("%d_%d_%d_%d_%d", piecesX, piecesY, (int) MG * 100, (int) MR * 100, MC);
+  public static String getNormalName(int piecesX, int piecesY, double MG, double MR, int MC,
+      int MAX_HOP) {
+    return String.format("%d_%d_%d_%d_%d_%d", piecesX, piecesY, (int) MG * 100, (int) MR * 100, MC,
+        MAX_HOP);
   }
 
   /**
