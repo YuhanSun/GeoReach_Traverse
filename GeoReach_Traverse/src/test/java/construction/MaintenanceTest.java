@@ -19,6 +19,7 @@ import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
 import org.roaringbitmap.buffer.ImmutableRoaringBitmap;
 import commons.ArrayUtil;
+import commons.Edge;
 import commons.Entity;
 import commons.EnumVariables.GeoReachOutputFormat;
 import commons.EnumVariables.GeoReachType;
@@ -35,7 +36,7 @@ import dataprocess.LoadData;
 public class MaintenanceTest {
   // private String dbPath =
   // "D:\\Ubuntu_shared\\GeoReachHop\\data\\Yelp\\neo4j-community-3.1.1_128_128_1_100_0_3_test\\data\\databases\\graph.db";
-  String dataset = "smallGraph";
+  String dataset = "Yelp";
   String homeDir = null, dataDir = null;
   String graphPath = null, entityPath = null, labelListPath = null;
   String dbPath = null, mapPath = null;
@@ -214,8 +215,12 @@ public class MaintenanceTest {
   }
 
   // space related variables
-  double minx = 0, miny = 0, maxx = 10, maxy = 10;
-  int pieces_x = 10, pieces_y = 10;
+  // double minx = 0, miny = 0, maxx = 10, maxy = 10;
+  // int pieces_x = 10, pieces_y = 10;
+  // Real dataset
+  double minx = -180, miny = -90, maxx = 180, maxy = 90;
+  int pieces_x = 128, pieces_y = 128;
+
   SpaceManager spaceManager = new SpaceManager(minx, miny, maxx, maxy, pieces_x, pieces_y);
 
   // index related variables
@@ -276,31 +281,64 @@ public class MaintenanceTest {
     MG = 2;
     MR = 2;
     Util.println(String.format("MG: %f, MR: %f", MG, MR));
-    addEdgeSetTest();
+    // addEdgeSetTest();
+    addEdgeSetTestReadEdges();
 
     // test for RMBR
     MG = -1;
     MR = 2;
     Util.println(String.format("MG: %f, MR: %f", MG, MR));
-    addEdgeSetTest();
+    // addEdgeSetTest();
+    addEdgeSetTestReadEdges();
 
     // test for GeoB
     MG = -1;
     MR = -1;
     Util.println(String.format("MG: %f, MR: %f", MG, MR));
-    addEdgeSetTest();
+    // addEdgeSetTest();
+    addEdgeSetTestReadEdges();
   }
+
+  @Test
+  public void addEdgeSetTestReadEdges() throws Exception {
+    loadGraph();
+    constructAndLoadIndex();
+    Transaction tx = dbservice.beginTx();
+    Maintenance maintenance = new Maintenance(spaceManager, MAX_HOP, MG, MR, MC, dbservice);
+
+    String edgePath = "D:\\Google_Drive\\Projects\\GeoReachHop\\query\\Yelp\\edges.txt";
+    List<Edge> edges = GraphUtil.readEdges(edgePath);
+    for (Edge edge : edges) {
+      int start = (int) edge.start;
+      int end = (int) edge.end;
+      graph.get(start).add(end);
+      graph.get(end).add(start);
+
+      Node src = dbservice.getNodeById(start);
+      Node trg = dbservice.getNodeById(end);
+      maintenance.addEdgeAndUpdateIndex(src, trg);
+    }
+
+    ArrayList<VertexGeoReachList> index =
+        IndexConstruct.ConstructIndexList(graph, entities, spaceManager, MAX_HOP);
+    ArrayList<ArrayList<Integer>> typesList =
+        IndexConstruct.generateTypeListForList(index, MAX_HOP, spaceManager, MG, MR, MC);
+
+    validateAllNodeIndex(maintenance, index, typesList, graph_pos_map_list);
+
+    tx.success();
+    tx.close();
+    maintenance.shutdown();
+    dbservice = null;
+  }
+
 
   @Test
   public void addEdgeSetTest() throws Exception {
     loadGraph();
     constructAndLoadIndex();
-    // ArrayList<VertexGeoReachList> index = null;
-    // ArrayList<ArrayList<Integer>> typesList = null;
     Transaction tx = dbservice.beginTx();
     Maintenance maintenance = new Maintenance(spaceManager, MAX_HOP, MG, MR, MC, dbservice);
-    // Node src = null, trg = null;
-    // int srcId, trgId;
 
     addEdgeSingleTest(0, 3, maintenance);
     addEdgeSingleTest(0, 1, maintenance);
