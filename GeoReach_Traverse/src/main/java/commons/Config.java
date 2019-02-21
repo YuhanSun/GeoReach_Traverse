@@ -52,6 +52,16 @@ public class Config {
   private String entityFileName = "entity.txt";
   private String labelListFileName = "label.txt";
 
+  private String edgeFileName = "edges.txt";
+
+  public String getEdgeFileName() {
+    return edgeFileName;
+  }
+
+  public void setEdgeFileName(String edgeFileName) {
+    this.edgeFileName = edgeFileName;
+  }
+
   public String getGraphFileName() {
     return graphFileName;
   }
