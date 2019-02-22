@@ -265,7 +265,6 @@ public class MaintenanceTest {
     Transaction tx = dbservice.beginTx();
     Maintenance maintenance = new Maintenance(spaceManager, MAX_HOP, MG, MR, MC, dbservice);
     validateAllNodeIndex(maintenance, index, typesList, graph_pos_map_list);
-    printDbInTransaction();
     tx.success();
     tx.close();
   }
@@ -325,6 +324,51 @@ public class MaintenanceTest {
         IndexConstruct.generateTypeListForList(index, MAX_HOP, spaceManager, MG, MR, MC);
 
     validateAllNodeIndex(maintenance, index, typesList, graph_pos_map_list);
+
+    tx.success();
+    tx.close();
+    maintenance.shutdown();
+    dbservice = null;
+  }
+
+  /**
+   * Test a single insertion. Modify the srcID and trgID if needed.
+   *
+   * @throws Exception
+   */
+  @Test
+  public void addEdgeSingleTest() throws Exception {
+    loadGraph();
+    constructAndLoadIndex();
+    Transaction tx = dbservice.beginTx();
+    Maintenance maintenance = new Maintenance(spaceManager, MAX_HOP, MG, MR, MC, dbservice);
+
+    int srcID = 552372, trgID = 501019;
+    Node src = dbservice.getNodeById(srcID);
+    Node trg = dbservice.getNodeById(trgID);
+    Neo4jGraphUtility.printNode(src);
+    Neo4jGraphUtility.printNode(trg);
+
+    maintenance.addEdgeAndUpdateIndex(src, trg);
+
+    Neo4jGraphUtility.printNode(src);
+    Neo4jGraphUtility.printNode(trg);
+
+    tx.success();
+    tx.close();
+
+    graph.get(srcID).add(trgID);
+    graph.get(trgID).add(srcID);
+
+    ArrayList<VertexGeoReachList> index =
+        IndexConstruct.ConstructIndexList(graph, entities, spaceManager, MAX_HOP);
+    ArrayList<ArrayList<Integer>> typesList =
+        IndexConstruct.generateTypeListForList(index, MAX_HOP, spaceManager, MG, MR, MC);
+
+    tx = dbservice.beginTx();
+    Neo4jGraphUtility.printNode(dbservice.getNodeById(srcID));
+    validateSingleNodeIndex(maintenance, index.get(srcID), typesList.get(srcID),
+        dbservice.getNodeById(srcID));
 
     tx.success();
     tx.close();
