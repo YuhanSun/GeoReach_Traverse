@@ -34,6 +34,7 @@ public class Loader {
   public String entityPath, graph_pos_map_path, graphPath;
 
   String GeoReachTypeName, reachGridName, rmbrName, geoBName;
+  String reachGridListName;
 
   public Loader(Config config) {
     this.config = config;
@@ -46,6 +47,7 @@ public class Loader {
     reachGridName = config.getReachGridName();
     rmbrName = config.getRMBRName();
     geoBName = config.getGeoBName();
+    reachGridListName = config.getReachGridListName();
   }
 
   public static void main(String[] args) {
@@ -145,6 +147,10 @@ public class Loader {
           switch (type) {
             case 0:
               inserter.setNodeProperty(neo4j_ID, reachGridName + "_" + j, strList[1]);
+              // debug
+              // ImmutableRoaringBitmap rBitmap = Util.getImmutableRoaringBitmap(strList[1]);
+              // inserter.setNodeProperty(neo4j_ID, reachGridListName + "_" + j,
+              // ArrayUtil.iterableToList(rBitmap).toString());
               break;
             case 1:
               inserter.setNodeProperty(neo4j_ID, rmbrName + "_" + j, strList[1]);
