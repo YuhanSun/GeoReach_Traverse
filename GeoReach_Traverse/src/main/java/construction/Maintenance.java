@@ -55,6 +55,7 @@ public class Maintenance {
   public String reachGridName = config.getReachGridName();
   public String rmbrName = config.getRMBRName();
   public String geoBName = config.getGeoBName();
+  public String reachGridListName = config.getReachGridListName();
 
   public double minx, miny, maxx, maxy;
   public int pieces_x, pieces_y;
@@ -87,9 +88,9 @@ public class Maintenance {
   }
 
   public void addEdgeAndUpdateIndex(Node src, Node trg) throws Exception {
+    src.createRelationshipTo(trg, GraphRel.GRAPH_LINK);
     updateOneDirectionAddEdge(src, trg);
     updateOneDirectionAddEdge(trg, src);
-    src.createRelationshipTo(trg, GraphRel.GRAPH_LINK);
   }
 
   /**
@@ -343,6 +344,10 @@ public class Maintenance {
       default:
         setGeoReachType(src, srcUpdateHop, GeoReachType.ReachGrid);
         src.setProperty(getGeoReachKey(GeoReachType.ReachGrid, srcUpdateHop), updateUnit.rbString);
+        // debug
+        // src.setProperty(reachGridListName + "_" + srcUpdateHop,
+        // ArrayUtil.iterableToList(updateUnit.reachGrid).toString());
+
         removeGeoReach(src, GeoReachType.GeoB, srcUpdateHop);
     }
     return UpdateStatus.UpdateOutside;
@@ -447,6 +452,8 @@ public class Maintenance {
   public void setReachGrid(Node node, int hop, RoaringBitmap rb) throws Exception {
     String string = Util.roarBitmapSerializeToString(rb);
     node.setProperty(getGeoReachKey(GeoReachType.ReachGrid, hop), string);
+    // debug
+    // node.setProperty(reachGridListName + "_" + hop, ArrayUtil.iterableToList(rb).toString());
   }
 
   public MyRectangle getRMBR(Node node, int hop) throws Exception {
