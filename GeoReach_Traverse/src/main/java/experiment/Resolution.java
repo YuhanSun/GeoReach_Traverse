@@ -3,6 +3,7 @@ package experiment;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
@@ -188,7 +189,7 @@ public class Resolution {
           ReadWriteUtil.WriteFile(result_detail_path, true, write_line);
 
           Util.println("queryrect path: " + queryrect_path);
-          ArrayList<MyRectangle> queryrect = ReadWriteUtil.ReadQueryRectangle(queryrect_path);
+          List<MyRectangle> queryrect = ReadWriteUtil.ReadQueryRectangle(queryrect_path);
 
           String dbFolder = String.format("%s_%d_%d_%d_%d_%d_%d", version, pieces, pieces,
               (int) (MG * 100), (int) (MR * 100), MC, 3);

@@ -149,7 +149,7 @@ public class ReadWriteUtil {
     }
   }
 
-  public static ArrayList<MyRectangle> ReadQueryRectangle(String filepath) {
+  public static List<MyRectangle> ReadQueryRectangle(String filepath) {
     ArrayList<MyRectangle> queryrectangles;
     queryrectangles = new ArrayList<MyRectangle>();
     BufferedReader reader = null;

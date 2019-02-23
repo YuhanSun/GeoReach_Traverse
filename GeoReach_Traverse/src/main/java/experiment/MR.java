@@ -2,6 +2,7 @@ package experiment;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import commons.Config;
@@ -195,7 +196,7 @@ public class MR {
           write_line = selectivity + "\n" + head_line;
           ReadWriteUtil.WriteFile(result_detail_path, true, write_line);
 
-          ArrayList<MyRectangle> queryrect = ReadWriteUtil.ReadQueryRectangle(queryrect_path);
+          List<MyRectangle> queryrect = ReadWriteUtil.ReadQueryRectangle(queryrect_path);
 
           ArrayList<Long> total_time = new ArrayList<Long>();
           ArrayList<Long> dbTime = new ArrayList<>();
