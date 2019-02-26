@@ -12,8 +12,15 @@ public class ResultRecord {
   public ResultRecord(long runTime, long visitetCount, long resultCount, long GeoReachPrunedCount,
       long HistoryPrunedCount) {
     this.runTime = runTime;
+    this.visitedCount = visitetCount;
     this.resultCount = resultCount;
     this.GeoReachPrunedCount = GeoReachPrunedCount;
     this.HistoryPrunedCount = HistoryPrunedCount;
+  }
+
+  public ResultRecord(long runTime, long visitedCount, long resultCount) {
+    this.runTime = runTime;
+    this.visitedCount = visitedCount;
+    this.resultCount = resultCount;
   }
 }
