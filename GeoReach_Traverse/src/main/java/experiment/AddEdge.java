@@ -30,6 +30,7 @@ import dataprocess.LoadData;
 public class AddEdge {
 
   public static Config config = new Config();
+  public static String password = config.getPassword();
 
   /**
    * Paths related to data files, including db.
@@ -60,13 +61,14 @@ public class AddEdge {
     AddEdge addEdge = new AddEdge();
     addEdge.iniPaths();
 
-    // run once to generate the inserted edges
+    // Run once to generate the inserted edges
     // addEdge.generateEdges();
 
-    // evaluate three set-up of MG, MR and test the run time of edge insertion
+    // Evaluate three set-up of MG, MR and test the run time of edge insertion
     // addEdge.evaluate();
 
-    addEdge.generateAccurateDbAfterAddEdge();
+    // Generate the db with the accurate index after insertion.
+    // addEdge.generateAccurateDbAfterAddEdge();
 
   }
 
@@ -144,7 +146,8 @@ public class AddEdge {
   }
 
   /**
-   * Add all the edges in edge.txt to the original graph.
+   * Add all the edges in edge.txt to the original graph. This can ensure that the neighbors are
+   * sorted by id.
    *
    * @throws Exception
    */
@@ -159,6 +162,12 @@ public class AddEdge {
     graph = GraphUtil.convertCollectionGraphToArrayList(treeSetGraph);
   }
 
+
+  /**
+   * Evaluate the insertion speed with different MG, MR.
+   *
+   * @throws Exception
+   */
   public void evaluate() throws Exception {
     double MG, MR;
     readGraph();
@@ -169,19 +178,30 @@ public class AddEdge {
       new File(testDir).mkdirs();
     }
 
+    // All reachgrid
     MG = 2;
     MR = 2;
     evaluate(MG, MR, 0);
 
+    // All rmbr
     MG = -1;
     MR = 2;
     evaluate(MG, MR, 0);
 
+    // All GeoB
     MG = -1;
     MR = -1;
     evaluate(MG, MR, 0);
   }
 
+  /**
+   * Copy the original db to the testDbPath and add edges there.
+   *
+   * @param MG
+   * @param MR
+   * @param testCount how many edges in the edge.txt file will be tested
+   * @throws Exception
+   */
   public void evaluate(double MG, double MR, int testCount) throws Exception {
     String dbFileName = Neo4jGraphUtility.getDbNormalName(piecesX, piecesY, MG, MR, MC, MAX_HOP);
 
@@ -223,6 +243,14 @@ public class AddEdge {
     service.shutdown();
   }
 
+  /**
+   * If the dbPath does not exist, load the graph and index from scratch. Read the id map from
+   * mapPath anyhow.
+   *
+   * @param MG
+   * @param MR
+   * @throws Exception
+   */
   public void loadGraphAndIndex(double MG, double MR) throws Exception {
     if (!Util.pathExist(dbPath)) {
       Util.println(String.format("load graph into %s...", dbPath));
