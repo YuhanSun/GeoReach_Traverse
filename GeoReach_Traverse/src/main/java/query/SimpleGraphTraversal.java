@@ -1,9 +1,9 @@
 package query;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -44,6 +44,10 @@ public class SimpleGraphTraversal {
     }
   }
 
+  public SimpleGraphTraversal(GraphDatabaseService service) {
+    this.dbservice = service;
+  }
+
   /**
    * DFS way of traversal.
    * 
@@ -51,7 +55,7 @@ public class SimpleGraphTraversal {
    * @param length
    * @param queryRectangle
    */
-  public void traverse(ArrayList<Node> startNodes, int length, MyRectangle queryRectangle) {
+  public void traverse(List<Node> startNodes, int length, MyRectangle queryRectangle) {
     // query variables initialization
     this.length = length;
     this.queryRectangle = queryRectangle;

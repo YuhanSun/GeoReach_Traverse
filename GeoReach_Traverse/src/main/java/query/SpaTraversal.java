@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -13,6 +14,7 @@ import org.roaringbitmap.buffer.ImmutableRoaringBitmap;
 import commons.Config;
 import commons.Labels.GraphRel;
 import commons.MyRectangle;
+import commons.SpaceManager;
 import commons.Util;
 
 public class SpaTraversal {
@@ -66,7 +68,19 @@ public class SpaTraversal {
 
   }
 
-  public void traverse(ArrayList<Node> startNodes, int length, MyRectangle queryRectangle) {
+  public SpaTraversal(GraphDatabaseService service, int MAX_HOP, SpaceManager spaceManager) {
+    this.dbservice = service;
+    this.MAX_HOP = MAX_HOP;
+    this.total_range = new MyRectangle(spaceManager.getMinx(), spaceManager.getMiny(),
+        spaceManager.getMaxx(), spaceManager.getMaxy());
+    this.pieces_x = spaceManager.getPiecesX();
+    this.pieces_y = spaceManager.getPiecesY();
+    resolution_x = (total_range.max_x - total_range.min_x) / (double) pieces_x;
+    resolution_y = (total_range.max_y - total_range.min_y) / (double) pieces_y;
+
+  }
+
+  public void traverse(List<Node> list, int length, MyRectangle queryRectangle) {
     this.length = length;
     this.queryRectangle = queryRectangle;
     // paths = new ArrayList<LinkedList<Long>>();
@@ -92,7 +106,7 @@ public class SpaTraversal {
     checkTime = 0;
 
     Transaction tx = dbservice.beginTx();
-    for (Node node : startNodes)
+    for (Node node : list)
       helper(node, 0);
     tx.success();
     tx.close();
