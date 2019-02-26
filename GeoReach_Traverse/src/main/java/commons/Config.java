@@ -61,7 +61,17 @@ public class Config {
   private String entityFileName = "entity.txt";
   private String labelListFileName = "label.txt";
 
+
   private String edgeFileName = "edges.txt";
+  private String startIDFileName = "startID.txt";
+
+  public String getStartIDFileName() {
+    return startIDFileName;
+  }
+
+  public void setStartIDFileName(String startIDFileName) {
+    this.startIDFileName = startIDFileName;
+  }
 
   public String getEdgeFileName() {
     return edgeFileName;
