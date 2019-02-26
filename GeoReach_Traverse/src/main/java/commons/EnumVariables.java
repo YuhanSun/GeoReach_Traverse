@@ -42,4 +42,8 @@ public class EnumVariables {
   public static enum GeoReachOutputFormat {
     BITMAP, LIST,
   }
+
+  public static enum Expand {
+    SPATRAVERSAL, SIMPLEGRAPHTRAVERSAL,
+  }
 }
