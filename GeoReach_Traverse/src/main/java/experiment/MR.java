@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
+import commons.ArrayUtil;
 import commons.Config;
 import commons.Entity;
 import commons.EnumVariables.GeoReachOutputFormat;
@@ -251,10 +252,10 @@ public class MR {
           }
 
           write_line = String.valueOf(MR) + "\t";
-          write_line += String.format("%d\t%d\t%d\t%d\t", Util.Average(total_time),
-              Util.Average(dbTime), Util.Average(checkTime), Util.Average(visitedcount));
-          write_line += String.format("%d\t%d\t%d\n", Util.Average(GeoReachPrunedCount),
-              Util.Average(HistoryPrunedCount), Util.Average(resultCount));
+          write_line += String.format("%d\t%d\t%d\t%d\t", ArrayUtil.Average(total_time),
+              ArrayUtil.Average(dbTime), ArrayUtil.Average(checkTime), ArrayUtil.Average(visitedcount));
+          write_line += String.format("%d\t%d\t%d\n", ArrayUtil.Average(GeoReachPrunedCount),
+              ArrayUtil.Average(HistoryPrunedCount), ArrayUtil.Average(resultCount));
           ReadWriteUtil.WriteFile(result_avg_path, true, write_line);
 
         }

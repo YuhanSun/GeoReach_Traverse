@@ -7,6 +7,7 @@ import java.util.List;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import commons.ArrayUtil;
 import commons.Config;
 import commons.Entity;
 import commons.EnumVariables.Datasets;
@@ -300,9 +301,9 @@ public class QueryLength {
 
         write_line = String.valueOf(length) + "\t";
         write_line +=
-            String.format("%d\t%d\t", Util.Average(total_time), Util.Average(visitedcount));
-        write_line += String.format("%d\t%d\t%d\n", Util.Average(GeoReachPrunedCount),
-            Util.Average(HistoryPrunedCount), Util.Average(resultCount));
+            String.format("%d\t%d\t", ArrayUtil.Average(total_time), ArrayUtil.Average(visitedcount));
+        write_line += String.format("%d\t%d\t%d\n", ArrayUtil.Average(GeoReachPrunedCount),
+            ArrayUtil.Average(HistoryPrunedCount), ArrayUtil.Average(resultCount));
         if (!TEST_FORMAT)
           ReadWriteUtil.WriteFile(result_avg_path, true, write_line);
       }
@@ -429,8 +430,8 @@ public class QueryLength {
 
         write_line = String.valueOf(length) + "\t";
         write_line +=
-            String.format("%d\t%d\t", Util.Average(total_time), Util.Average(visitedcount));
-        write_line += String.format("%d\n", Util.Average(resultCount));
+            String.format("%d\t%d\t", ArrayUtil.Average(total_time), ArrayUtil.Average(visitedcount));
+        write_line += String.format("%d\n", ArrayUtil.Average(resultCount));
         if (!TEST_FORMAT)
           ReadWriteUtil.WriteFile(result_avg_path, true, write_line);
       }

@@ -97,4 +97,13 @@ public class ArrayUtil {
     }
     return res;
   }
+
+  public static long Average(List<Long> arraylist) {
+    if (arraylist.size() == 0)
+      return -1;
+    long sum = 0;
+    for (long element : arraylist)
+      sum += element;
+    return sum / arraylist.size();
+  }
 }

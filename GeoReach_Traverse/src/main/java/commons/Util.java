@@ -158,15 +158,6 @@ public class Util {
     ReadWriteUtil.WriteArray(labelListPath, labelListString);
   }
 
-  public static long Average(ArrayList<Long> arraylist) {
-    if (arraylist.size() == 0)
-      return -1;
-    long sum = 0;
-    for (long element : arraylist)
-      sum += element;
-    return sum / arraylist.size();
-  }
-
   /**
    * This function has to be used in transaction.
    * 
@@ -175,7 +166,7 @@ public class Util {
    * @return
    */
   public static ArrayList<Node> getNodesByIDs(GraphDatabaseService databaseService,
-      ArrayList<Long> ids) {
+      List<Long> ids) {
     ArrayList<Node> nodes = new ArrayList<>();
     for (long id : ids)
       nodes.add(databaseService.getNodeById(id));
