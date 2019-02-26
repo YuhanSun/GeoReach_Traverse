@@ -4,17 +4,25 @@ import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import commons.ArrayUtil;
 import commons.Config;
 import commons.Entity;
 import commons.EnumVariables.Datasets;
+import commons.EnumVariables.Expand;
 import commons.EnumVariables.system;
+import commons.ExperimentUtil;
 import commons.GraphUtil;
 import commons.MyRectangle;
+import commons.Neo4jGraphUtility;
 import commons.ReadWriteUtil;
+import commons.SpaceManager;
 import commons.Util;
 import query.Neo4jCypherTraversal;
 import query.SimpleGraphTraversal;
@@ -23,11 +31,11 @@ import query.SpaTraversal;
 
 public class SelectivityNumber {
 
-  public Config config;
+  public static Config config = new Config();
   public String dataset;
   public String version;
   public system systemName;
-  public String password;
+  public static String password = config.getPassword();
   public int MAX_HOPNUM;
   public MyRectangle totalRange;
 
@@ -77,11 +85,11 @@ public class SelectivityNumber {
     initializeParameters();
   }
 
-  public static int pieces_x = 96, pieces_y = 96;
-  public static double MG = 1.0, MR = 1.0;
-  public static int MC = 0;
-  public static int length = 3;
-  public static int times = 10;
+  public int pieces_x = 96, pieces_y = 96;
+  public double MG = 1.0, MR = 1.0;
+  public int MC = 0;
+  public int length = 3;
+  public int times = 10;
 
   public void initializeParameters() {
     TEST_FORMAT = false;
@@ -149,7 +157,7 @@ public class SelectivityNumber {
 
   public static boolean clearCacheFlag = true;
   public static boolean hotDB = false;
-  DecimalFormat df = new DecimalFormat("0E0");
+  static DecimalFormat df = new DecimalFormat("0E0");
 
   public static void main(String[] args) {
     try {
@@ -205,8 +213,196 @@ public class SelectivityNumber {
     }
   }
 
-  // public static void spaTraversal(List<List<Node>> groupsNodes, ArrayList<MyRectangle>
-  // rectangles)
+  public static void evaluateQuery(String dbPath, boolean clearCache, double MG, double MR,
+      long[] graph_pos_map_list, SpaceManager spaceManager, String resultDir, String dataset,
+      String queryDir, String startIDPath, int offset, int groupCount, int groupSize, int spaCount,
+      int MAX_HOP, int length, double startSelectivity, double endSelectivity, int selectivityTimes)
+      throws Exception {
+    {
+      // Create the group nodes list
+      GraphDatabaseService service = Neo4jGraphUtility.getDatabaseService(dbPath);
+      ArrayList<Integer> allIDs = ReadWriteUtil.readIntegerArray(startIDPath);
+      List<List<Node>> groupsNodes = new ArrayList<>(groupCount);
+      for (int i = 0; i < groupCount; i++)
+        groupsNodes.add(new ArrayList<>());
+      Transaction tx = service.beginTx();
+      for (int i = offset; i < offset + groupSize * groupCount; i++) {
+        int id = allIDs.get(i);
+        int index = i % groupCount;
+        long neo4jId = graph_pos_map_list[id];
+        groupsNodes.get(index).add(service.getNodeById(neo4jId));
+      }
+      tx.success();
+      tx.close();
+
+      // Read query rectangles list.
+      List<List<MyRectangle>> rectanglesList = new LinkedList<>();
+      double selectivity = startSelectivity;
+      while (selectivity <= endSelectivity) {
+        String queryrect_path = String.format("%s/queryrect_%d.txt", queryDir,
+            ExperimentUtil.getRectangleFileName(spaCount, selectivity));
+        Util.println("query rectangle path: " + queryrect_path);
+
+        List<MyRectangle> queryrect = ReadWriteUtil.ReadQueryRectangle(queryrect_path);
+        for (int i = 0; i < queryrect.size(); i++) {
+          MyRectangle rectangle = queryrect.get(i);
+          if (rectangle.area() == 0.0) {
+            double delta = Math.pow(0.1, 10);
+            rectangle = new MyRectangle(rectangle.min_x - delta, rectangle.min_y - delta,
+                rectangle.max_x + delta, rectangle.max_y + delta);
+          }
+          queryrect.set(i, rectangle);
+        }
+        rectanglesList.add(queryrect);
+      }
+
+      String result_detail_path =
+          String.format("%s/%s_spaTraversal_detail.txt", resultDir, dataset);
+      String result_avg_path = String.format("%s/%s_spaTraversal_avg.txt", resultDir, dataset);
+
+      String write_line = String.format("%s\tlength:%d\n", dataset, length);
+      ReadWriteUtil.WriteFile(result_detail_path, true, write_line);
+      ReadWriteUtil.WriteFile(result_avg_path, true, write_line);
+
+      write_line =
+          String.format("MAXHOP=%d, pieces=%d, MG=%f", MAX_HOP, spaceManager.getPiecesX(), MG);
+      write_line = "MAXHOP = " + MAX_HOP + ", pieces = " + spaceManager.getPiecesX();
+      ReadWriteUtil.WriteFile(result_avg_path, true, write_line + "\n");
+
+      String head_line = "time\tvisited_count\tGeoReachPruned\tHistoryPruned\tresult_count\n";
+      ReadWriteUtil.WriteFile(result_avg_path, true, "selectivity\t" + head_line);
+
+      List<List<ResultRecord>> recordsList =
+          SelectivityNumber.evaluateTraversalSelectivities(service, MAX_HOP, spaceManager,
+              groupsNodes, rectanglesList, length, Expand.SPATRAVERSAL, clearCache);
+
+      // Output the result
+      selectivity = startSelectivity;
+      for (List<ResultRecord> records : recordsList) {
+        write_line = df.format(selectivity) + "\n" + head_line;
+        ReadWriteUtil.WriteFile(result_detail_path, true, write_line);
+
+        // Output detail for each traversal query.
+        for (ResultRecord record : records) {
+          // if (clearCacheFlag)
+          // Util.clearAndSleep(password, 5000);
+          // start = System.currentTimeMillis();
+          // spaTraversal.traverse(startNodes, length, rectangle);
+          // time = System.currentTimeMillis() - start;
+          write_line = String.format("%d\t%d\t", record.runTime, record.visitedCount);
+          write_line +=
+              String.format("%d\t%d\t", record.GeoReachPrunedCount, record.HistoryPrunedCount);
+          write_line += String.format("%d\n", record.resultCount);
+          ReadWriteUtil.WriteFile(result_detail_path, true, write_line);
+
+        }
+
+        // For each selectivity, remove the first result
+        if (hotDB) {
+          records.remove(0);
+        }
+
+        // Output the average for one selectivity.
+        write_line = df.format(selectivity) + "\t";
+        write_line += String.format("%d\t%d\t", ExperimentUtil.getRuntimeAvg(records),
+            ExperimentUtil.getVisitedCountAvg(records));
+        write_line +=
+            String.format("%d\t%d\t%d\n", ExperimentUtil.getGeoReachPrunedCountAvg(records),
+                ExperimentUtil.getHistoryPrunedCountAvg(records),
+                ExperimentUtil.getResultCountAvg(records));
+        ReadWriteUtil.WriteFile(result_avg_path, true, write_line);
+
+        selectivity *= selectivityTimes;
+      }
+
+      ReadWriteUtil.WriteFile(result_detail_path, true, "\n");
+      ReadWriteUtil.WriteFile(result_avg_path, true, "\n");
+    }
+  }
+
+
+  /**
+   * Evaluate rectangle sets with different selectivities.
+   *
+   * @param service
+   * @param MAX_HOP
+   * @param spaceManager
+   * @param groupsNodes
+   * @param rectanglesList
+   * @param expand
+   * @return
+   * @throws Exception
+   */
+  public static List<List<ResultRecord>> evaluateTraversalSelectivities(
+      GraphDatabaseService service, int MAX_HOP, SpaceManager spaceManager,
+      List<List<Node>> groupsNodes, List<List<MyRectangle>> rectanglesList, int length,
+      Expand expand, boolean clearCache) throws Exception {
+    List<List<ResultRecord>> recordsList = new ArrayList<>(rectanglesList.size());
+    for (List<MyRectangle> rectangles : rectanglesList) {
+      List<ResultRecord> records = evaluateTraversal(service, MAX_HOP, spaceManager, groupsNodes,
+          rectangles, length, expand, clearCache);
+      recordsList.add(records);
+    }
+    return recordsList;
+  }
+
+  /**
+   * Evaluate a set of node list for a list of rectangles with the same selectivity.
+   *
+   * @param service
+   * @param MAX_HOP
+   * @param spaceManager
+   * @param groupsNodes
+   * @param rectangles
+   * @param expand
+   * @return each ResultRecord in the returned list is the result for running a traversal from a
+   *         list of nodes to a rectangle
+   * @throws Exception
+   */
+  public static List<ResultRecord> evaluateTraversal(GraphDatabaseService service, int MAX_HOP,
+      SpaceManager spaceManager, List<List<Node>> groupsNodes, List<MyRectangle> rectangles,
+      int length, Expand expand, boolean clearCache) throws Exception {
+    if (groupsNodes.size() != rectangles.size()) {
+      throw new Exception(String.format("groupNodes has size of %d, while rectangles %d!",
+          groupsNodes.size(), rectangles.size()));
+    }
+
+    List<ResultRecord> resultRecords = new ArrayList<>(groupsNodes.size());
+    Iterator<List<Node>> iterator1 = groupsNodes.iterator();
+    Iterator<MyRectangle> iterator2 = rectangles.iterator();
+    switch (expand) {
+      case SPATRAVERSAL:
+        SpaTraversal spaTraversal = new SpaTraversal(service, MAX_HOP, spaceManager);
+        while (iterator1.hasNext() && iterator2.hasNext()) {
+          if (clearCache) {
+            Util.clearAndSleep(password, 5000);
+          }
+          long start = System.currentTimeMillis();
+          spaTraversal.traverse(iterator1.next(), length, iterator2.next());
+          long runTime = System.currentTimeMillis() - start;
+          ResultRecord record =
+              new ResultRecord(runTime, spaTraversal.visitedCount, spaTraversal.resultCount,
+                  spaTraversal.GeoReachPruneCount, spaTraversal.PrunedVerticesWorkCount);
+          resultRecords.add(record);
+        }
+        break;
+      case SIMPLEGRAPHTRAVERSAL:
+        SimpleGraphTraversal simpleGraphTraversal = new SimpleGraphTraversal(service);
+        while (iterator1.hasNext() && iterator2.hasNext()) {
+          long start = System.currentTimeMillis();
+          simpleGraphTraversal.traverse(iterator1.next(), length, iterator2.next());
+          long runTime = System.currentTimeMillis() - start;
+          ResultRecord record = new ResultRecord(runTime, simpleGraphTraversal.visitedCount,
+              simpleGraphTraversal.resultCount);
+          resultRecords.add(record);
+        }
+        break;
+      default:
+        break;
+    }
+
+    return resultRecords;
+  }
 
   public void spaTraversal(ArrayList<ArrayList<Long>> startIDsList) {
     SpaTraversal spaTraversal = null;
@@ -328,10 +524,10 @@ public class SelectivityNumber {
         }
 
         write_line = df.format(selectivity) + "\t";
-        write_line +=
-            String.format("%d\t%d\t", Util.Average(total_time), Util.Average(visitedcount));
-        write_line += String.format("%d\t%d\t%d\n", Util.Average(GeoReachPrunedCount),
-            Util.Average(HistoryPrunedCount), Util.Average(resultCount));
+        write_line += String.format("%d\t%d\t", ArrayUtil.Average(total_time),
+            ArrayUtil.Average(visitedcount));
+        write_line += String.format("%d\t%d\t%d\n", ArrayUtil.Average(GeoReachPrunedCount),
+            ArrayUtil.Average(HistoryPrunedCount), ArrayUtil.Average(resultCount));
         if (!TEST_FORMAT)
           ReadWriteUtil.WriteFile(result_avg_path, true, write_line);
 
@@ -454,9 +650,9 @@ public class SelectivityNumber {
           resultCount.remove(0);
         }
         write_line = df.format(selectivity) + "\t";
-        write_line +=
-            String.format("%d\t%d\t", Util.Average(total_time), Util.Average(visitedcount));
-        write_line += String.format("%d\n", Util.Average(resultCount));
+        write_line += String.format("%d\t%d\t", ArrayUtil.Average(total_time),
+            ArrayUtil.Average(visitedcount));
+        write_line += String.format("%d\n", ArrayUtil.Average(resultCount));
         if (!TEST_FORMAT)
           ReadWriteUtil.WriteFile(result_avg_path, true, write_line);
 
@@ -568,9 +764,9 @@ public class SelectivityNumber {
         neo4jCypherTraversal.dbservice.shutdown();
 
         write_line = String.valueOf(selectivity) + "\t";
-        write_line +=
-            String.format("%d\t%d\t", Util.Average(total_time), Util.Average(pageAccessCount));
-        write_line += String.format("%d\n", Util.Average(resultCount));
+        write_line += String.format("%d\t%d\t", ArrayUtil.Average(total_time),
+            ArrayUtil.Average(pageAccessCount));
+        write_line += String.format("%d\n", ArrayUtil.Average(resultCount));
         if (!TEST_FORMAT)
           ReadWriteUtil.WriteFile(result_avg_path, true, write_line);
 
