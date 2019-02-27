@@ -23,4 +23,11 @@ public class ResultRecord {
     this.visitedCount = visitedCount;
     this.resultCount = resultCount;
   }
+
+  @Override
+  public String toString() {
+    return String.format(
+        "runTime:%d, visitedCount:%d, resultCount:%d, GeoReachPrunedCount:%d, HistoryPrunedCount:%d",
+        runTime, visitedCount, resultCount, GeoReachPrunedCount, HistoryPrunedCount);
+  }
 }
