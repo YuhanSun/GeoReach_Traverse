@@ -6,7 +6,7 @@ import experiment.ResultRecord;
 
 public class ExperimentUtil {
   public static String getRectangleFileName(int spaCount, double selectivity) {
-    return String.format("queryrect_%d.txt", spaCount * selectivity);
+    return String.format("queryrect_%d.txt", (int) (spaCount * selectivity));
   }
 
   public static long getRuntimeAvg(List<ResultRecord> records) {
