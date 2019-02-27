@@ -213,11 +213,11 @@ public class SelectivityNumber {
     }
   }
 
-  public static void evaluateQuery(String dbPath, boolean clearCache, double MG, double MR,
-      long[] graph_pos_map_list, SpaceManager spaceManager, String resultDir, String dataset,
-      String queryDir, String startIDPath, int offset, int groupCount, int groupSize, int spaCount,
-      int MAX_HOP, int length, double startSelectivity, double endSelectivity, int selectivityTimes)
-      throws Exception {
+  public static void evaluateQuery(String dbPath, Expand expand, boolean clearCache, double MG,
+      double MR, long[] graph_pos_map_list, SpaceManager spaceManager, String resultDir,
+      String dataset, String queryDir, String startIDPath, int offset, int groupCount,
+      int groupSize, int spaCount, int MAX_HOP, int length, double startSelectivity,
+      double endSelectivity, int selectivityTimes) throws Exception {
     {
       // Create the group nodes list
       GraphDatabaseService service = Neo4jGraphUtility.getDatabaseService(dbPath);
@@ -239,7 +239,7 @@ public class SelectivityNumber {
       List<List<MyRectangle>> rectanglesList = new LinkedList<>();
       double selectivity = startSelectivity;
       while (selectivity <= endSelectivity) {
-        String queryrect_path = String.format("%s/queryrect_%d.txt", queryDir,
+        String queryrect_path = String.format("%s/%s", queryDir,
             ExperimentUtil.getRectangleFileName(spaCount, selectivity));
         Util.println("query rectangle path: " + queryrect_path);
 
@@ -254,27 +254,28 @@ public class SelectivityNumber {
           queryrect.set(i, rectangle);
         }
         rectanglesList.add(queryrect);
+        selectivity *= selectivityTimes;
       }
 
       String result_detail_path =
           String.format("%s/%s_spaTraversal_detail.txt", resultDir, dataset);
       String result_avg_path = String.format("%s/%s_spaTraversal_avg.txt", resultDir, dataset);
 
-      String write_line = String.format("%s\tlength:%d\n", dataset, length);
+      String write_line =
+          String.format("%s\n" + "length=%d, offset=%d, groupCount=%d, groupSize=%d" + "\n",
+              dataset, length, offset, groupCount, groupSize);
       ReadWriteUtil.WriteFile(result_detail_path, true, write_line);
       ReadWriteUtil.WriteFile(result_avg_path, true, write_line);
 
-      write_line =
-          String.format("MAXHOP=%d, pieces=%d, MG=%f", MAX_HOP, spaceManager.getPiecesX(), MG);
-      write_line = "MAXHOP = " + MAX_HOP + ", pieces = " + spaceManager.getPiecesX();
-      ReadWriteUtil.WriteFile(result_avg_path, true, write_line + "\n");
+      write_line = String.format("MAXHOP=%d, pieces=%d, MG=%f, MR=%f\n", MAX_HOP,
+          spaceManager.getPiecesX(), MG, MR);
+      ReadWriteUtil.WriteFile(result_avg_path, true, write_line);
 
       String head_line = "time\tvisited_count\tGeoReachPruned\tHistoryPruned\tresult_count\n";
       ReadWriteUtil.WriteFile(result_avg_path, true, "selectivity\t" + head_line);
 
-      List<List<ResultRecord>> recordsList =
-          SelectivityNumber.evaluateTraversalSelectivities(service, MAX_HOP, spaceManager,
-              groupsNodes, rectanglesList, length, Expand.SPATRAVERSAL, clearCache);
+      List<List<ResultRecord>> recordsList = SelectivityNumber.evaluateTraversalSelectivities(
+          service, MAX_HOP, spaceManager, groupsNodes, rectanglesList, length, expand, clearCache);
 
       // Output the result
       selectivity = startSelectivity;
@@ -294,7 +295,6 @@ public class SelectivityNumber {
               String.format("%d\t%d\t", record.GeoReachPrunedCount, record.HistoryPrunedCount);
           write_line += String.format("%d\n", record.resultCount);
           ReadWriteUtil.WriteFile(result_detail_path, true, write_line);
-
         }
 
         // For each selectivity, remove the first result
@@ -338,10 +338,13 @@ public class SelectivityNumber {
       List<List<Node>> groupsNodes, List<List<MyRectangle>> rectanglesList, int length,
       Expand expand, boolean clearCache) throws Exception {
     List<List<ResultRecord>> recordsList = new ArrayList<>(rectanglesList.size());
+    int i = 0;
     for (List<MyRectangle> rectangles : rectanglesList) {
+      Util.println(String.format("selectivity: %d th", i));
       List<ResultRecord> records = evaluateTraversal(service, MAX_HOP, spaceManager, groupsNodes,
           rectangles, length, expand, clearCache);
       recordsList.add(records);
+      i++;
     }
     return recordsList;
   }
@@ -362,7 +365,7 @@ public class SelectivityNumber {
   public static List<ResultRecord> evaluateTraversal(GraphDatabaseService service, int MAX_HOP,
       SpaceManager spaceManager, List<List<Node>> groupsNodes, List<MyRectangle> rectangles,
       int length, Expand expand, boolean clearCache) throws Exception {
-    if (groupsNodes.size() != rectangles.size()) {
+    if (groupsNodes.size() > rectangles.size()) {
       throw new Exception(String.format("groupNodes has size of %d, while rectangles %d!",
           groupsNodes.size(), rectangles.size()));
     }
@@ -384,6 +387,7 @@ public class SelectivityNumber {
               new ResultRecord(runTime, spaTraversal.visitedCount, spaTraversal.resultCount,
                   spaTraversal.GeoReachPruneCount, spaTraversal.PrunedVerticesWorkCount);
           resultRecords.add(record);
+          Util.println(record);
         }
         break;
       case SIMPLEGRAPHTRAVERSAL:
@@ -395,6 +399,7 @@ public class SelectivityNumber {
           ResultRecord record = new ResultRecord(runTime, simpleGraphTraversal.visitedCount,
               simpleGraphTraversal.resultCount);
           resultRecords.add(record);
+          Util.println(record);
         }
         break;
       default:
