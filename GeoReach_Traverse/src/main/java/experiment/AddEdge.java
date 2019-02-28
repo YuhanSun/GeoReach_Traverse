@@ -14,7 +14,9 @@ import org.neo4j.graphdb.Transaction;
 import commons.Config;
 import commons.Edge;
 import commons.Entity;
+import commons.EnumVariables.Expand;
 import commons.EnumVariables.GeoReachOutputFormat;
+import commons.EnumVariables.MaintenanceStrategy;
 import commons.GeoReachIndexUtil;
 import commons.GraphUtil;
 import commons.Neo4jGraphUtility;
@@ -49,6 +51,12 @@ public class AddEdge {
   public String edgePath;
   public String testDir;
 
+  /**
+   * Dir or file name related to Add edge experiment.
+   */
+  public final static String afterAddAccurateDirName = "after_add_accurate";
+  public final static String afterAddLightweightDirName = "after_add_lightweight";
+
   ArrayList<ArrayList<Integer>> graph = null;
   ArrayList<Entity> entities = null;
   ArrayList<Integer> labelList = null;
@@ -57,19 +65,27 @@ public class AddEdge {
   long[] graph_pos_map_list;
 
   public static void main(String[] args) throws Exception {
-    // TODO Auto-generated method stub
-    AddEdge addEdge = new AddEdge();
-    addEdge.iniPaths();
+    try {
+      AddEdge addEdge = new AddEdge();
+      addEdge.iniPaths();
 
-    // Run once to generate the inserted edges
-    // addEdge.generateEdges();
+      // Run once to generate the inserted edges
+      // addEdge.generateEdges();
 
-    // Evaluate three set-up of MG, MR and test the run time of edge insertion
-    // addEdge.evaluate();
+      // Evaluate three set-up of MG, MR and test the run time of edge insertion
+      // addEdge.iniPaths();
+      // addEdge.evaluate();
 
-    // Generate the db with the accurate index after insertion.
-    // addEdge.generateAccurateDbAfterAddEdge();
+      // Generate the db with the accurate index after insertion.
+      // addEdge.iniPaths();
+      // addEdge.generateAccurateDbAfterAddEdge();
 
+      addEdge.evaluateQuery();
+
+    } catch (Exception e) {
+      e.printStackTrace();
+      System.exit(-1);
+    }
   }
 
   public void iniPaths() {
@@ -92,14 +108,125 @@ public class AddEdge {
     queryDir = String.format("%s/query/%s", experimentDir, dataset);
     resultDir = experimentDir + "/add_edge";
     edgePath = queryDir + "/edges.txt";
-    testDir = dataDir + "/test";
+    testDir = dataDir + "/" + afterAddLightweightDirName;
   }
 
   public static int piecesX = 128, piecesY = 128;
   public static int MC = 0;
   public static int MAX_HOP = 3;
   public static double minx = -180, miny = -90, maxx = 180, maxy = 90;
-  SpaceManager spaceManager = new SpaceManager(minx, miny, maxx, maxy, piecesX, piecesY);
+  public static SpaceManager spaceManager =
+      new SpaceManager(minx, miny, maxx, maxy, piecesX, piecesY);
+
+  public void evaluateQuery() throws Exception {
+    double MG, MR;
+    MaintenanceStrategy strategy;
+    Expand expand;
+
+    // MG = 2.0;
+    // MR = 2.0;
+    // strategy = MaintenanceStrategy.LIGHTWEIGHT;
+    // expand = Expand.SIMPLEGRAPHTRAVERSAL;
+    // runQueryLightweightStrategy(MG, MR, strategy, expand);
+
+    // MG = -1.0;
+    // MR = 2.0;
+    // strategy = MaintenanceStrategy.LIGHTWEIGHT;
+    // expand = Expand.SPATRAVERSAL;
+    // iniPaths();
+    // runQueryLightweightStrategy(MG, MR, strategy, expand);
+    // strategy = MaintenanceStrategy.RECONSTRUCT;
+    // iniPaths();
+    // runQueryLightweightStrategy(MG, MR, strategy, expand);
+    //
+    // MG = -1.0;
+    // MR = -1.0;
+    // strategy = MaintenanceStrategy.LIGHTWEIGHT;
+    // expand = Expand.SPATRAVERSAL;
+    // iniPaths();
+    // runQueryLightweightStrategy(MG, MR, strategy, expand);
+    // strategy = MaintenanceStrategy.RECONSTRUCT;
+    // iniPaths();
+    // runQueryLightweightStrategy(MG, MR, strategy, expand);
+
+    MG = 0.5;
+    MR = 2.0;
+    strategy = MaintenanceStrategy.LIGHTWEIGHT;
+    expand = Expand.SPATRAVERSAL;
+    iniPaths();
+    runQueryLightweightStrategy(MG, MR, strategy, expand);
+    strategy = MaintenanceStrategy.RECONSTRUCT;
+    iniPaths();
+    runQueryLightweightStrategy(MG, MR, strategy, expand);
+
+  }
+
+  public void runQueryLightweightStrategy(double MG, double MR, MaintenanceStrategy strategy,
+      Expand expand) throws Exception {
+    boolean clearCache = false;
+    boolean hotDB = true;
+    entities = GraphUtil.ReadEntity(entityPath);
+    int spaCount = Util.GetSpatialEntityCount(entities);
+    String curDataDir = null;
+    if (strategy.equals(MaintenanceStrategy.LIGHTWEIGHT)) {
+      curDataDir = dataDir + "/" + afterAddLightweightDirName;
+      resultDir += "/" + afterAddLightweightDirName;
+
+    } else {
+      curDataDir = dataDir + "/" + afterAddAccurateDirName;
+      resultDir += "/" + afterAddAccurateDirName;
+    }
+    if (!Util.pathExist(resultDir)) {
+      new File(resultDir).mkdirs();
+    }
+    dbPath =
+        curDataDir + "/" + Neo4jGraphUtility.getDbNormalName(piecesX, piecesY, MG, MR, MC, MAX_HOP);
+    mapPath = curDataDir + "/"
+        + Neo4jGraphUtility.getGraphNeo4jIdMapNormalName(piecesX, piecesY, MG, MR, MC, MAX_HOP);
+    Util.println("Read map from " + mapPath);
+    graph_pos_map_list = ReadWriteUtil.readMapToArray(mapPath);
+
+    String startIDPath = queryDir + "/" + config.getStartIDFileName();
+    int offset = 0, groupCount = 5, groupSize = 500;
+    int length = 3;
+    double startSelectivity = Math.pow(10, -4), endSelectivity = Math.pow(10, -1) * 2;
+    int selectivityTimes = 10;
+
+    SelectivityNumber.evaluateQuery(dbPath, expand, clearCache, hotDB, MG, MR, graph_pos_map_list,
+        spaceManager, resultDir, dataset, queryDir, startIDPath, offset, groupCount, groupSize,
+        spaCount, MAX_HOP, length, startSelectivity, endSelectivity, selectivityTimes);
+  }
+
+  // public void runQuery() throws Exception {
+  // boolean clearCache = false;
+  // entities = GraphUtil.ReadEntity(entityPath);
+  // int spaCount = Util.GetSpatialEntityCount(entities);
+  // String curDataDir = dataDir + "/" + afterAddAccurateDirName;
+  // double MG, MR;
+  //
+  // MG = 2;
+  // MR = 2;
+  // dbPath =
+  // curDataDir + "/" + Neo4jGraphUtility.getDbNormalName(piecesX, piecesY, MG, MR, MC, MAX_HOP);
+  // mapPath = curDataDir + "/"
+  // + Neo4jGraphUtility.getGraphNeo4jIdMapNormalName(piecesX, piecesY, MG, MR, MC, MAX_HOP);
+  // Util.println("Read map from " + mapPath);
+  // graph_pos_map_list = ReadWriteUtil.readMapToArray(mapPath);
+  // resultDir += "/" + afterAddAccurateDirName;
+  // if (!Util.pathExist(resultDir)) {
+  // new File(resultDir).mkdirs();
+  // }
+  // String startIDPath = queryDir + "/" + config.getStartIDFileName();
+  // int offset = 0, groupCount = 2, groupSize = 500;
+  // int length = 3;
+  // double startSelectivity = Math.pow(10, -4), endSelectivity = Math.pow(10, -1) * 2;
+  // int selectivityTimes = 10;
+  //
+  // SelectivityNumber.evaluateQuery(dbPath, Expand.SPATRAVERSAL, clearCache, MG, MR,
+  // graph_pos_map_list, spaceManager, resultDir, dataset, queryDir, startIDPath, offset,
+  // groupCount, groupSize, spaCount, MAX_HOP, length, startSelectivity, endSelectivity,
+  // selectivityTimes);
+  // }
 
   /**
    * Generate the accurate SIP for comparison.
@@ -109,23 +236,27 @@ public class AddEdge {
   public void generateAccurateDbAfterAddEdge() throws Exception {
     readGraph();
     addEdgesToGraph();
-    dataDir += "/after_add";
+    dataDir += "/" + afterAddAccurateDirName;
     if (Util.pathExist(dataDir)) {
       new File(dataDir).mkdirs();
     }
 
     double MG, MR;
 
-    MG = 2;
-    MR = 2;
-    generateAccurateDbAfterAddEdges(MG, MR);
+    // MG = 2;
+    // MR = 2;
+    // generateAccurateDbAfterAddEdges(MG, MR);
+    //
+    // MG = -1;
+    // MR = 2;
+    // generateAccurateDbAfterAddEdges(MG, MR);
+    //
+    // MG = -1;
+    // MR = -1;
+    // generateAccurateDbAfterAddEdges(MG, MR);
 
-    MG = -1;
-    MR = 2;
-    generateAccurateDbAfterAddEdges(MG, MR);
-
-    MG = -1;
-    MR = -1;
+    MG = 0.5;
+    MR = 2.0;
     generateAccurateDbAfterAddEdges(MG, MR);
   }
 
@@ -178,20 +309,25 @@ public class AddEdge {
       new File(testDir).mkdirs();
     }
 
-    // All reachgrid
-    MG = 2;
-    MR = 2;
+    // // All reachgrid
+    // MG = 2;
+    // MR = 2;
+    // evaluate(MG, MR, 0);
+    //
+    // // All rmbr
+    // MG = -1;
+    // MR = 2;
+    // evaluate(MG, MR, 0);
+    //
+    // // All GeoB
+    // MG = -1;
+    // MR = -1;
+    // evaluate(MG, MR, 0);
+
+    MG = 0.5;
+    MR = 2.0;
     evaluate(MG, MR, 0);
 
-    // All rmbr
-    MG = -1;
-    MR = 2;
-    evaluate(MG, MR, 0);
-
-    // All GeoB
-    MG = -1;
-    MR = -1;
-    evaluate(MG, MR, 0);
   }
 
   /**
@@ -204,11 +340,11 @@ public class AddEdge {
    */
   public void evaluate(double MG, double MR, int testCount) throws Exception {
     String dbFileName = Neo4jGraphUtility.getDbNormalName(piecesX, piecesY, MG, MR, MC, MAX_HOP);
-
     dbPath = dataDir + "/" + dbFileName;
     // mapPath is initialized before loadGraphAndIndex because its value will be used.
-    mapPath = dataDir + "/"
-        + Neo4jGraphUtility.getGraphNeo4jIdMapNormalName(piecesX, piecesY, MG, MR, MC, MAX_HOP);
+    String mapFileName =
+        Neo4jGraphUtility.getGraphNeo4jIdMapNormalName(piecesX, piecesY, MG, MR, MC, MAX_HOP);
+    mapPath = dataDir + "/" + mapFileName;
     loadGraphAndIndex(MG, MR);
 
     String testDbPath = testDir + "/" + dbFileName;
@@ -218,13 +354,21 @@ public class AddEdge {
       Util.println(String.format("Delete %s...", testDbPath));
       FileUtils.deleteDirectory(new File(testDbPath));
     }
+    String newMapPath = testDir + mapFileName;
+    if (Util.pathExist(newMapPath)) {
+      Util.println(String.format("Delete %s...", newMapPath));
+      new File(newMapPath).delete();
+    }
     // Copy the original db to the test dir.
     Util.println(String.format("Copy %s to %s...", dbPath, testDir));
     FileUtils.copyDirectoryToDirectory(new File(dbPath), new File(testDir));
+    Util.println(String.format("Copy %s to %s...", mapPath, testDir));
+    FileUtils.copyFileToDirectory(new File(mapPath), new File(testDir), true);
 
     GraphDatabaseService service = Neo4jGraphUtility.getDatabaseService(testDbPath);
     SpaceManager spaceManager = new SpaceManager(minx, miny, maxx, maxy, piecesX, piecesY);
     Maintenance maintenance = new Maintenance(spaceManager, MAX_HOP, MG, MR, MC, service);
+    Util.println("Read edges from " + edgePath + "...");
     List<Edge> edges = GraphUtil.readEdges(edgePath);
     if (testCount == 0) {
       testCount = edges.size();
@@ -239,6 +383,7 @@ public class AddEdge {
         break;
       }
     }
+    Util.println("maintenance test...");
     addEdgeMaintenance(edgesNeo4j, maintenance);
     service.shutdown();
   }
