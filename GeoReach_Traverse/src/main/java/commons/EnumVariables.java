@@ -46,4 +46,8 @@ public class EnumVariables {
   public static enum Expand {
     SPATRAVERSAL, SIMPLEGRAPHTRAVERSAL,
   }
+
+  public static enum MaintenanceStrategy {
+    LIGHTWEIGHT, RECONSTRUCT,
+  }
 }
