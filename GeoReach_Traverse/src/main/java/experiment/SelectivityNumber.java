@@ -213,8 +213,8 @@ public class SelectivityNumber {
     }
   }
 
-  public static void evaluateQuery(String dbPath, Expand expand, boolean clearCache, double MG,
-      double MR, long[] graph_pos_map_list, SpaceManager spaceManager, String resultDir,
+  public static void evaluateQuery(String dbPath, Expand expand, boolean clearCache, boolean hotDB,
+      double MG, double MR, long[] graph_pos_map_list, SpaceManager spaceManager, String resultDir,
       String dataset, String queryDir, String startIDPath, int offset, int groupCount,
       int groupSize, int spaCount, int MAX_HOP, int length, double startSelectivity,
       double endSelectivity, int selectivityTimes) throws Exception {
@@ -257,9 +257,19 @@ public class SelectivityNumber {
         selectivity *= selectivityTimes;
       }
 
-      String result_detail_path =
-          String.format("%s/%s_spaTraversal_detail.txt", resultDir, dataset);
-      String result_avg_path = String.format("%s/%s_spaTraversal_avg.txt", resultDir, dataset);
+      String result_detail_path = null, result_avg_path = null;
+      switch (expand) {
+        case SPATRAVERSAL:
+          result_detail_path = String.format("%s/%s_spaTraversal_detail.txt", resultDir, dataset);
+          result_avg_path = String.format("%s/%s_spaTraversal_avg.txt", resultDir, dataset);
+          break;
+        case SIMPLEGRAPHTRAVERSAL:
+          result_detail_path =
+              String.format("%s/%s_simpleTraversal_detail.txt", resultDir, dataset);
+          result_avg_path = String.format("%s/%s_simpleTraversal_avg.txt", resultDir, dataset);
+        default:
+          break;
+      }
 
       String write_line =
           String.format("%s\n" + "length=%d, offset=%d, groupCount=%d, groupSize=%d" + "\n",
