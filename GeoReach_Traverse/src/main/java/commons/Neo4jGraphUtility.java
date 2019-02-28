@@ -41,8 +41,8 @@ public class Neo4jGraphUtility {
 
   public static String getNormalName(int piecesX, int piecesY, double MG, double MR, int MC,
       int MAX_HOP) {
-    return String.format("%d_%d_%d_%d_%d_%d", piecesX, piecesY, (int) MG * 100, (int) MR * 100, MC,
-        MAX_HOP);
+    return String.format("%d_%d_%d_%d_%d_%d", piecesX, piecesY, (int) (MG * 100), (int) (MR * 100),
+        MC, MAX_HOP);
   }
 
   /**
