@@ -174,7 +174,8 @@ public class SpaceManager {
   }
 
   /**
-   * Get the [idX_min, idY_min, idX_max, idY_max] as the 2-D boundary for the given reachgrid.
+   * Get the [idX_min, idY_min, idX_max, idY_max, count] as the 2-D boundary for the given
+   * reachgrid.
    *
    * @param immutableRoaringBitmap
    * @return the boundary in [0, 3]. [4] stores the # of elements in the iterable
