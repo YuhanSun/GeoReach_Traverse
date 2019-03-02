@@ -13,6 +13,30 @@ import commons.EnumVariables.GeoReachType;
 
 public class GeoReachIndexUtil {
 
+  /**
+   * Decide whether current gridCount can satisfy MG constraint.
+   *
+   * @param gridCount number of grid cells
+   * @param idXMin
+   * @param idYMin
+   * @param idXMax
+   * @param idYMax
+   * @param MG
+   * @return
+   */
+  public static boolean validateMG(int gridCount, int idXMin, int idYMin, int idXMax, int idYMax,
+      double MG) {
+    if (gridCount == 1) {
+      return false;
+    }
+    return gridCount < ((idXMax - idXMin + 1) * (idYMax - idYMin + 1) * MG);
+  }
+
+  public static boolean validateMR(MyRectangle rectangle, double totalArea, double MR) {
+    // area of rectangle <= totalArea * MR
+    return rectangle.area() < totalArea * MR;
+  }
+
   public static GeoReachType getGeoReachType(int type) throws Exception {
     switch (type) {
       case 0:

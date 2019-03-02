@@ -572,9 +572,10 @@ public class IndexConstruct {
           idX_max = Math.min(pieces_x - 1, idX_max);
           idY_max = Math.min(pieces_y - 1, idY_max);
 
-          if (reachgrid.size() > (idX_max - idX_min + 1) * (idY_max - idY_min + 1) * MG) {
+          if (!GeoReachIndexUtil.validateMG(reachgrid.size(), idX_min, idY_min, idX_max, idY_max,
+              MG)) {
             type = 1;
-            if (rmbr.area() > total_area * MR) {
+            if (!GeoReachIndexUtil.validateMR(rmbr, total_area, MR)) {
               vertexGeoReach.GeoBs.set(i, true);
               type = 2;
             }
@@ -658,9 +659,10 @@ public class IndexConstruct {
           idX_max = Math.min(pieces_x - 1, idX_max);
           idY_max = Math.min(pieces_y - 1, idY_max);
 
-          if (reachgrid.size() > (idX_max - idX_min + 1) * (idY_max - idY_min + 1) * MG) {
+          if (!GeoReachIndexUtil.validateMG(reachgrid.size(), idX_min, idY_min, idX_max, idY_max,
+              MG)) {
             type = 1;
-            if (rmbr.area() > total_area * MR) {
+            if (!GeoReachIndexUtil.validateMR(rmbr, total_area, MR)) {
               vertexGeoReach.GeoBs.set(i, true);
               type = 2;
             }

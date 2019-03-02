@@ -12,6 +12,7 @@ import commons.Config;
 import commons.EnumVariables.BoundaryLocationStatus;
 import commons.EnumVariables.GeoReachType;
 import commons.EnumVariables.UpdateStatus;
+import commons.GeoReachIndexUtil;
 import commons.Labels;
 import commons.Labels.GraphRel;
 import commons.MyRectangle;
@@ -361,13 +362,23 @@ public class Maintenance {
    * @return <code>true</code> means needs to be replaced by rmbr
    */
   public boolean validateMG(RoaringBitmap rb, int[] boundary) {
-    // # of cells in rb > # of cells in the coverage MBR * MG
-    return (boundary[4] <= (boundary[2] - boundary[0] + 1) * (boundary[3] - boundary[1] + 1) * MG);
+    // # of cells in rb <= # of cells in the coverage MBR * MG
+    return GeoReachIndexUtil.validateMG(boundary[4], boundary[0], boundary[1], boundary[2],
+        boundary[3], MG);
+    // return (boundary[4] <= (boundary[2] - boundary[0] + 1) * (boundary[3] - boundary[1] + 1) *
+    // MG);
   }
 
+  /**
+   * Decide whether a rectangle is valid.
+   *
+   * @param rectangle
+   * @return
+   */
   public boolean validateMR(MyRectangle rectangle) {
     // area of rectangle > totalArea * MR
-    return rectangle.area() <= spaceManager.getTotalArea() * MR;
+    return GeoReachIndexUtil.validateMR(rectangle, spaceManager.getTotalArea(), MR);
+    // return rectangle.area() <= spaceManager.getTotalArea() * MR;
   }
 
   /**
