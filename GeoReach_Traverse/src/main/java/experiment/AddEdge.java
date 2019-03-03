@@ -291,14 +291,14 @@ public class AddEdge {
     if (!Util.pathExist(dataDir)) {
       new File(dataDir).mkdirs();
     }
-    if (Util.pathExist(testDir)) {
+    if (!Util.pathExist(testDir)) {
       new File(testDir).mkdirs();
     }
 
     // // All reachgrid
     MG = 1.0;
     MR = 2.0;
-    evaluate(MG, MR, 0);
+    evaluateEdgeInsersion(MG, MR, 0);
     //
     // // All rmbr
     // MG = -1;
@@ -324,7 +324,7 @@ public class AddEdge {
    * @param testCount how many edges in the edge.txt file will be tested
    * @throws Exception
    */
-  public void evaluate(double MG, double MR, int testCount) throws Exception {
+  public void evaluateEdgeInsersion(double MG, double MR, int testCount) throws Exception {
     String dbFileName = Neo4jGraphUtility.getDbNormalName(piecesX, piecesY, MG, MR, MC, MAX_HOP);
     dbPath = dataDir + "/" + dbFileName;
     // mapPath is initialized before loadGraphAndIndex because its value will be used.
