@@ -71,6 +71,9 @@ public class Maintenance {
   public String dbPath;
   public GraphDatabaseService service;
 
+  // Experiment variable
+  public int visitedCount;
+
   public Maintenance(double minx, double miny, double maxx, double maxy, int piecesX, int piecesY,
       int MAX_HOP, double MG, Double MR, int MC, GraphDatabaseService service) {
     spaceManager = new SpaceManager(minx, miny, maxx, maxy, piecesX, piecesY);
@@ -89,6 +92,7 @@ public class Maintenance {
   }
 
   public void addEdgeAndUpdateIndex(Node src, Node trg) throws Exception {
+    visitedCount = 0;
     src.createRelationshipTo(trg, GraphRel.GRAPH_LINK);
     updateOneDirectionAddEdge(src, trg);
     updateOneDirectionAddEdge(trg, src);
@@ -129,6 +133,7 @@ public class Maintenance {
     int dist = 0;
     // hop on src to be updated
     for (int hop = MAX_HOP; hop >= minHop + 1; hop--) {
+      visitedCount += currentUpdateNodes.size();
       HashMap<Node, HashSet<Integer>> nextUpdateNodes = new HashMap<>();
       for (Node node : currentUpdateNodes.keySet()) {
         HashSet<Integer> curSrcupdateHops = currentUpdateNodes.get(node);
