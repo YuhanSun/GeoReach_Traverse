@@ -4,6 +4,7 @@ public class ResultRecord {
   public long runTime;
   public long dbTime;
   public long checkTime;
+  public long commitTime;
   public long visitedCount;
   public long resultCount;
   public long GeoReachPrunedCount;
@@ -22,6 +23,11 @@ public class ResultRecord {
     this.runTime = runTime;
     this.visitedCount = visitedCount;
     this.resultCount = resultCount;
+  }
+
+  public ResultRecord(long runTime, long commitTime, long visitedCount, long resultCount) {
+    this(runTime, visitedCount, resultCount);
+    this.commitTime = commitTime;
   }
 
   @Override
