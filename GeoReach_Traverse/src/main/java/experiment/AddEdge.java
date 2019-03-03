@@ -1,7 +1,6 @@
 package experiment;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -71,6 +70,7 @@ public class AddEdge {
 
       // Run once to generate the inserted edges
       // addEdge.generateEdges();
+      addEdge.generateEdgesAttach();
 
       // Evaluate three set-up of MG, MR and test the run time of edge insertion
       // addEdge.iniPaths();
@@ -80,7 +80,7 @@ public class AddEdge {
       // addEdge.iniPaths();
       // addEdge.generateAccurateDbAfterAddEdge();
 
-      addEdge.evaluateQuery();
+      // addEdge.evaluateQuery();
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -123,10 +123,14 @@ public class AddEdge {
     MaintenanceStrategy strategy;
     Expand expand;
 
-    // MG = 2.0;
-    // MR = 2.0;
-    // strategy = MaintenanceStrategy.LIGHTWEIGHT;
-    // expand = Expand.SIMPLEGRAPHTRAVERSAL;
+    MG = 1.0;
+    MR = 2.0;
+    expand = Expand.SIMPLEGRAPHTRAVERSAL;
+    strategy = MaintenanceStrategy.LIGHTWEIGHT;
+    iniPaths();
+    runQueryLightweightStrategy(MG, MR, strategy, expand);
+    // strategy = MaintenanceStrategy.RECONSTRUCT;
+    // iniPaths();
     // runQueryLightweightStrategy(MG, MR, strategy, expand);
 
     // MG = -1.0;
@@ -149,15 +153,15 @@ public class AddEdge {
     // iniPaths();
     // runQueryLightweightStrategy(MG, MR, strategy, expand);
 
-    MG = 0.5;
-    MR = 2.0;
-    strategy = MaintenanceStrategy.LIGHTWEIGHT;
-    expand = Expand.SPATRAVERSAL;
-    iniPaths();
-    runQueryLightweightStrategy(MG, MR, strategy, expand);
-    strategy = MaintenanceStrategy.RECONSTRUCT;
-    iniPaths();
-    runQueryLightweightStrategy(MG, MR, strategy, expand);
+    // MG = 0.5;
+    // MR = 2.0;
+    // strategy = MaintenanceStrategy.LIGHTWEIGHT;
+    // expand = Expand.SPATRAVERSAL;
+    // iniPaths();
+    // runQueryLightweightStrategy(MG, MR, strategy, expand);
+    // strategy = MaintenanceStrategy.RECONSTRUCT;
+    // iniPaths();
+    // runQueryLightweightStrategy(MG, MR, strategy, expand);
 
   }
 
@@ -187,7 +191,7 @@ public class AddEdge {
     graph_pos_map_list = ReadWriteUtil.readMapToArray(mapPath);
 
     String startIDPath = queryDir + "/" + config.getStartIDFileName();
-    int offset = 0, groupCount = 5, groupSize = 500;
+    int offset = 0, groupCount = 20, groupSize = 500;
     int length = 3;
     double startSelectivity = Math.pow(10, -4), endSelectivity = Math.pow(10, -1) * 2;
     int selectivityTimes = 10;
@@ -196,37 +200,6 @@ public class AddEdge {
         spaceManager, resultDir, dataset, queryDir, startIDPath, offset, groupCount, groupSize,
         spaCount, MAX_HOP, length, startSelectivity, endSelectivity, selectivityTimes);
   }
-
-  // public void runQuery() throws Exception {
-  // boolean clearCache = false;
-  // entities = GraphUtil.ReadEntity(entityPath);
-  // int spaCount = Util.GetSpatialEntityCount(entities);
-  // String curDataDir = dataDir + "/" + afterAddAccurateDirName;
-  // double MG, MR;
-  //
-  // MG = 2;
-  // MR = 2;
-  // dbPath =
-  // curDataDir + "/" + Neo4jGraphUtility.getDbNormalName(piecesX, piecesY, MG, MR, MC, MAX_HOP);
-  // mapPath = curDataDir + "/"
-  // + Neo4jGraphUtility.getGraphNeo4jIdMapNormalName(piecesX, piecesY, MG, MR, MC, MAX_HOP);
-  // Util.println("Read map from " + mapPath);
-  // graph_pos_map_list = ReadWriteUtil.readMapToArray(mapPath);
-  // resultDir += "/" + afterAddAccurateDirName;
-  // if (!Util.pathExist(resultDir)) {
-  // new File(resultDir).mkdirs();
-  // }
-  // String startIDPath = queryDir + "/" + config.getStartIDFileName();
-  // int offset = 0, groupCount = 2, groupSize = 500;
-  // int length = 3;
-  // double startSelectivity = Math.pow(10, -4), endSelectivity = Math.pow(10, -1) * 2;
-  // int selectivityTimes = 10;
-  //
-  // SelectivityNumber.evaluateQuery(dbPath, Expand.SPATRAVERSAL, clearCache, MG, MR,
-  // graph_pos_map_list, spaceManager, resultDir, dataset, queryDir, startIDPath, offset,
-  // groupCount, groupSize, spaCount, MAX_HOP, length, startSelectivity, endSelectivity,
-  // selectivityTimes);
-  // }
 
   /**
    * Generate the accurate SIP for comparison.
@@ -237,34 +210,46 @@ public class AddEdge {
     readGraph();
     addEdgesToGraph();
     dataDir += "/" + afterAddAccurateDirName;
-    if (Util.pathExist(dataDir)) {
+    if (!Util.pathExist(dataDir)) {
       new File(dataDir).mkdirs();
     }
 
     double MG, MR;
 
-    // MG = 2;
-    // MR = 2;
+    // MG = 1.0;
+    // MR = 2.0;
     // generateAccurateDbAfterAddEdges(MG, MR);
-    //
-    // MG = -1;
-    // MR = 2;
-    // generateAccurateDbAfterAddEdges(MG, MR);
-    //
-    // MG = -1;
-    // MR = -1;
-    // generateAccurateDbAfterAddEdges(MG, MR);
+
+    MG = -1;
+    MR = 2;
+    generateAccurateDbAfterAddEdges(MG, MR);
+
+    MG = -1;
+    MR = -1;
+    generateAccurateDbAfterAddEdges(MG, MR);
 
     MG = 0.5;
     MR = 2.0;
     generateAccurateDbAfterAddEdges(MG, MR);
   }
 
+  /**
+   * Generate the new db with edges being inserted. If the directory exists, it will be deleted. The
+   * graph will be reloaded and index will be reconstructed and loaded as well.
+   * 
+   * @param MG
+   * @param MR
+   * @throws Exception
+   */
   public void generateAccurateDbAfterAddEdges(double MG, double MR) throws Exception {
     String dbFileName = Neo4jGraphUtility.getDbNormalName(piecesX, piecesY, MG, MR, MC, MAX_HOP);
 
     dbPath = dataDir + "/" + dbFileName;
-    // mapPath is initialized before loadGraphAndIndex because its value will be used.
+    if (Util.pathExist(dbPath)) {
+      FileUtils.deleteDirectory(new File(dbPath));
+    }
+    // mapPath is initialized before loadGraphAndIndex because its value will be used in
+    // loadGraphAndIndex.
     mapPath = dataDir + "/"
         + Neo4jGraphUtility.getGraphNeo4jIdMapNormalName(piecesX, piecesY, MG, MR, MC, MAX_HOP);
     loadGraphAndIndex(MG, MR);
@@ -289,6 +274,7 @@ public class AddEdge {
       int start = (int) edge.start;
       int end = (int) edge.end;
       treeSetGraph.get(start).add(end);
+      treeSetGraph.get(end).add(start);
     }
     graph = GraphUtil.convertCollectionGraphToArrayList(treeSetGraph);
   }
@@ -299,7 +285,7 @@ public class AddEdge {
    *
    * @throws Exception
    */
-  public void evaluate() throws Exception {
+  public void evaluateEdgeInsertion() throws Exception {
     double MG, MR;
     readGraph();
     if (!Util.pathExist(dataDir)) {
@@ -310,9 +296,9 @@ public class AddEdge {
     }
 
     // // All reachgrid
-    // MG = 2;
-    // MR = 2;
-    // evaluate(MG, MR, 0);
+    MG = 1.0;
+    MR = 2.0;
+    evaluate(MG, MR, 0);
     //
     // // All rmbr
     // MG = -1;
@@ -324,9 +310,9 @@ public class AddEdge {
     // MR = -1;
     // evaluate(MG, MR, 0);
 
-    MG = 0.5;
-    MR = 2.0;
-    evaluate(MG, MR, 0);
+    // MG = 0.5;
+    // MR = 2.0;
+    // evaluate(MG, MR, 0);
 
   }
 
@@ -485,6 +471,21 @@ public class AddEdge {
     Util.println("commit time: " + String.valueOf(System.currentTimeMillis() - time));
   }
 
+
+  public void generateEdgesAttach() throws Exception {
+    Util.println("Read graph from " + graphPath);
+    this.graph = GraphUtil.ReadGraph(graphPath);
+    List<Collection<Integer>> graph = GraphUtil.convertListGraphToTreeSetGraph(this.graph);
+    int edgeCount = GraphUtil.getEdgeCount(graph);
+    double addRatio = 0.05;
+    int targetCount = (int) (addRatio * edgeCount);
+    addEdgesToGraph();
+    graph = GraphUtil.convertListGraphToTreeSetGraph(this.graph);
+    List<Edge> edges = generateEdges(graph, targetCount);
+    String outputPath = queryDir + "/" + config.getEdgeFileName();
+    ReadWriteUtil.writeEdges(edges, outputPath, true);
+  }
+
   /**
    * Generate the edges for experiment.
    *
@@ -492,38 +493,48 @@ public class AddEdge {
    */
   public void generateEdges() throws Exception {
     String outputPath = queryDir + "/" + config.getEdgeFileName();
-    generateEdges(graphPath, entityPath, labelListPath, 0.05, outputPath);
+    generateEdges(graphPath, 0.05, outputPath);
   }
 
-  public static void generateEdges(String graphPath, String entityPath, String labelListPath,
-      double targetRatio, String outputPath) throws IOException {
+  public static void generateEdges(String graphPath, double targetRatio, String outputPath)
+      throws IOException {
     Util.println("Read graph from " + graphPath);
     List<Collection<Integer>> graph =
         GraphUtil.convertListGraphToTreeSetGraph(GraphUtil.ReadGraph(graphPath));
-    Util.println("Read entity from " + entityPath);
-    ArrayList<Entity> entities = GraphUtil.ReadEntity(entityPath);
-    Util.println("Read labels from " + labelListPath);
-    ArrayList<Integer> labelList = ReadWriteUtil.readIntegerArray(labelListPath);
 
     int edgeCount = GraphUtil.getEdgeCount(graph);
     int targetCount = (int) (edgeCount * targetRatio);
     Util.println("Generate edges output to " + outputPath);
-    generateEdges(graph, entities, labelList, targetCount, outputPath);
+    List<Edge> edges = generateEdges(graph, targetCount);
+    ReadWriteUtil.writeEdges(edges, outputPath, false);
   }
 
-  /**
-   * Generate random edges between vertexes.
-   *
-   * @param graph
-   * @param entities
-   * @param labelList
-   * @param targetCount
-   * @param outputPath
-   * @throws IOException
-   */
-  public static void generateEdges(List<Collection<Integer>> graph, List<Entity> entities,
-      List<Integer> labelList, int targetCount, String outputPath) throws IOException {
-    FileWriter writer = new FileWriter(outputPath);
+  // public static void generateEdges(List<Collection<Integer>> graph, List<Entity> entities,
+  // List<Integer> labelList, int targetCount, String outputPath) throws IOException {
+  // FileWriter writer = new FileWriter(outputPath);
+  // Random random = new Random();
+  // int size = graph.size();
+  // int count = 0;
+  // while (count < targetCount) {
+  // int id1 = random.nextInt(size);
+  // while (true) {
+  // int id2 = random.nextInt(size);
+  // if (id1 != id2) {
+  // if (!graph.get(id1).contains(id2)) {
+  // graph.get(id1).add(id2);
+  // graph.get(id2).add(id1);
+  // writer.write(String.format("%d,%d\n", id1, id2));
+  // count++;
+  // break;
+  // }
+  // }
+  // }
+  // }
+  // writer.close();
+  // }
+
+  public static List<Edge> generateEdges(List<Collection<Integer>> graph, int targetCount) {
+    List<Edge> edges = new ArrayList<>(targetCount);
     Random random = new Random();
     int size = graph.size();
     int count = 0;
@@ -535,14 +546,13 @@ public class AddEdge {
           if (!graph.get(id1).contains(id2)) {
             graph.get(id1).add(id2);
             graph.get(id2).add(id1);
-            writer.write(String.format("%d,%d\n", id1, id2));
+            edges.add(new Edge(id1, id2));
             count++;
             break;
           }
         }
       }
     }
-    writer.close();
+    return edges;
   }
-
 }

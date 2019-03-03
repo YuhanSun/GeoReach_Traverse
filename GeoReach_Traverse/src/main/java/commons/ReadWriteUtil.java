@@ -14,6 +14,15 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 public class ReadWriteUtil {
+
+  public static void writeEdges(Iterable<Edge> edges, String path, boolean app) throws IOException {
+    FileWriter writer = new FileWriter(path, app);
+    for (Edge edge : edges) {
+      writer.write(edge.toString() + "\n");
+    }
+    writer.close();
+  }
+
   public static <T> void WriteArray(String filename, List<T> arrayList) {
     FileWriter fileWriter = null;
     try {
