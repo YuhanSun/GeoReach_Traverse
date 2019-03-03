@@ -118,7 +118,7 @@ public class AddEdge {
   public static SpaceManager spaceManager =
       new SpaceManager(minx, miny, maxx, maxy, piecesX, piecesY);
 
-  public void evaluateQuery() throws Exception {
+  public void evaluateInsertionByQuery() throws Exception {
     double MG, MR;
     MaintenanceStrategy strategy;
     Expand expand;
@@ -128,7 +128,7 @@ public class AddEdge {
     expand = Expand.SIMPLEGRAPHTRAVERSAL;
     strategy = MaintenanceStrategy.LIGHTWEIGHT;
     iniPaths();
-    runQueryLightweightStrategy(MG, MR, strategy, expand);
+    evaluateInsertionByQuery(MG, MR, strategy, expand);
     // strategy = MaintenanceStrategy.RECONSTRUCT;
     // iniPaths();
     // runQueryLightweightStrategy(MG, MR, strategy, expand);
@@ -165,7 +165,7 @@ public class AddEdge {
 
   }
 
-  public void runQueryLightweightStrategy(double MG, double MR, MaintenanceStrategy strategy,
+  public void evaluateInsertionByQuery(double MG, double MR, MaintenanceStrategy strategy,
       Expand expand) throws Exception {
     boolean clearCache = false;
     boolean hotDB = true;
