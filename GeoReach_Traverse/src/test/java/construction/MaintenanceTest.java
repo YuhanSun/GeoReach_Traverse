@@ -315,7 +315,7 @@ public class MaintenanceTest {
 
       Node src = dbservice.getNodeById(start);
       Node trg = dbservice.getNodeById(end);
-      maintenance.addEdgeAndUpdateIndex(src, trg);
+      maintenance.addEdgeAndUpdateIndexLightweight(src, trg);
     }
 
     ArrayList<VertexGeoReachList> index =
@@ -349,7 +349,7 @@ public class MaintenanceTest {
     Neo4jGraphUtility.printNode(src);
     Neo4jGraphUtility.printNode(trg);
 
-    maintenance.addEdgeAndUpdateIndex(src, trg);
+    maintenance.addEdgeAndUpdateIndexLightweight(src, trg);
 
     Neo4jGraphUtility.printNode(src);
     Neo4jGraphUtility.printNode(trg);
@@ -406,7 +406,7 @@ public class MaintenanceTest {
         IndexConstruct.generateTypeListForList(index, MAX_HOP, spaceManager, MG, MR, MC);
     Node src = dbservice.getNodeById(srcId);
     Node trg = dbservice.getNodeById(trgId);
-    maintenance.addEdgeAndUpdateIndex(src, trg);
+    maintenance.addEdgeAndUpdateIndexLightweight(src, trg);
     validateAllNodeIndex(maintenance, index, typesList, graph_pos_map_list);
   }
 

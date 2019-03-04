@@ -1,6 +1,7 @@
 package experiment;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -66,15 +67,15 @@ public class AddEdge {
   public static void main(String[] args) throws Exception {
     try {
       AddEdge addEdge = new AddEdge();
-      addEdge.iniPaths();
 
       // Run once to generate the inserted edges
+      // addEdge.iniPaths();
       // addEdge.generateEdges();
-      addEdge.generateEdgesAttach();
+      // addEdge.generateEdgesAttach();
 
       // Evaluate three set-up of MG, MR and test the run time of edge insertion
-      // addEdge.iniPaths();
-      // addEdge.evaluate();
+      addEdge.iniPaths();
+      addEdge.evaluateEdgeInsertion();
 
       // Generate the db with the accurate index after insertion.
       // addEdge.iniPaths();
@@ -286,7 +287,6 @@ public class AddEdge {
    * @throws Exception
    */
   public void evaluateEdgeInsertion() throws Exception {
-    double MG, MR;
     readGraph();
     if (!Util.pathExist(dataDir)) {
       new File(dataDir).mkdirs();
@@ -296,24 +296,24 @@ public class AddEdge {
     }
 
     // // All reachgrid
-    MG = 1.0;
-    MR = 2.0;
-    evaluateEdgeInsersion(MG, MR, 0);
+    // evaluateEdgeInsersion(1.0, 2.0, 0.25, MaintenanceStrategy.LIGHTWEIGHT);
+    // evaluateEdgeInsersion(1.0, 2.0, 0.5, MaintenanceStrategy.LIGHTWEIGHT);
+    // evaluateEdgeInsersion(1.0, 2.0, 1.0, MaintenanceStrategy.LIGHTWEIGHT);
     //
     // // All rmbr
-    // MG = -1;
-    // MR = 2;
-    // evaluate(MG, MR, 0);
+    evaluateEdgeInsersion(-1, 2.0, 0.25, MaintenanceStrategy.LIGHTWEIGHT);
+    evaluateEdgeInsersion(-1, 2.0, 0.5, MaintenanceStrategy.LIGHTWEIGHT);
+    evaluateEdgeInsersion(-1, 2.0, 1.0, MaintenanceStrategy.LIGHTWEIGHT);
     //
     // // All GeoB
-    // MG = -1;
-    // MR = -1;
-    // evaluate(MG, MR, 0);
+    evaluateEdgeInsersion(-1, -1, 0.25, MaintenanceStrategy.LIGHTWEIGHT);
+    evaluateEdgeInsersion(-1, -1, 0.5, MaintenanceStrategy.LIGHTWEIGHT);
+    evaluateEdgeInsersion(-1, -1, 1.0, MaintenanceStrategy.LIGHTWEIGHT);
 
-    // MG = 0.5;
-    // MR = 2.0;
-    // evaluate(MG, MR, 0);
-
+    // MG = 0.5, ReachGrid + RMBR
+    evaluateEdgeInsersion(0.5, 2.0, 0.25, MaintenanceStrategy.LIGHTWEIGHT);
+    evaluateEdgeInsersion(0.5, 2.0, 0.5, MaintenanceStrategy.LIGHTWEIGHT);
+    evaluateEdgeInsersion(0.5, 2.0, 1.0, MaintenanceStrategy.LIGHTWEIGHT);
   }
 
   /**
@@ -324,7 +324,8 @@ public class AddEdge {
    * @param testCount how many edges in the edge.txt file will be tested
    * @throws Exception
    */
-  public void evaluateEdgeInsersion(double MG, double MR, int testCount) throws Exception {
+  public void evaluateEdgeInsersion(double MG, double MR, double testRatio,
+      MaintenanceStrategy strategy) throws Exception {
     String dbFileName = Neo4jGraphUtility.getDbNormalName(piecesX, piecesY, MG, MR, MC, MAX_HOP);
     dbPath = dataDir + "/" + dbFileName;
     // mapPath is initialized before loadGraphAndIndex because its value will be used.
@@ -356,9 +357,7 @@ public class AddEdge {
     Maintenance maintenance = new Maintenance(spaceManager, MAX_HOP, MG, MR, MC, service);
     Util.println("Read edges from " + edgePath + "...");
     List<Edge> edges = GraphUtil.readEdges(edgePath);
-    if (testCount == 0) {
-      testCount = edges.size();
-    }
+    int testCount = (int) (edges.size() * testRatio);
     List<Edge> edgesNeo4j = new ArrayList<>(testCount);
     int i = 0;
     for (Edge edge : edges) {
@@ -370,8 +369,24 @@ public class AddEdge {
       }
     }
     Util.println("maintenance test...");
-    addEdgeMaintenance(edgesNeo4j, maintenance);
+    ResultRecord resultRecord = addEdgeMaintenance(edgesNeo4j, maintenance, strategy);
     service.shutdown();
+
+    String resultPath = resultDir + "/add_edge_time.txt";
+    FileWriter writer = new FileWriter(resultPath, true);
+    writer.write(String.format("MAX_HOP=%d, MG=%s, MR=%s, strategy=%s\n", MAX_HOP,
+        String.valueOf(MG), String.valueOf(MR), strategy));
+    writer.write(String.format("insertion count: %d\n", edgesNeo4j.size()));
+    writer.write(String.format("total time: %d\n", resultRecord.runTime));
+    writer.write(
+        String.format("average time: %f\n", (double) resultRecord.runTime / edgesNeo4j.size()));
+    writer.write(String.format("commit time: %d\n", resultRecord.commitTime));
+    writer.write(String.format("visited count: %d\n", resultRecord.visitedCount));
+    writer.write(String.format("average visited count: %f\n",
+        (double) resultRecord.visitedCount / edgesNeo4j.size()));
+
+    writer.write("\n");
+    writer.close();
   }
 
   /**
@@ -448,27 +463,33 @@ public class AddEdge {
    * @param maintenance
    * @throws Exception
    */
-  public static void addEdgeMaintenance(List<Edge> edges, Maintenance maintenance)
-      throws Exception {
+  public static ResultRecord addEdgeMaintenance(List<Edge> edges, Maintenance maintenance,
+      MaintenanceStrategy strategy) throws Exception {
     GraphDatabaseService service = maintenance.service;
     Transaction tx = service.beginTx();
-    long time = System.currentTimeMillis();
+    long totalTime = 0, visitedCount = 0;
     for (Edge edge : edges) {
       // Util.println(edge.toString());
       Node src = service.getNodeById(edge.start);
       Node trg = service.getNodeById(edge.end);
-      maintenance.addEdgeAndUpdateIndex(src, trg);
+      long time = System.currentTimeMillis();
+      if (strategy.equals(MaintenanceStrategy.LIGHTWEIGHT)) {
+        maintenance.addEdgeAndUpdateIndexLightweight(src, trg);
+      }
+      totalTime += System.currentTimeMillis() - time;
+      visitedCount += maintenance.visitedCount;
     }
-    long totalTime = System.currentTimeMillis() - time;
     Util.println(String.format("MG = %s, MR = %s", String.valueOf(maintenance.MG),
         String.valueOf(maintenance.MR)));
     Util.println("total time: " + totalTime);
     double avgTime = (double) totalTime / edges.size();
     Util.println("average time: " + avgTime);
-    time = System.currentTimeMillis();
+    long time = System.currentTimeMillis();
     tx.success();
     tx.close();
-    Util.println("commit time: " + String.valueOf(System.currentTimeMillis() - time));
+    long commitTime = System.currentTimeMillis() - time;
+    Util.println("commit time: " + String.valueOf(commitTime));
+    return new ResultRecord(totalTime, commitTime, visitedCount, -1);
   }
 
 

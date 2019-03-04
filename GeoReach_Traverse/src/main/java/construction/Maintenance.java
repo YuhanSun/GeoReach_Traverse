@@ -91,7 +91,7 @@ public class Maintenance {
         MR, MC, service);
   }
 
-  public void addEdgeAndUpdateIndex(Node src, Node trg) throws Exception {
+  public void addEdgeAndUpdateIndexLightweight(Node src, Node trg) throws Exception {
     visitedCount = 0;
     src.createRelationshipTo(trg, GraphRel.GRAPH_LINK);
     updateOneDirectionAddEdge(src, trg);
