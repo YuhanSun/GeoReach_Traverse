@@ -8,9 +8,9 @@ public class Edge {
     this.start = start;
     this.end = end;
   }
-  
+
   @Override
   public String toString() {
-    return String.format("(%d,%d)", start, end);
+    return String.format("%d,%d", start, end);
   }
 }
