@@ -10,6 +10,14 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
 public class Neo4jGraphUtility {
 
+  /**
+   * Assume that the property exists. Otherwise throw exception.
+   *
+   * @param node
+   * @param property
+   * @return
+   * @throws Exception
+   */
   public static Object getNodeProperty(Node node, String property) throws Exception {
     if (!node.hasProperty(property)) {
       Neo4jGraphUtility.printNode(node);
