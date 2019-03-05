@@ -6,7 +6,10 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import org.neo4j.graphdb.traversal.Evaluators;
+import org.neo4j.graphdb.traversal.TraversalDescription;
 
 public class Neo4jGraphUtility {
 
@@ -51,6 +54,14 @@ public class Neo4jGraphUtility {
       int MAX_HOP) {
     return String.format("%d_%d_%d_%d_%d_%d", piecesX, piecesY, (int) (MG * 100), (int) (MR * 100),
         MC, MAX_HOP);
+  }
+
+
+  public static ResourceIterable<Node> getNeighborsWithinHop(GraphDatabaseService service,
+      Node node, RelationshipType relationshipType, int hop) {
+    TraversalDescription td = service.traversalDescription().depthFirst()
+        .relationships(relationshipType).evaluator(Evaluators.toDepth(hop));
+    return td.traverse(node).nodes();
   }
 
   /**
