@@ -25,6 +25,7 @@ import commons.EnumVariables.GeoReachOutputFormat;
 import commons.EnumVariables.GeoReachType;
 import commons.GeoReachIndexUtil;
 import commons.GraphUtil;
+import commons.Labels.GraphRel;
 import commons.MyRectangle;
 import commons.Neo4jGraphUtility;
 import commons.ReadWriteUtil;
@@ -136,6 +137,9 @@ public class MaintenanceTest {
     ClassLoader classLoader = getClass().getClassLoader();
     File file = new File(classLoader.getResource("").getFile());
     homeDir = file.getAbsolutePath();
+
+    homeDir = "D:\\Ubuntu_shared\\GeoReachHop\\test";
+
     dataDir = homeDir + "/data/" + dataset;
 
     if (!Util.pathExist(dataDir)) {
@@ -264,7 +268,7 @@ public class MaintenanceTest {
     }
     Transaction tx = dbservice.beginTx();
     Maintenance maintenance = new Maintenance(spaceManager, MAX_HOP, MG, MR, MC, dbservice);
-    validateAllNodeIndex(maintenance, index, typesList, graph_pos_map_list);
+    validateAllNodeIndex(maintenance, index, typesList, graph_pos_map_list, true);
     tx.success();
     tx.close();
   }
@@ -300,14 +304,31 @@ public class MaintenanceTest {
 
   @Test
   public void addEdgeSetTestReadEdges() throws Exception {
-    loadGraph();
-    constructAndLoadIndex();
+    // loadGraph();
+    // constructAndLoadIndex();
+
+    readGraph();
+    graph_pos_map_list = ReadWriteUtil.readMapToArray(mapPath);
+
+    if (dbservice == null) {
+      dbservice = Neo4jGraphUtility.getDatabaseService(dbPath);
+    }
     Transaction tx = dbservice.beginTx();
     Maintenance maintenance = new Maintenance(spaceManager, MAX_HOP, MG, MR, MC, dbservice);
 
     String edgePath = "D:\\Google_Drive\\Projects\\GeoReachHop\\query\\Yelp\\edges.txt";
     List<Edge> edges = GraphUtil.readEdges(edgePath);
+    double testRatio = 0.25;
+    int testCount = (int) (testRatio * edges.size());
+    testCount = 20;
+    int i = 0;
     for (Edge edge : edges) {
+      Util.println(edge);
+      Util.println(i);
+      if (i == testCount) {
+        break;
+      }
+      i++;
       int start = (int) edge.start;
       int end = (int) edge.end;
       graph.get(start).add(end);
@@ -315,7 +336,8 @@ public class MaintenanceTest {
 
       Node src = dbservice.getNodeById(start);
       Node trg = dbservice.getNodeById(end);
-      maintenance.addEdgeAndUpdateIndexLightweight(src, trg);
+      // maintenance.addEdgeAndUpdateIndexLightweight(src, trg);
+      maintenance.addEdgeAndUpdateIndexReconstruct(src, trg);
     }
 
     ArrayList<VertexGeoReachList> index =
@@ -323,10 +345,11 @@ public class MaintenanceTest {
     ArrayList<ArrayList<Integer>> typesList =
         IndexConstruct.generateTypeListForList(index, MAX_HOP, spaceManager, MG, MR, MC);
 
-    validateAllNodeIndex(maintenance, index, typesList, graph_pos_map_list);
+    validateAllNodeIndex(maintenance, index, typesList, graph_pos_map_list, true);
 
     tx.success();
     tx.close();
+
     maintenance.shutdown();
     dbservice = null;
   }
@@ -340,22 +363,26 @@ public class MaintenanceTest {
   public void addEdgeSingleTest() throws Exception {
     loadGraph();
     constructAndLoadIndex();
+
+    // readGraph();
+
+    if (dbservice == null) {
+      dbservice = Neo4jGraphUtility.getDatabaseService(dbPath);
+    }
     Transaction tx = dbservice.beginTx();
     Maintenance maintenance = new Maintenance(spaceManager, MAX_HOP, MG, MR, MC, dbservice);
 
-    int srcID = 552372, trgID = 501019;
+    int srcID = 499488, trgID = 564550;
     Node src = dbservice.getNodeById(srcID);
     Node trg = dbservice.getNodeById(trgID);
     Neo4jGraphUtility.printNode(src);
     Neo4jGraphUtility.printNode(trg);
 
-    maintenance.addEdgeAndUpdateIndexLightweight(src, trg);
+    maintenance.addEdgeAndUpdateIndexReconstruct(src, trg);
+    // maintenance.addEdgeAndUpdateIndexLightweight(src, trg);
 
     Neo4jGraphUtility.printNode(src);
     Neo4jGraphUtility.printNode(trg);
-
-    tx.success();
-    tx.close();
 
     graph.get(srcID).add(trgID);
     graph.get(trgID).add(srcID);
@@ -365,10 +392,15 @@ public class MaintenanceTest {
     ArrayList<ArrayList<Integer>> typesList =
         IndexConstruct.generateTypeListForList(index, MAX_HOP, spaceManager, MG, MR, MC);
 
-    tx = dbservice.beginTx();
     Neo4jGraphUtility.printNode(dbservice.getNodeById(srcID));
-    validateSingleNodeIndex(maintenance, index.get(srcID), typesList.get(srcID),
-        dbservice.getNodeById(srcID));
+    ResourceIterable<Node> testNodes =
+        Neo4jGraphUtility.getNeighborsWithinHop(dbservice, trg, GraphRel.GRAPH_LINK, 2);
+
+    for (Node node : testNodes) {
+      Neo4jGraphUtility.printNode(node);
+      int id = (int) node.getProperty("id");
+      validateSingleNodeIndex(maintenance, index.get(id), typesList.get(id), node);
+    }
 
     tx.success();
     tx.close();
@@ -407,7 +439,7 @@ public class MaintenanceTest {
     Node src = dbservice.getNodeById(srcId);
     Node trg = dbservice.getNodeById(trgId);
     maintenance.addEdgeAndUpdateIndexLightweight(src, trg);
-    validateAllNodeIndex(maintenance, index, typesList, graph_pos_map_list);
+    validateAllNodeIndex(maintenance, index, typesList, graph_pos_map_list, true);
   }
 
   /**
@@ -420,11 +452,13 @@ public class MaintenanceTest {
    * @throws Exception
    */
   public void validateAllNodeIndex(Maintenance maintenance, List<VertexGeoReachList> index,
-      ArrayList<ArrayList<Integer>> typesList, long[] graph_pos_map_list) throws Exception {
+      ArrayList<ArrayList<Integer>> typesList, long[] graph_pos_map_list, boolean stop)
+      throws Exception {
     if (index.size() != typesList.size()) {
       throw new Exception("index size is different from that of typesList!");
     }
 
+    int falseCount = 0;
     Iterator<VertexGeoReachList> iterIndex = index.iterator();
     Iterator<ArrayList<Integer>> iterTypes = typesList.iterator();
     int id = 0;
@@ -433,11 +467,20 @@ public class MaintenanceTest {
       List<Integer> types = iterTypes.next();
       long neo4jID = graph_pos_map_list[id];
       Node node = dbservice.getNodeById(neo4jID);
+      // Util.println(node);
       if (!validateSingleNodeIndex(maintenance, nodeIndex, types, node)) {
-        throw new Exception(String.format("Node %d at %s index inconsistency!", id, node));
+        if (stop) {
+          throw new Exception(String.format("Node %d at %s index inconsistency!", id, node));
+        } else {
+          falseCount++;
+        }
       }
       id++;
     }
+    if (falseCount > 0) {
+      throw new Exception(falseCount + " nodes have the wrong index!");
+    }
+    Util.println("false count: " + falseCount);
   }
 
   /**
@@ -459,6 +502,7 @@ public class MaintenanceTest {
         Util.println(String.format(
             "GeoReachType on %d hop of %s inconsistency. Type on node is %s while on index is %s!",
             hop, node, typeOnNode, typeOnIndex));
+        Util.println(nodeIndex);
         return false;
       }
       switch (typeOnNode) {

@@ -1,5 +1,6 @@
 package construction;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -8,9 +9,11 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.roaringbitmap.RoaringBitmap;
 import org.roaringbitmap.buffer.ImmutableRoaringBitmap;
+import org.roaringbitmap.buffer.MutableRoaringBitmap;
 import commons.Config;
 import commons.EnumVariables.BoundaryLocationStatus;
 import commons.EnumVariables.GeoReachType;
+import commons.EnumVariables.MaintenanceStrategy;
 import commons.EnumVariables.UpdateStatus;
 import commons.GeoReachIndexUtil;
 import commons.Labels;
@@ -91,6 +94,148 @@ public class Maintenance {
         MR, MC, service);
   }
 
+  private boolean isSpatialNode(Node node) {
+    return node.hasProperty(lon_name);
+  }
+
+  private double getLongitude(Node node) {
+    return (double) node.getProperty(lon_name);
+  }
+
+  private double getLatitude(Node node) {
+    return (double) node.getProperty(lat_name);
+  }
+
+  public void addEdgeAndUpdateIndex(Node src, Node trg, MaintenanceStrategy strategy)
+      throws Exception {
+    switch (strategy) {
+      case LIGHTWEIGHT:
+        addEdgeAndUpdateIndexLightweight(src, trg);
+        break;
+      case RECONSTRUCT:
+        addEdgeAndUpdateIndexReconstruct(src, trg);
+        break;
+      default:
+        break;
+    }
+  }
+
+  public void addEdgeAndUpdateIndexReconstruct(Node src, Node trg) throws Exception {
+    visitedCount = 0;
+    src.createRelationshipTo(trg, GraphRel.GRAPH_LINK);
+    reconstruct(src);
+    reconstruct(trg);
+  }
+
+  private void reconstruct(Node constructNode) throws Exception {
+    HashMap<Integer, UpdateUnit> geoReachAfterInsertion = reconstructGeoReach(constructNode);
+    HashMap<Node, HashSet<Integer>> nextUpdateNodes = new HashMap<>();
+    HashSet<Integer> srcUpdateHops = new HashSet<>();
+    for (int hop = 1; hop <= MAX_HOP; hop++) {
+      srcUpdateHops.add(hop);
+    }
+    update(constructNode, geoReachAfterInsertion, srcUpdateHops, -1, nextUpdateNodes);
+
+    HashMap<Node, HashSet<Integer>> currentUpdateNodes = nextUpdateNodes;
+
+    int dist = 0; // distance to the trg node
+    // hop on trg to be updated
+    for (; dist < MAX_HOP - 1;) {
+      visitedCount += currentUpdateNodes.size();
+      nextUpdateNodes = new HashMap<>();
+      for (Node node : currentUpdateNodes.keySet()) {
+        HashSet<Integer> curSrcUpdateHops = currentUpdateNodes.get(node);
+        update(node, geoReachAfterInsertion, curSrcUpdateHops, dist, nextUpdateNodes);
+      }
+      currentUpdateNodes = nextUpdateNodes;
+      dist++;
+    }
+  }
+
+  // private HashMap<Integer, UpdateUnit> isNodeGeoReachModified(Node node,
+  // HashMap<Integer, UpdateUnit> geoReachAfterInsertion) throws Exception {
+  // HashMap<Integer, UpdateUnit> updateUnits = new HashMap<>();
+  // for (int hop = 1; hop <= MAX_HOP; hop++) {
+  // GeoReachType type = getGeoReachType(node, hop);
+  // UpdateUnit unit = geoReachAfterInsertion.get(hop);
+  // switch (type) {
+  // case ReachGrid:
+  // ImmutableRoaringBitmap irbPrev = getReachGrid(node, hop);
+  // ImmutableRoaringBitmap irbAfter = unit.reachGrid;
+  // ImmutableRoaringBitmap irbDiff = ImmutableRoaringBitmap.andNot(irbAfter, irbPrev);
+  // UpdateUnit diffUnit = new UpdateUnit(null, irbDiff, unit.rmbr, unit.geoB);
+  // updateUnits.put(hop, diffUnit);
+  // break;
+  //
+  // default:
+  // break;
+  // }
+  // }
+  // return updateUnits;
+  // }
+
+  /**
+   * Reconstruct GeoReach for [0, B] hops.
+   *
+   * @param trg
+   * @return
+   */
+  private HashMap<Integer, UpdateUnit> reconstructGeoReach(Node trg) {
+    HashMap<Integer, UpdateUnit> updateUnits = new HashMap<>();
+    Collection<Node> curLevelNodes = new HashSet<>();
+    curLevelNodes.add(trg);
+    for (int i = 0; i <= MAX_HOP; i++) {
+      UpdateUnit unit = constructUnit(curLevelNodes);
+      updateUnits.put(i, unit);
+
+      Collection<Node> nextLevelNodes = new HashSet<>();
+      for (Node node : curLevelNodes) {
+        Iterable<Relationship> relationships = node.getRelationships();
+        for (Relationship relationship : relationships) {
+          Node neighbor = relationship.getOtherNode(node);
+          nextLevelNodes.add(neighbor);
+        }
+      }
+      curLevelNodes = nextLevelNodes;
+    }
+    return updateUnits;
+  }
+
+  /**
+   * Construct the UpdateUnit for a collection of nodes. Type is not important in current case. But
+   * may need to be modified if used for other purpose.
+   *
+   * @param nodes
+   * @return
+   */
+  private UpdateUnit constructUnit(Collection<Node> nodes) {
+    MutableRoaringBitmap rb = new MutableRoaringBitmap();
+    MyRectangle rmbr = null;
+    boolean GeoB = false;
+    for (Node node : nodes) {
+      if (isSpatialNode(node)) {
+        double lon = getLongitude(node);
+        double lat = getLatitude(node);
+        int id = spaceManager.getId(lon, lat);
+        rb.add(id);
+        if (rmbr == null) {
+          rmbr = new MyRectangle(lon, lat, lon, lat);
+        } else {
+          rmbr.MBR(new MyRectangle(lon, lat, lon, lat));
+        }
+        GeoB = true;
+      }
+    }
+    switch (rb.getCardinality()) {
+      case 0:
+        return new UpdateUnit(GeoReachType.GeoB, null, null, GeoB);
+      case 1:
+        return new UpdateUnit(GeoReachType.RMBR, rb, rmbr, GeoB);
+      default:
+        return new UpdateUnit(GeoReachType.ReachGrid, rb, rmbr, GeoB);
+    }
+  }
+
   public void addEdgeAndUpdateIndexLightweight(Node src, Node trg) throws Exception {
     visitedCount = 0;
     src.createRelationshipTo(trg, GraphRel.GRAPH_LINK);
@@ -130,7 +275,7 @@ public class Maintenance {
       srcUpdateHops.add(i);
     }
     currentUpdateNodes.put(src, srcUpdateHops);
-    int dist = 0;
+    int dist = 0; // distance to the src node
     // hop on src to be updated
     for (int hop = MAX_HOP; hop >= minHop + 1; hop--) {
       visitedCount += currentUpdateNodes.size();
@@ -154,9 +299,9 @@ public class Maintenance {
     HashMap<Integer, UpdateUnit> updateUnits = new HashMap<>();
     // Neo4jGraphUtility.printNode(node);
     // handle the SIP(node, 0)
-    if (node.hasProperty(lon_name)) {
-      double lon = (Double) node.getProperty(lon_name);
-      double lat = (Double) node.getProperty(lat_name);
+    if (isSpatialNode(node)) {
+      double lon = getLongitude(node);
+      double lat = getLatitude(node);
       int id = spaceManager.getId(lon, lat);
       RoaringBitmap roaringBitmap = new RoaringBitmap();
       roaringBitmap.add(id);
@@ -207,7 +352,8 @@ public class Maintenance {
    *
    * @param node
    * @param updateUnits
-   * @param srcUpdateHops the required hops to be updated on node
+   * @param srcUpdateHops
+   * @param dist
    * @param nextUpdateNodes
    * @throws Exception
    */
@@ -222,6 +368,10 @@ public class Maintenance {
         while (iterator.hasNext()) {
           Relationship relationship = iterator.next();
           Node neighbor = relationship.getOtherNode(node);
+          // debug
+          if (neighbor.getId() == 1719) {
+            Util.println("here");
+          }
           if (!nextUpdateNodes.containsKey(neighbor)) {
             nextUpdateNodes.put(neighbor, new HashSet<>());
           }
@@ -248,6 +398,9 @@ public class Maintenance {
     UpdateStatus status = null;
     GeoReachType geoReachType = getGeoReachType(src, srcUpdateHop);
     int trgHopInUnit = srcUpdateHop - dist - 1;
+    // Debug
+    Util.println("trghop: " + trgHopInUnit);
+    Util.println("dist: " + dist);
     // the hop in unit that is used to update the src
     UpdateUnit updateUnit = updateUnits.get(trgHopInUnit);
     switch (geoReachType) {
@@ -279,14 +432,32 @@ public class Maintenance {
         break;
       case RMBR:
         MyRectangle srcRect = getRMBR(src, srcUpdateHop);
-        status = srcRect.MBR(updateUnit.rmbr);
-        if (status.equals(UpdateStatus.UpdateOutside)) {
-          if (validateMR(srcRect)) {
-            src.setProperty(getGeoReachKey(GeoReachType.RMBR, srcUpdateHop), srcRect.toString());
-          } else {
+        if (Util.rectLocatedInRect(updateUnit.rmbr, srcRect)) {
+          return UpdateStatus.NotUpdateInside;
+        }
+        ImmutableRoaringBitmap irbSrc = spaceManager.getCoverIdOfRectangle(srcRect);
+        int[] xyBoundarySrc = spaceManager.getXYBoundary(srcRect);
+        RoaringBitmap rbSrc = new RoaringBitmap(irbSrc);
+        UpdateStatus reachGridStatus =
+            updateReachGridWithReachGrid(rbSrc, updateUnit.reachGrid, xyBoundarySrc);
+        if (!reachGridStatus.equals(UpdateStatus.NotUpdateInside)
+            && !reachGridStatus.equals(UpdateStatus.NotUpdateOnBoundary)) {
+          if (validateMG(rbSrc, xyBoundarySrc)) {
+            // change the GeoReach Type to reachgrid and modify ReachGrid value in db
             removeGeoReach(src, GeoReachType.RMBR, srcUpdateHop);
-            setGeoReachType(src, srcUpdateHop, GeoReachType.GeoB);
-            src.setProperty(getGeoReachKey(GeoReachType.GeoB, srcUpdateHop), true);
+            setGeoReachType(src, srcUpdateHop, GeoReachType.ReachGrid);
+            setReachGrid(src, srcUpdateHop, rbSrc);
+            return reachGridStatus;
+          } else {
+            status = srcRect.MBR(updateUnit.rmbr);
+            if (validateMR(srcRect)) {
+              src.setProperty(getGeoReachKey(GeoReachType.RMBR, srcUpdateHop), srcRect.toString());
+            } else {
+              removeGeoReach(src, GeoReachType.RMBR, srcUpdateHop);
+              setGeoReachType(src, srcUpdateHop, GeoReachType.GeoB);
+              src.setProperty(getGeoReachKey(GeoReachType.GeoB, srcUpdateHop), true);
+            }
+            return status;
           }
         }
         break;
@@ -314,6 +485,9 @@ public class Maintenance {
       }
       // update spatial relation status
       BoundaryLocationStatus boundaryStatus = Util.locate(boundary, xyId);
+      if (boundaryStatus.equals(BoundaryLocationStatus.OUTSIDE)) {
+        Util.extendBoundary(boundary, xyId);
+      }
       status = updateBoundaryLocationStatus(status, boundaryStatus);
     }
     return getUpdateStatus(status, hasDiff);
@@ -339,8 +513,9 @@ public class Maintenance {
         if (updateUnit.geoB) {
           src.setProperty(getGeoReachKey(GeoReachType.GeoB, srcUpdateHop), true);
           return UpdateStatus.UpdateOutside;
+        } else {
+          return UpdateStatus.NotUpdateInside;
         }
-        break;
       case RMBR:
         setGeoReachType(src, srcUpdateHop, GeoReachType.RMBR);
         src.setProperty(getGeoReachKey(GeoReachType.RMBR, srcUpdateHop),
@@ -472,11 +647,27 @@ public class Maintenance {
     // node.setProperty(reachGridListName + "_" + hop, ArrayUtil.iterableToList(rb).toString());
   }
 
+  /**
+   * Assume that Type of hop is RMBR and the property exists.
+   *
+   * @param node
+   * @param hop
+   * @return
+   * @throws Exception
+   */
   public MyRectangle getRMBR(Node node, int hop) throws Exception {
     String property = rmbrName + "_" + hop;
     return new MyRectangle(Neo4jGraphUtility.getNodeProperty(node, property).toString());
   }
 
+  /**
+   * Assume that Type of hop is GeoB and the property exists.
+   *
+   * @param node
+   * @param hop
+   * @return
+   * @throws Exception
+   */
   public boolean getGeoB(Node node, int hop) throws Exception {
     String property = geoBName + "_" + hop;
     return (boolean) Neo4jGraphUtility.getNodeProperty(node, property);

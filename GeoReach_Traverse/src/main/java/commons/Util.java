@@ -25,6 +25,17 @@ import commons.EnumVariables.BoundaryLocationStatus;
 
 public class Util {
 
+  public static void extendBoundary(int[] boundary, int[] xyId) {
+    extendBoundary(boundary, xyId[0], xyId[1]);
+  }
+
+  public static void extendBoundary(int[] boundary, int idX, int idY) {
+    boundary[0] = Math.min(boundary[0], idX);
+    boundary[1] = Math.min(boundary[1], idY);
+    boundary[2] = Math.max(boundary[2], idX);
+    boundary[3] = Math.max(boundary[3], idY);
+  }
+
   /**
    * Detect location of the [idX, idY] w.r.t. the boundary.
    *
@@ -354,6 +365,22 @@ public class Util {
         res.put(element, 1);
     }
     return res;
+  }
+
+
+  /**
+   * Decide whether rect1 is located in rect2.
+   *
+   * @param rect1
+   * @param rect2
+   * @return
+   */
+  public static boolean rectLocatedInRect(MyRectangle rect1, MyRectangle rect2) {
+    if (Location_In_Rect(rect1.min_x, rect1.min_y, rect2) == false
+        || Location_In_Rect(rect1.max_x, rect1.max_y, rect2) == false) {
+      return false;
+    }
+    return true;
   }
 
   /**

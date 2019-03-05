@@ -170,7 +170,8 @@ public class SpaceManager {
   public int[] getXYBoundary(MyRectangle rmbr) {
     int[] xyLB = getXYId(rmbr.min_x, rmbr.min_y);
     int[] xyRT = getXYId(rmbr.max_x, rmbr.max_y);
-    return new int[] {xyLB[0], xyLB[1], xyRT[0], xyRT[1]};
+    return new int[] {xyLB[0], xyLB[1], xyRT[0], xyRT[1],
+        (xyRT[1] - xyLB[1] + 1) * (xyRT[1] - xyLB[0] + 1)};
   }
 
   /**
