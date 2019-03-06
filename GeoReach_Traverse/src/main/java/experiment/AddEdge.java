@@ -352,9 +352,6 @@ public class AddEdge {
     mapPath = dataDir + "/" + mapFileName;
     loadGraphAndIndex(MG, MR);
 
-    if (!Util.pathExist(testDir)) {
-      new File(testDir).mkdirs();
-    }
     switch (strategy) {
       case LIGHTWEIGHT:
         testDir = dataDir + "/" + afterAddLightweightDirName;
@@ -362,6 +359,12 @@ public class AddEdge {
       case RECONSTRUCT:
         testDir = dataDir + "/" + afterAddAccurateDirName;
         break;
+    }
+    if (!Util.pathExist(testDir)) {
+      Util.println("make dir: " + testDir);
+      new File(testDir).mkdirs();
+    } else {
+      Util.println(testDir + " already exists");
     }
     String testDbPath = testDir + "/" + dbFileName;
     // If the testDb dir exists, remove it.
