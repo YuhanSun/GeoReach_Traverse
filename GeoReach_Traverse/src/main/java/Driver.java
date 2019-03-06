@@ -82,6 +82,7 @@ public class Driver {
                 Double.parseDouble(cmd.getOptionValue(MR)),
                 Double.parseDouble(cmd.getOptionValue(testRatio)),
                 MaintenanceStrategy.valueOf(cmd.getOptionValue(strategy)));
+            break;
           case query:
             addEdge.iniPaths(cmd.getOptionValue(homeDir), cmd.getOptionValue(resultDir),
                 cmd.getOptionValue(dataset));
@@ -89,6 +90,7 @@ public class Driver {
                 Double.parseDouble(cmd.getOptionValue(MR)),
                 MaintenanceStrategy.valueOf(cmd.getOptionValue(strategy)),
                 Expand.valueOf(cmd.getOptionValue(expand)));
+            break;
           default:
             Util.println(String.format("Function %s does not exist!", functionNameString));
             break;
