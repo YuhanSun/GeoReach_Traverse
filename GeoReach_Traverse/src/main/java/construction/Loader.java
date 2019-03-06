@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.Map;
 import org.neo4j.unsafe.batchinsert.BatchInserter;
 import org.neo4j.unsafe.batchinsert.BatchInserters;
+import org.roaringbitmap.buffer.ImmutableRoaringBitmap;
+import commons.ArrayUtil;
 import commons.Config;
 import commons.Entity;
 import commons.EnumVariables.Datasets;
@@ -148,9 +150,9 @@ public class Loader {
             case 0:
               inserter.setNodeProperty(neo4j_ID, reachGridName + "_" + j, strList[1]);
               // debug
-              // ImmutableRoaringBitmap rBitmap = Util.getImmutableRoaringBitmap(strList[1]);
-              // inserter.setNodeProperty(neo4j_ID, reachGridListName + "_" + j,
-              // ArrayUtil.iterableToList(rBitmap).toString());
+              ImmutableRoaringBitmap rBitmap = Util.getImmutableRoaringBitmap(strList[1]);
+              inserter.setNodeProperty(neo4j_ID, reachGridListName + "_" + j,
+                  ArrayUtil.iterableToList(rBitmap).toString());
               break;
             case 1:
               inserter.setNodeProperty(neo4j_ID, rmbrName + "_" + j, strList[1]);
