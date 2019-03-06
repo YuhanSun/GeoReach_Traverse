@@ -225,9 +225,6 @@ public class AddEdge {
    * @throws Exception
    */
   public void generateAccurateDbAfterAddEdge() throws Exception {
-    readGraphEntityAndLabelList();
-    addEdgesToGraph();
-
     double MG, MR;
 
     // MG = 1.0;
@@ -261,6 +258,8 @@ public class AddEdge {
    * @throws Exception
    */
   public void generateAccurateDbAfterAddEdges(double MG, double MR) throws Exception {
+    readGraphEntityAndLabelList();
+    addEdgesToGraph();
     String dbFileName = Neo4jGraphUtility.getDbNormalName(piecesX, piecesY, MG, MR, MC, MAX_HOP);
     dataDir += "/" + afterAddAccurateDirName;
     if (!Util.pathExist(dataDir)) {
