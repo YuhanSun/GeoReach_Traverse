@@ -259,7 +259,7 @@ public class AddEdge {
    */
   public void generateAccurateDbAfterAddEdges(double MG, double MR) throws Exception {
     readGraphEntityAndLabelList();
-    addEdgesToGraph();
+    addEdgesToGraph(0.5);
     String dbFileName = Neo4jGraphUtility.getDbNormalName(piecesX, piecesY, MG, MR, MC, MAX_HOP);
     dataDir += "/" + afterAddAccurateDirName;
     if (!Util.pathExist(dataDir)) {
@@ -290,13 +290,30 @@ public class AddEdge {
    * @throws Exception
    */
   public void addEdgesToGraph() throws Exception {
+    addEdgesToGraph(1.0);
+  }
+
+  /**
+   * Add edges in edge.txt to the original graph. This can ensure that the neighbors are sorted by
+   * id.
+   *
+   * @param ratio the number of added edges to the total number of edges in edge.txt
+   * @throws Exception
+   */
+  public void addEdgesToGraph(double ratio) throws Exception {
     List<Edge> edges = GraphUtil.readEdges(edgePath);
     List<Collection<Integer>> treeSetGraph = GraphUtil.convertListGraphToTreeSetGraph(graph);
+    int count = (int) (ratio * edges.size());
+    int i = 0;
     for (Edge edge : edges) {
+      if (i == count) {
+        break;
+      }
       int start = (int) edge.start;
       int end = (int) edge.end;
       treeSetGraph.get(start).add(end);
       treeSetGraph.get(end).add(start);
+      i++;
     }
     graph = GraphUtil.convertCollectionGraphToArrayList(treeSetGraph);
   }
