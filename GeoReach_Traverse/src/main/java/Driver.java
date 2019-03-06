@@ -74,21 +74,21 @@ public class Driver {
         FunctionName functionName = FunctionName.valueOf(functionNameString);
         AddEdge addEdge = new AddEdge();
         switch (functionName) {
-          case query:
-            addEdge.iniPaths(cmd.getOptionValue(homeDir), cmd.getOptionValue(resultDir),
-                cmd.getOptionValue(dataset));
-            addEdge.readGraphEntityAndLabelList();
-            addEdge.evaluateInsertionByQuery(Double.parseDouble(cmd.getOptionValue(MG)),
-                Double.parseDouble(cmd.getOptionValue(MR)),
-                MaintenanceStrategy.valueOf(cmd.getOptionValue(strategy)),
-                EnumVariables.Expand.valueOf(cmd.getOptionValue(expand)));
           case insertion:
             addEdge.iniPaths(cmd.getOptionValue(homeDir), cmd.getOptionValue(resultDir),
                 cmd.getOptionValue(dataset));
+            addEdge.readGraphEntityAndLabelList();
             addEdge.evaluateEdgeInsersion(Double.parseDouble(cmd.getOptionValue(MG)),
                 Double.parseDouble(cmd.getOptionValue(MR)),
                 Double.parseDouble(cmd.getOptionValue(testRatio)),
                 MaintenanceStrategy.valueOf(cmd.getOptionValue(strategy)));
+          case query:
+            addEdge.iniPaths(cmd.getOptionValue(homeDir), cmd.getOptionValue(resultDir),
+                cmd.getOptionValue(dataset));
+            addEdge.evaluateInsertionByQuery(Double.parseDouble(cmd.getOptionValue(MG)),
+                Double.parseDouble(cmd.getOptionValue(MR)),
+                MaintenanceStrategy.valueOf(cmd.getOptionValue(strategy)),
+                EnumVariables.Expand.valueOf(cmd.getOptionValue(expand)));
           default:
             Util.println(String.format("Function %s does not exist!", functionNameString));
             break;
