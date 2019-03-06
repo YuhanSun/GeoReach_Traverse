@@ -1,5 +1,5 @@
 #!/bin/bash
-
+./package.sh
 # server
 homeDir="/hdd/code/yuhansun"
 dataset="Yelp"
@@ -19,10 +19,10 @@ java -Xmx100g -jar ${jar_path} -h
 
 # run the query
 # create the db first
-java -Xmx100g -jar ${jar_path} -f insertion -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG 1.0 -MR 2.0 -testRatio 0.5 -us LIGHTWEIGHT
-# run the query
-java -Xmx100g -jar ${jar_path} -f query -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG 1.0 -MR 2.0 -us LIGHTWEIGHT -ex SPATRAVERSAL
+# java -Xmx100g -jar ${jar_path} -f insertion -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG 1.0 -MR 2.0 -testRatio 0.5 -us LIGHTWEIGHT
+java -Xmx100g -jar ${jar_path} -f insertion -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG -1.0 -MR 2.0 -testRatio 0.5 -us LIGHTWEIGHT
+java -Xmx100g -jar ${jar_path} -f insertion -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG -1.0 -MR -1.0 -testRatio 0.5 -us LIGHTWEIGHT
 
-# java -Xmx100g -jar ${jar_path} -f insertion -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG 1.0 -MR 2.0 -testRatio 0.5 -e LIGHTWEIGHT
-# java -Xmx100g -jar ${jar_path} -f insertion -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG 1.0 -MR 2.0 -testRatio 0.5 -e LIGHTWEIGHT
-# java -Xmx100g -jar ${jar_path} -f insertion -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG 1.0 -MR 2.0 -testRatio 0.5 -e LIGHTWEIGHT
+# run the query
+# java -Xmx100g -jar ${jar_path} -f query -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG 1.0 -MR 2.0 -us LIGHTWEIGHT -ex SPATRAVERSAL
+

@@ -209,7 +209,7 @@ public class AddEdge {
     graph_pos_map_list = ReadWriteUtil.readMapToArray(mapPath);
 
     String startIDPath = queryDir + "/" + config.getStartIDFileName();
-    int offset = 0, groupCount = 20, groupSize = 500;
+    int offset = 0, groupCount = 10, groupSize = 500;
     int length = 3;
     double startSelectivity = Math.pow(10, -4), endSelectivity = Math.pow(10, -1) * 2;
     int selectivityTimes = 10;
