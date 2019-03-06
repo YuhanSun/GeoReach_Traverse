@@ -5,7 +5,7 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-import commons.EnumVariables;
+import commons.EnumVariables.Expand;
 import commons.EnumVariables.MaintenanceStrategy;
 import commons.Util;
 import experiment.AddEdge;
@@ -88,7 +88,7 @@ public class Driver {
             addEdge.evaluateInsertionByQuery(Double.parseDouble(cmd.getOptionValue(MG)),
                 Double.parseDouble(cmd.getOptionValue(MR)),
                 MaintenanceStrategy.valueOf(cmd.getOptionValue(strategy)),
-                EnumVariables.Expand.valueOf(cmd.getOptionValue(expand)));
+                Expand.valueOf(cmd.getOptionValue(expand)));
           default:
             Util.println(String.format("Function %s does not exist!", functionNameString));
             break;
