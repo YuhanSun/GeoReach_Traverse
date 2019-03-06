@@ -18,7 +18,6 @@ echo "java -Xmx100g -jar ${jar_path} -h"
 java -Xmx100g -jar ${jar_path} -h
 
 # run the query
-echo "java -Xmx100g -jar ${jar_path} -f inser -dp ${db_path} -d ${dataset} -gp ${graph_path} -ep ${entity_path} -lp ${label_path}"
 # create the db first
 java -Xmx100g -jar ${jar_path} -f insertion -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG 1.0 -MR 2.0 -testRatio 0.5 -us LIGHTWEIGHT
 # run the query
