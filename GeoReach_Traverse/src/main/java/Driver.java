@@ -14,7 +14,7 @@ public class Driver {
 
   // function names
   private static enum FunctionName {
-    query, insertion,
+    query, insertion, generateAccurateDb,
   }
 
   private String[] args = null;
@@ -73,23 +73,24 @@ public class Driver {
         String functionNameString = cmd.getOptionValue(function);
         FunctionName functionName = FunctionName.valueOf(functionNameString);
         AddEdge addEdge = new AddEdge();
+        addEdge.iniPaths(cmd.getOptionValue(homeDir), cmd.getOptionValue(resultDir),
+            cmd.getOptionValue(dataset));
+        double MGVal = Double.parseDouble(cmd.getOptionValue(MG));
+        double MRVal = Double.parseDouble(cmd.getOptionValue(MR));
         switch (functionName) {
           case insertion:
-            addEdge.iniPaths(cmd.getOptionValue(homeDir), cmd.getOptionValue(resultDir),
-                cmd.getOptionValue(dataset));
             addEdge.readGraphEntityAndLabelList();
-            addEdge.evaluateEdgeInsersion(Double.parseDouble(cmd.getOptionValue(MG)),
-                Double.parseDouble(cmd.getOptionValue(MR)),
+            addEdge.evaluateEdgeInsersion(MGVal, MRVal,
                 Double.parseDouble(cmd.getOptionValue(testRatio)),
                 MaintenanceStrategy.valueOf(cmd.getOptionValue(strategy)));
             break;
           case query:
-            addEdge.iniPaths(cmd.getOptionValue(homeDir), cmd.getOptionValue(resultDir),
-                cmd.getOptionValue(dataset));
-            addEdge.evaluateInsertionByQuery(Double.parseDouble(cmd.getOptionValue(MG)),
-                Double.parseDouble(cmd.getOptionValue(MR)),
+            addEdge.evaluateInsertionByQuery(MGVal, MRVal,
                 MaintenanceStrategy.valueOf(cmd.getOptionValue(strategy)),
                 Expand.valueOf(cmd.getOptionValue(expand)));
+            break;
+          case generateAccurateDb:
+            addEdge.generateAccurateDbAfterAddEdges(MGVal, MRVal);
             break;
           default:
             Util.println(String.format("Function %s does not exist!", functionNameString));

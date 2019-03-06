@@ -227,40 +227,45 @@ public class AddEdge {
   public void generateAccurateDbAfterAddEdge() throws Exception {
     readGraphEntityAndLabelList();
     addEdgesToGraph();
-    dataDir += "/" + afterAddAccurateDirName;
-    if (!Util.pathExist(dataDir)) {
-      new File(dataDir).mkdirs();
-    }
 
     double MG, MR;
 
     // MG = 1.0;
     // MR = 2.0;
+    // iniPaths();
     // generateAccurateDbAfterAddEdges(MG, MR);
 
     MG = -1;
     MR = 2;
+    iniPaths();
     generateAccurateDbAfterAddEdges(MG, MR);
 
     MG = -1;
     MR = -1;
+    iniPaths();
     generateAccurateDbAfterAddEdges(MG, MR);
 
     MG = 0.5;
     MR = 2.0;
+    iniPaths();
     generateAccurateDbAfterAddEdges(MG, MR);
   }
 
   /**
    * Generate the new db with edges being inserted. If the directory exists, it will be deleted. The
-   * graph will be reloaded and index will be reconstructed and loaded as well.
-   * 
+   * graph will be reloaded and index will be reconstructed and loaded as well. Must call iniPaths(,
+   * , ,) before using this function.
+   *
    * @param MG
    * @param MR
    * @throws Exception
    */
   public void generateAccurateDbAfterAddEdges(double MG, double MR) throws Exception {
     String dbFileName = Neo4jGraphUtility.getDbNormalName(piecesX, piecesY, MG, MR, MC, MAX_HOP);
+    dataDir += "/" + afterAddAccurateDirName;
+    if (!Util.pathExist(dataDir)) {
+      new File(dataDir).mkdirs();
+    }
 
     dbPath = dataDir + "/" + dbFileName;
     if (Util.pathExist(dbPath)) {
