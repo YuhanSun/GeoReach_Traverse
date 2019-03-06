@@ -77,7 +77,7 @@ public class Driver {
           case query:
             addEdge.iniPaths(cmd.getOptionValue(homeDir), cmd.getOptionValue(resultDir),
                 cmd.getOptionValue(dataset));
-            addEdge.readGraph();
+            addEdge.readGraphEntityAndLabelList();
             addEdge.evaluateInsertionByQuery(Double.parseDouble(cmd.getOptionValue(MG)),
                 Double.parseDouble(cmd.getOptionValue(MR)),
                 MaintenanceStrategy.valueOf(cmd.getOptionValue(strategy)),

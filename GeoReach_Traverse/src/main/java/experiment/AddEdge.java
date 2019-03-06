@@ -225,7 +225,7 @@ public class AddEdge {
    * @throws Exception
    */
   public void generateAccurateDbAfterAddEdge() throws Exception {
-    readGraph();
+    readGraphEntityAndLabelList();
     addEdgesToGraph();
     dataDir += "/" + afterAddAccurateDirName;
     if (!Util.pathExist(dataDir)) {
@@ -304,7 +304,7 @@ public class AddEdge {
    * @throws Exception
    */
   public void evaluateEdgeInsertion() throws Exception {
-    readGraph();
+    readGraphEntityAndLabelList();
     if (!Util.pathExist(dataDir)) {
       new File(dataDir).mkdirs();
     }
@@ -479,7 +479,7 @@ public class AddEdge {
     loadData.LoadGraphEdges(mapPath, dbPath, graph);
   }
 
-  public void readGraph() {
+  public void readGraphEntityAndLabelList() {
     graph = GraphUtil.ReadGraph(graphPath);
     entities = GraphUtil.ReadEntity(entityPath);
     labelList = ReadWriteUtil.readIntegerArray(labelListPath);
