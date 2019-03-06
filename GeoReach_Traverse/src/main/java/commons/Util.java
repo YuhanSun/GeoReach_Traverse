@@ -376,6 +376,9 @@ public class Util {
    * @return
    */
   public static boolean rectLocatedInRect(MyRectangle rect1, MyRectangle rect2) {
+    if (rect1 == null) {
+      return true;
+    }
     if (Location_In_Rect(rect1.min_x, rect1.min_y, rect2) == false
         || Location_In_Rect(rect1.max_x, rect1.max_y, rect2) == false) {
       return false;

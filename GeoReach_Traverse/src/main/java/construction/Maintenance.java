@@ -368,10 +368,6 @@ public class Maintenance {
         while (iterator.hasNext()) {
           Relationship relationship = iterator.next();
           Node neighbor = relationship.getOtherNode(node);
-          // debug
-          if (neighbor.getId() == 1719) {
-            Util.println("here");
-          }
           if (!nextUpdateNodes.containsKey(neighbor)) {
             nextUpdateNodes.put(neighbor, new HashSet<>());
           }
@@ -399,8 +395,8 @@ public class Maintenance {
     GeoReachType geoReachType = getGeoReachType(src, srcUpdateHop);
     int trgHopInUnit = srcUpdateHop - dist - 1;
     // Debug
-    Util.println("trghop: " + trgHopInUnit);
-    Util.println("dist: " + dist);
+    // Util.println("trghop: " + trgHopInUnit);
+    // Util.println("dist: " + dist);
     // the hop in unit that is used to update the src
     UpdateUnit updateUnit = updateUnits.get(trgHopInUnit);
     switch (geoReachType) {
@@ -460,7 +456,7 @@ public class Maintenance {
             return status;
           }
         }
-        break;
+        return reachGridStatus;
       case GeoB:
         status = updateGeoB(src, srcUpdateHop, updateUnit);
     }
