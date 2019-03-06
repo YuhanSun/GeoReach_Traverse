@@ -13,7 +13,7 @@ resultDir="${homeDir}/result"
 # data_dir="${dir}/${dataset}"
 # code_dir="/Users/zhouyang/Google_Drive/Projects/github_code"
 
-jar_path="${code_dir}/Riso-Tree/target/Riso-Tree-0.0.1-SNAPSHOT.jar"
+jar_path="${code_dir}/GeoReach_Traverse/GeoReach_Traverse/target/GeoReach_Traverse-0.0.1-SNAPSHOT.jar"
 echo "java -Xmx100g -jar ${jar_path} -h"
 java -Xmx100g -jar ${jar_path} -h
 
