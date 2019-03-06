@@ -479,7 +479,7 @@ public class AddEdge {
     loadData.LoadGraphEdges(mapPath, dbPath, graph);
   }
 
-  private void readGraph() {
+  public void readGraph() {
     graph = GraphUtil.ReadGraph(graphPath);
     entities = GraphUtil.ReadEntity(entityPath);
     labelList = ReadWriteUtil.readIntegerArray(labelListPath);
