@@ -89,6 +89,23 @@ public class AddEdge {
     }
   }
 
+  public void iniPaths(String homeDir, String experimentDir, String dataset) {
+    this.homeDir = homeDir;
+    this.experimentDir = experimentDir;
+
+    // data dirs
+    this.dataset = dataset;
+    dataDir = homeDir + "/data/" + dataset;
+    graphPath = dataDir + "/" + config.getGraphFileName();
+    entityPath = dataDir + "/" + config.getEntityFileName();
+    labelListPath = dataDir + "/" + config.getLabelListFileName();
+
+    // experiment dirs
+    queryDir = String.format("%s/query/%s", experimentDir, dataset);
+    resultDir = experimentDir + "/add_edge";
+    edgePath = queryDir + "/edges.txt";
+  }
+
   public void iniPaths() {
     // Only need to modify homeDir.
     // ClassLoader classLoader = new AddEdge().getClass().getClassLoader();
@@ -96,20 +113,11 @@ public class AddEdge {
     // homeDir = file.getAbsolutePath();
     homeDir = "D:\\Ubuntu_shared\\GeoReachHop";
 
-    // data dirs
     dataset = "Yelp";
-    dataDir = homeDir + "/data/" + dataset;
-    graphPath = dataDir + "/" + config.getGraphFileName();
-    entityPath = dataDir + "/" + config.getEntityFileName();
-    labelListPath = dataDir + "/" + config.getLabelListFileName();
-
     // experiment dirs
     // experimentDir = "/Users/zhouyang/Google_Drive/Projects/GeoReachHop";
     experimentDir = "D:\\Google_Drive\\Projects\\GeoReachHop";
-    queryDir = String.format("%s/query/%s", experimentDir, dataset);
-    resultDir = experimentDir + "/add_edge";
-    edgePath = queryDir + "/edges.txt";
-    testDir = dataDir + "/" + afterAddLightweightDirName;
+    iniPaths(homeDir, experimentDir, dataset);
   }
 
   public static int piecesX = 128, piecesY = 128;
@@ -166,6 +174,15 @@ public class AddEdge {
 
   }
 
+  /**
+   * Assume that the db exists.
+   *
+   * @param MG
+   * @param MR
+   * @param strategy
+   * @param expand
+   * @throws Exception
+   */
   public void evaluateInsertionByQuery(double MG, double MR, MaintenanceStrategy strategy,
       Expand expand) throws Exception {
     boolean clearCache = false;
@@ -291,33 +308,30 @@ public class AddEdge {
     if (!Util.pathExist(dataDir)) {
       new File(dataDir).mkdirs();
     }
-    if (!Util.pathExist(testDir)) {
-      new File(testDir).mkdirs();
-    }
 
     // // All reachgrid
-    // evaluateEdgeInsersion(1.0, 2.0, 0.25, MaintenanceStrategy.LIGHTWEIGHT);
-    // evaluateEdgeInsersion(1.0, 2.0, 0.5, MaintenanceStrategy.LIGHTWEIGHT);
+    evaluateEdgeInsersion(1.0, 2.0, 0.25, MaintenanceStrategy.LIGHTWEIGHT);
+    evaluateEdgeInsersion(1.0, 2.0, 0.5, MaintenanceStrategy.LIGHTWEIGHT);
     evaluateEdgeInsersion(1.0, 2.0, 0.75, MaintenanceStrategy.LIGHTWEIGHT);
-    // evaluateEdgeInsersion(1.0, 2.0, 1.0, MaintenanceStrategy.LIGHTWEIGHT);
+    evaluateEdgeInsersion(1.0, 2.0, 1.0, MaintenanceStrategy.LIGHTWEIGHT);
     //
     // // All rmbr
-    // evaluateEdgeInsersion(-1, 2.0, 0.25, MaintenanceStrategy.LIGHTWEIGHT);
-    // evaluateEdgeInsersion(-1, 2.0, 0.5, MaintenanceStrategy.LIGHTWEIGHT);
+    evaluateEdgeInsersion(-1, 2.0, 0.25, MaintenanceStrategy.LIGHTWEIGHT);
+    evaluateEdgeInsersion(-1, 2.0, 0.5, MaintenanceStrategy.LIGHTWEIGHT);
     evaluateEdgeInsersion(-1, 2.0, 0.75, MaintenanceStrategy.LIGHTWEIGHT);
-    // evaluateEdgeInsersion(-1, 2.0, 1.0, MaintenanceStrategy.LIGHTWEIGHT);
+    evaluateEdgeInsersion(-1, 2.0, 1.0, MaintenanceStrategy.LIGHTWEIGHT);
     //
     // // All GeoB
-    // evaluateEdgeInsersion(-1, -1, 0.25, MaintenanceStrategy.LIGHTWEIGHT);
-    // evaluateEdgeInsersion(-1, -1, 0.5, MaintenanceStrategy.LIGHTWEIGHT);
+    evaluateEdgeInsersion(-1, -1, 0.25, MaintenanceStrategy.LIGHTWEIGHT);
+    evaluateEdgeInsersion(-1, -1, 0.5, MaintenanceStrategy.LIGHTWEIGHT);
     evaluateEdgeInsersion(-1, -1, 0.75, MaintenanceStrategy.LIGHTWEIGHT);
-    // evaluateEdgeInsersion(-1, -1, 1.0, MaintenanceStrategy.LIGHTWEIGHT);
+    evaluateEdgeInsersion(-1, -1, 1.0, MaintenanceStrategy.LIGHTWEIGHT);
 
     // MG = 0.5, ReachGrid + RMBR
-    // evaluateEdgeInsersion(0.5, 2.0, 0.25, MaintenanceStrategy.LIGHTWEIGHT);
-    // evaluateEdgeInsersion(0.5, 2.0, 0.5, MaintenanceStrategy.LIGHTWEIGHT);
+    evaluateEdgeInsersion(0.5, 2.0, 0.25, MaintenanceStrategy.LIGHTWEIGHT);
+    evaluateEdgeInsersion(0.5, 2.0, 0.5, MaintenanceStrategy.LIGHTWEIGHT);
     evaluateEdgeInsersion(0.5, 2.0, 0.75, MaintenanceStrategy.LIGHTWEIGHT);
-    // evaluateEdgeInsersion(0.5, 2.0, 1.0, MaintenanceStrategy.LIGHTWEIGHT);
+    evaluateEdgeInsersion(0.5, 2.0, 1.0, MaintenanceStrategy.LIGHTWEIGHT);
   }
 
   /**
@@ -338,6 +352,17 @@ public class AddEdge {
     mapPath = dataDir + "/" + mapFileName;
     loadGraphAndIndex(MG, MR);
 
+    if (!Util.pathExist(testDir)) {
+      new File(testDir).mkdirs();
+    }
+    switch (strategy) {
+      case LIGHTWEIGHT:
+        testDir = dataDir + "/" + afterAddLightweightDirName;
+        break;
+      case RECONSTRUCT:
+        testDir = dataDir + "/" + afterAddAccurateDirName;
+        break;
+    }
     String testDbPath = testDir + "/" + dbFileName;
     // If the testDb dir exists, remove it.
     // Because it was inserted edges and is different from the original graph.
@@ -479,6 +504,8 @@ public class AddEdge {
       long time = System.currentTimeMillis();
       if (strategy.equals(MaintenanceStrategy.LIGHTWEIGHT)) {
         maintenance.addEdgeAndUpdateIndexLightweight(src, trg);
+      } else {
+        maintenance.addEdgeAndUpdateIndexReconstruct(src, trg);
       }
       totalTime += System.currentTimeMillis() - time;
       visitedCount += maintenance.visitedCount;
