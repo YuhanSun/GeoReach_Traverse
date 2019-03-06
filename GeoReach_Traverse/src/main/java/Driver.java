@@ -37,6 +37,7 @@ public class Driver {
   public Driver(String[] args) {
     this.args = args;
     options.addOption(help, "help", false, "show help.");
+    options.addOption(function, "function", true, "function");
     // directory
     options.addOption(homeDir, "home-directory", true, "home directory");
     options.addOption(dataset, "dataset", true, "dataset for folder name");
@@ -86,7 +87,7 @@ public class Driver {
             addEdge.evaluateEdgeInsersion(Double.parseDouble(cmd.getOptionValue(MG)),
                 Double.parseDouble(cmd.getOptionValue(MR)),
                 Double.parseDouble(cmd.getOptionValue(testRatio)),
-                MaintenanceStrategy.valueOf(cmd.getOptionValue(expand)));
+                MaintenanceStrategy.valueOf(cmd.getOptionValue(strategy)));
           default:
             Util.println(String.format("Function %s does not exist!", functionNameString));
             break;
