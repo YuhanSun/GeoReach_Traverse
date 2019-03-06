@@ -22,12 +22,18 @@ java -Xmx100g -jar ${jar_path} -h
 # java -Xmx100g -jar ${jar_path} -f insertion -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG -1.0 -MR 2.0 -testRatio 0.5 -us LIGHTWEIGHT
 # java -Xmx100g -jar ${jar_path} -f insertion -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG -1.0 -MR -1.0 -testRatio 0.5 -us LIGHTWEIGHT
 
-# run the query on the inserted db
+# run the query on the lightweight inserted db
 # java -Xmx100g -jar ${jar_path} -f query -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG 1.0 -MR 2.0 -us LIGHTWEIGHT -ex SPATRAVERSAL
 # java -Xmx100g -jar ${jar_path} -f query -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG -1.0 -MR 2.0 -us LIGHTWEIGHT -ex SPATRAVERSAL
 # java -Xmx100g -jar ${jar_path} -f query -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG -1.0 -MR -1.0 -us LIGHTWEIGHT -ex SPATRAVERSAL
 
 # generate the accurate db after insertion
-java -Xmx100g -jar ${jar_path} -f generateAccurateDb -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG 1.0 -MR 2.0
-java -Xmx100g -jar ${jar_path} -f generateAccurateDb -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG -1.0 -MR 2.0
-java -Xmx100g -jar ${jar_path} -f generateAccurateDb -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG -1.0 -MR -1.0
+# java -Xmx100g -jar ${jar_path} -f generateAccurateDb -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG 1.0 -MR 2.0
+# java -Xmx100g -jar ${jar_path} -f generateAccurateDb -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG -1.0 -MR 2.0
+# java -Xmx100g -jar ${jar_path} -f generateAccurateDb -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG -1.0 -MR -1.0
+
+
+# run the query on the reconstruct inserted db
+java -Xmx100g -jar ${jar_path} -f query -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG 1.0 -MR 2.0 -us RECONSTRUCT -ex SPATRAVERSAL
+java -Xmx100g -jar ${jar_path} -f query -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG -1.0 -MR 2.0 -us RECONSTRUCT -ex SPATRAVERSAL
+java -Xmx100g -jar ${jar_path} -f query -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG -1.0 -MR -1.0 -us RECONSTRUCT -ex SPATRAVERSAL
