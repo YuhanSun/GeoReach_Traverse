@@ -330,29 +330,29 @@ public class AddEdge {
       new File(dataDir).mkdirs();
     }
 
-    // // All reachgrid
-    evaluateEdgeInsersion(1.0, 2.0, 0.25, MaintenanceStrategy.LIGHTWEIGHT);
-    evaluateEdgeInsersion(1.0, 2.0, 0.5, MaintenanceStrategy.LIGHTWEIGHT);
-    evaluateEdgeInsersion(1.0, 2.0, 0.75, MaintenanceStrategy.LIGHTWEIGHT);
-    evaluateEdgeInsersion(1.0, 2.0, 1.0, MaintenanceStrategy.LIGHTWEIGHT);
-    //
-    // // All rmbr
-    evaluateEdgeInsersion(-1, 2.0, 0.25, MaintenanceStrategy.LIGHTWEIGHT);
-    evaluateEdgeInsersion(-1, 2.0, 0.5, MaintenanceStrategy.LIGHTWEIGHT);
-    evaluateEdgeInsersion(-1, 2.0, 0.75, MaintenanceStrategy.LIGHTWEIGHT);
-    evaluateEdgeInsersion(-1, 2.0, 1.0, MaintenanceStrategy.LIGHTWEIGHT);
-    //
     // // All GeoB
-    evaluateEdgeInsersion(-1, -1, 0.25, MaintenanceStrategy.LIGHTWEIGHT);
-    evaluateEdgeInsersion(-1, -1, 0.5, MaintenanceStrategy.LIGHTWEIGHT);
-    evaluateEdgeInsersion(-1, -1, 0.75, MaintenanceStrategy.LIGHTWEIGHT);
+    // evaluateEdgeInsersion(-1, -1, 0.25, MaintenanceStrategy.LIGHTWEIGHT);
+    // evaluateEdgeInsersion(-1, -1, 0.5, MaintenanceStrategy.LIGHTWEIGHT);
+    // evaluateEdgeInsersion(-1, -1, 0.75, MaintenanceStrategy.LIGHTWEIGHT);
     evaluateEdgeInsersion(-1, -1, 1.0, MaintenanceStrategy.LIGHTWEIGHT);
 
+    // // All rmbr
+    // evaluateEdgeInsersion(-1, 2.0, 0.25, MaintenanceStrategy.LIGHTWEIGHT);
+    // evaluateEdgeInsersion(-1, 2.0, 0.5, MaintenanceStrategy.LIGHTWEIGHT);
+    // evaluateEdgeInsersion(-1, 2.0, 0.75, MaintenanceStrategy.LIGHTWEIGHT);
+    evaluateEdgeInsersion(-1, 2.0, 1.0, MaintenanceStrategy.LIGHTWEIGHT);
+
+    // // All reachgrid
+    // evaluateEdgeInsersion(1.0, 2.0, 0.25, MaintenanceStrategy.LIGHTWEIGHT);
+    // evaluateEdgeInsersion(1.0, 2.0, 0.5, MaintenanceStrategy.LIGHTWEIGHT);
+    // evaluateEdgeInsersion(1.0, 2.0, 0.75, MaintenanceStrategy.LIGHTWEIGHT);
+    evaluateEdgeInsersion(1.0, 2.0, 1.0, MaintenanceStrategy.LIGHTWEIGHT);
+
     // MG = 0.5, ReachGrid + RMBR
-    evaluateEdgeInsersion(0.5, 2.0, 0.25, MaintenanceStrategy.LIGHTWEIGHT);
-    evaluateEdgeInsersion(0.5, 2.0, 0.5, MaintenanceStrategy.LIGHTWEIGHT);
-    evaluateEdgeInsersion(0.5, 2.0, 0.75, MaintenanceStrategy.LIGHTWEIGHT);
-    evaluateEdgeInsersion(0.5, 2.0, 1.0, MaintenanceStrategy.LIGHTWEIGHT);
+    // evaluateEdgeInsersion(0.5, 2.0, 0.25, MaintenanceStrategy.LIGHTWEIGHT);
+    // evaluateEdgeInsersion(0.5, 2.0, 0.5, MaintenanceStrategy.LIGHTWEIGHT);
+    // evaluateEdgeInsersion(0.5, 2.0, 0.75, MaintenanceStrategy.LIGHTWEIGHT);
+    // evaluateEdgeInsersion(0.5, 2.0, 1.0, MaintenanceStrategy.LIGHTWEIGHT);
   }
 
   /**
