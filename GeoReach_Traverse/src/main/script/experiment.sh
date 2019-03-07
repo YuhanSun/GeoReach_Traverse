@@ -17,7 +17,7 @@ jar_path="${code_dir}/GeoReach_Traverse/GeoReach_Traverse/target/GeoReach_Traver
 echo "java -Xmx100g -jar ${jar_path} -h"
 java -Xmx100g -jar ${jar_path} -h
 
-# create the db which is inserted with 10% edges
+# create the db which is inserted with 10% edges lightweight strategy
 # java -Xmx100g -jar ${jar_path} -f insertion -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG 1.0 -MR 2.0 -testRatio 0.5 -us LIGHTWEIGHT
 # java -Xmx100g -jar ${jar_path} -f insertion -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG -1.0 -MR 2.0 -testRatio 0.5 -us LIGHTWEIGHT
 # java -Xmx100g -jar ${jar_path} -f insertion -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG -1.0 -MR -1.0 -testRatio 0.5 -us LIGHTWEIGHT
@@ -27,6 +27,18 @@ java -Xmx100g -jar ${jar_path} -h
 # java -Xmx100g -jar ${jar_path} -f query -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG -1.0 -MR 2.0 -us LIGHTWEIGHT -ex SPATRAVERSAL
 # java -Xmx100g -jar ${jar_path} -f query -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG -1.0 -MR -1.0 -us LIGHTWEIGHT -ex SPATRAVERSAL
 
+# create the db which is inserted with 10% edges reconstruct strategy
+java -Xmx100g -jar ${jar_path} -f insertion -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG -1.0 -MR -1.0 -testRatio 0.5 -us RECONSTRUCT
+java -Xmx100g -jar ${jar_path} -f insertion -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG -1.0 -MR 2.0 -testRatio 0.5 -us RECONSTRUCT
+java -Xmx100g -jar ${jar_path} -f insertion -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG 1.0 -MR 2.0 -testRatio 0.5 -us RECONSTRUCT
+
+
+
+# run the query on the RECONSTRUCT inserted db
+java -Xmx100g -jar ${jar_path} -f query -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG 1.0 -MR 2.0 -us RECONSTRUCT -ex SPATRAVERSAL
+java -Xmx100g -jar ${jar_path} -f query -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG -1.0 -MR 2.0 -us RECONSTRUCT -ex SPATRAVERSAL
+java -Xmx100g -jar ${jar_path} -f query -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG -1.0 -MR -1.0 -us RECONSTRUCT -ex SPATRAVERSAL
+
 # generate the accurate db after insertion
 # java -Xmx100g -jar ${jar_path} -f generateAccurateDb -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG 1.0 -MR 2.0
 # java -Xmx100g -jar ${jar_path} -f generateAccurateDb -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG -1.0 -MR 2.0
@@ -34,6 +46,6 @@ java -Xmx100g -jar ${jar_path} -h
 
 
 # run the query on the reconstruct inserted db
-java -Xmx100g -jar ${jar_path} -f query -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG 1.0 -MR 2.0 -us RECONSTRUCT -ex SPATRAVERSAL
-java -Xmx100g -jar ${jar_path} -f query -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG -1.0 -MR 2.0 -us RECONSTRUCT -ex SPATRAVERSAL
-java -Xmx100g -jar ${jar_path} -f query -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG -1.0 -MR -1.0 -us RECONSTRUCT -ex SPATRAVERSAL
+# java -Xmx100g -jar ${jar_path} -f query -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG 1.0 -MR 2.0 -us RECONSTRUCT -ex SPATRAVERSAL
+# java -Xmx100g -jar ${jar_path} -f query -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG -1.0 -MR 2.0 -us RECONSTRUCT -ex SPATRAVERSAL
+# java -Xmx100g -jar ${jar_path} -f query -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG -1.0 -MR -1.0 -us RECONSTRUCT -ex SPATRAVERSAL

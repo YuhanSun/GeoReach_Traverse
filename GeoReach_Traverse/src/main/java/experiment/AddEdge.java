@@ -334,19 +334,19 @@ public class AddEdge {
     // evaluateEdgeInsersion(-1, -1, 0.25, MaintenanceStrategy.LIGHTWEIGHT);
     // evaluateEdgeInsersion(-1, -1, 0.5, MaintenanceStrategy.LIGHTWEIGHT);
     // evaluateEdgeInsersion(-1, -1, 0.75, MaintenanceStrategy.LIGHTWEIGHT);
-    evaluateEdgeInsersion(-1, -1, 1.0, MaintenanceStrategy.LIGHTWEIGHT);
+    evaluateEdgeInsersion(-1, -1, 1.0, MaintenanceStrategy.RECONSTRUCT);
 
     // // All rmbr
     // evaluateEdgeInsersion(-1, 2.0, 0.25, MaintenanceStrategy.LIGHTWEIGHT);
     // evaluateEdgeInsersion(-1, 2.0, 0.5, MaintenanceStrategy.LIGHTWEIGHT);
     // evaluateEdgeInsersion(-1, 2.0, 0.75, MaintenanceStrategy.LIGHTWEIGHT);
-    evaluateEdgeInsersion(-1, 2.0, 1.0, MaintenanceStrategy.LIGHTWEIGHT);
+    evaluateEdgeInsersion(-1, 2.0, 1.0, MaintenanceStrategy.RECONSTRUCT);
 
     // // All reachgrid
     // evaluateEdgeInsersion(1.0, 2.0, 0.25, MaintenanceStrategy.LIGHTWEIGHT);
     // evaluateEdgeInsersion(1.0, 2.0, 0.5, MaintenanceStrategy.LIGHTWEIGHT);
     // evaluateEdgeInsersion(1.0, 2.0, 0.75, MaintenanceStrategy.LIGHTWEIGHT);
-    evaluateEdgeInsersion(1.0, 2.0, 1.0, MaintenanceStrategy.LIGHTWEIGHT);
+    evaluateEdgeInsersion(1.0, 2.0, 1.0, MaintenanceStrategy.RECONSTRUCT);
 
     // MG = 0.5, ReachGrid + RMBR
     // evaluateEdgeInsersion(0.5, 2.0, 0.25, MaintenanceStrategy.LIGHTWEIGHT);
@@ -410,36 +410,79 @@ public class AddEdge {
     Maintenance maintenance = new Maintenance(spaceManager, MAX_HOP, MG, MR, MC, service);
     Util.println("Read edges from " + edgePath + "...");
     List<Edge> edges = GraphUtil.readEdges(edgePath);
-    int testCount = (int) (edges.size() * testRatio);
-    List<Edge> edgesNeo4j = new ArrayList<>(testCount);
-    int i = 0;
-    for (Edge edge : edges) {
-      edgesNeo4j
-          .add(new Edge(graph_pos_map_list[(int) edge.start], graph_pos_map_list[(int) edge.end]));
-      i++;
-      if (i == testCount) {
-        break;
+    ArrayList<Edge> edgeArray = new ArrayList<>(edges);
+
+    int partCount = 4;
+    int partSize = edges.size() / 4;
+    Util.println("part size: " + partSize);
+
+    int index = 0;
+    // List<Edge> edgesNeo4j = new ArrayList<>()
+    // for (Edge edge : edges) {
+    //
+    // }
+
+    for (int i = 0; i < partCount; i++) {
+      List<Edge> edgesNeo4j = new ArrayList<>(partSize);
+      for (int j = 0; j < partSize; j++) {
+        Util.println(index);
+        Edge edge = edgeArray.get(index);
+        edgesNeo4j.add(
+            new Edge(graph_pos_map_list[(int) edge.start], graph_pos_map_list[(int) edge.end]));
+        index++;
       }
+      Util.println("maintenance test part " + i + "...");
+      ResultRecord resultRecord = addEdgeMaintenance(edgesNeo4j, maintenance, strategy);
+
+      String resultPath = resultDir + "/add_edge_time.txt";
+      FileWriter writer = new FileWriter(resultPath, true);
+      writer.write(String.format("part%d, MAX_HOP=%d, MG=%s, MR=%s, strategy=%s\n", i, MAX_HOP,
+          String.valueOf(MG), String.valueOf(MR), strategy));
+      writer.write(String.format("insertion count: %d\n", edgesNeo4j.size()));
+      writer.write(String.format("total time: %d\n", resultRecord.runTime));
+      writer.write(
+          String.format("average time: %f\n", (double) resultRecord.runTime / edgesNeo4j.size()));
+      writer.write(String.format("commit time: %d\n", resultRecord.commitTime));
+      writer.write(String.format("visited count: %d\n", resultRecord.visitedCount));
+      writer.write(String.format("average visited count: %f\n",
+          (double) resultRecord.visitedCount / edgesNeo4j.size()));
+      writer.write(String.format("Reconstruct ratio: %s\n", maintenance.reconstructCount));
+
+      writer.write("\n");
+      writer.close();
     }
-    Util.println("maintenance test...");
-    ResultRecord resultRecord = addEdgeMaintenance(edgesNeo4j, maintenance, strategy);
     service.shutdown();
 
-    String resultPath = resultDir + "/add_edge_time.txt";
-    FileWriter writer = new FileWriter(resultPath, true);
-    writer.write(String.format("MAX_HOP=%d, MG=%s, MR=%s, strategy=%s\n", MAX_HOP,
-        String.valueOf(MG), String.valueOf(MR), strategy));
-    writer.write(String.format("insertion count: %d\n", edgesNeo4j.size()));
-    writer.write(String.format("total time: %d\n", resultRecord.runTime));
-    writer.write(
-        String.format("average time: %f\n", (double) resultRecord.runTime / edgesNeo4j.size()));
-    writer.write(String.format("commit time: %d\n", resultRecord.commitTime));
-    writer.write(String.format("visited count: %d\n", resultRecord.visitedCount));
-    writer.write(String.format("average visited count: %f\n",
-        (double) resultRecord.visitedCount / edgesNeo4j.size()));
-
-    writer.write("\n");
-    writer.close();
+    // int testCount = (int) (edges.size() * testRatio);
+    // List<Edge> edgesNeo4j = new ArrayList<>(testCount);
+    // int i = 0;
+    // for (Edge edge : edges) {
+    // edgesNeo4j
+    // .add(new Edge(graph_pos_map_list[(int) edge.start], graph_pos_map_list[(int) edge.end]));
+    // i++;
+    // if (i == testCount) {
+    // break;
+    // }
+    // }
+    // Util.println("maintenance test...");
+    // ResultRecord resultRecord = addEdgeMaintenance(edgesNeo4j, maintenance, strategy);
+    // service.shutdown();
+    //
+    // String resultPath = resultDir + "/add_edge_time.txt";
+    // FileWriter writer = new FileWriter(resultPath, true);
+    // writer.write(String.format("MAX_HOP=%d, MG=%s, MR=%s, strategy=%s\n", MAX_HOP,
+    // String.valueOf(MG), String.valueOf(MR), strategy));
+    // writer.write(String.format("insertion count: %d\n", edgesNeo4j.size()));
+    // writer.write(String.format("total time: %d\n", resultRecord.runTime));
+    // writer.write(
+    // String.format("average time: %f\n", (double) resultRecord.runTime / edgesNeo4j.size()));
+    // writer.write(String.format("commit time: %d\n", resultRecord.commitTime));
+    // writer.write(String.format("visited count: %d\n", resultRecord.visitedCount));
+    // writer.write(String.format("average visited count: %f\n",
+    // (double) resultRecord.visitedCount / edgesNeo4j.size()));
+    //
+    // writer.write("\n");
+    // writer.close();
   }
 
   /**
@@ -521,8 +564,11 @@ public class AddEdge {
     GraphDatabaseService service = maintenance.service;
     Transaction tx = service.beginTx();
     long totalTime = 0, visitedCount = 0;
+    int idx = 0;
     for (Edge edge : edges) {
-      // Util.println(edge.toString());
+      Util.println(idx);
+      idx++;
+      Util.println(edge.toString());
       Node src = service.getNodeById(edge.start);
       Node trg = service.getNodeById(edge.end);
       long time = System.currentTimeMillis();
