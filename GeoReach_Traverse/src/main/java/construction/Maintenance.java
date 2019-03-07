@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -76,6 +78,7 @@ public class Maintenance {
 
   // Experiment variable
   public int visitedCount;
+  public HashMap<Integer, Integer> reconstructCount = new HashMap<>();
 
   public Maintenance(double minx, double miny, double maxx, double maxy, int piecesX, int piecesY,
       int MAX_HOP, double MG, Double MR, int MC, GraphDatabaseService service) {
@@ -123,18 +126,47 @@ public class Maintenance {
   public void addEdgeAndUpdateIndexReconstruct(Node src, Node trg) throws Exception {
     visitedCount = 0;
     src.createRelationshipTo(trg, GraphRel.GRAPH_LINK);
-    reconstruct(src);
-    reconstruct(trg);
+    reconstruct(src, trg);
+    reconstruct(trg, src);
   }
 
-  private void reconstruct(Node constructNode) throws Exception {
-    HashMap<Integer, UpdateUnit> geoReachAfterInsertion = reconstructGeoReach(constructNode);
+  private void reconstruct(Node src, Node trg) throws Exception {
+    HashMap<Integer, UpdateUnit> updateUnits = createUpdateUnit(trg, MAX_HOP);
+    List<GeoReachType> types = getGeoReachTypes(trg);
+    // B-hop type is not needed, while 0-hop is. To make it consistent with updateUnits.
+    types.remove(types.size() - 1);
+    if (updateUnits.get(0).geoB) {
+      types.add(0, GeoReachType.RMBR);
+    } else {
+      types.add(0, GeoReachType.GeoB);
+    }
+
+    int reconstructMaxHop = MAX_HOP;
+    for (; reconstructMaxHop > 0; reconstructMaxHop--) {
+      if (isReconstructedNeeded(src, reconstructMaxHop, updateUnits, types)) {
+        break;
+      }
+    }
+    if (reconstructMaxHop > 0) {
+      int curCount = reconstructCount.getOrDefault(reconstructMaxHop, 0);
+      reconstructCount.put(reconstructMaxHop, curCount + 1);
+    }
+    // debug
+    // Util.println("reconstruct max hop: " + reconstructMaxHop);
+
+    // replace the updateUnits with accurate value
+    HashMap<Integer, UpdateUnit> geoReachAfterInsertion =
+        reconstructGeoReach(src, reconstructMaxHop);
+    for (int key : geoReachAfterInsertion.keySet()) {
+      updateUnits.put(key, geoReachAfterInsertion.get(key));
+    }
+
     HashMap<Node, HashSet<Integer>> nextUpdateNodes = new HashMap<>();
     HashSet<Integer> srcUpdateHops = new HashSet<>();
     for (int hop = 1; hop <= MAX_HOP; hop++) {
       srcUpdateHops.add(hop);
     }
-    update(constructNode, geoReachAfterInsertion, srcUpdateHops, -1, nextUpdateNodes);
+    update(src, updateUnits, srcUpdateHops, -1, nextUpdateNodes);
 
     HashMap<Node, HashSet<Integer>> currentUpdateNodes = nextUpdateNodes;
 
@@ -145,11 +177,25 @@ public class Maintenance {
       nextUpdateNodes = new HashMap<>();
       for (Node node : currentUpdateNodes.keySet()) {
         HashSet<Integer> curSrcUpdateHops = currentUpdateNodes.get(node);
-        update(node, geoReachAfterInsertion, curSrcUpdateHops, dist, nextUpdateNodes);
+        update(node, updateUnits, curSrcUpdateHops, dist, nextUpdateNodes);
       }
       currentUpdateNodes = nextUpdateNodes;
       dist++;
     }
+  }
+
+  private boolean isReconstructedNeeded(Node src, int srcHop,
+      HashMap<Integer, UpdateUnit> updateUnits, List<GeoReachType> types) throws Exception {
+    int trgHop = srcHop - 1;
+    if (trgHop < 0) {
+      throw new Exception("target hop < 0");
+    }
+    if (getGeoReachType(src, srcHop).equals(GeoReachType.ReachGrid)
+        && types.get(trgHop).equals(GeoReachType.RMBR)
+        && updateUnits.get(trgHop).reachGrid.getCardinality() > 1) {
+      return true;
+    }
+    return false;
   }
 
   // private HashMap<Integer, UpdateUnit> isNodeGeoReachModified(Node node,
@@ -174,25 +220,29 @@ public class Maintenance {
   // return updateUnits;
   // }
 
-  /**
-   * Reconstruct GeoReach for [0, B] hops.
-   *
-   * @param trg
-   * @return
-   */
-  private HashMap<Integer, UpdateUnit> reconstructGeoReach(Node trg) {
+  // /**
+  // * Reconstruct GeoReach for [0, B] hops.
+  // *
+  // * @param trg
+  // * @return
+  // */
+  // private HashMap<Integer, UpdateUnit> reconstructGeoReach(Node trg) {
+  // return reconstructGeoReach(trg, MAX_HOP);
+  // }
+
+  private HashMap<Integer, UpdateUnit> reconstructGeoReach(Node node, int bound) {
     HashMap<Integer, UpdateUnit> updateUnits = new HashMap<>();
     Collection<Node> curLevelNodes = new HashSet<>();
-    curLevelNodes.add(trg);
-    for (int i = 0; i <= MAX_HOP; i++) {
+    curLevelNodes.add(node);
+    for (int i = 0; i <= bound; i++) {
       UpdateUnit unit = constructUnit(curLevelNodes);
       updateUnits.put(i, unit);
 
       Collection<Node> nextLevelNodes = new HashSet<>();
-      for (Node node : curLevelNodes) {
-        Iterable<Relationship> relationships = node.getRelationships();
+      for (Node curNode : curLevelNodes) {
+        Iterable<Relationship> relationships = curNode.getRelationships();
         for (Relationship relationship : relationships) {
-          Node neighbor = relationship.getOtherNode(node);
+          Node neighbor = relationship.getOtherNode(curNode);
           nextLevelNodes.add(neighbor);
         }
       }
@@ -296,6 +346,10 @@ public class Maintenance {
    * @throws Exception
    */
   private HashMap<Integer, UpdateUnit> createUpdateUnit(Node node) throws Exception {
+    return createUpdateUnit(node, MAX_HOP - 1);
+  }
+
+  private HashMap<Integer, UpdateUnit> createUpdateUnit(Node node, int max_hop) throws Exception {
     HashMap<Integer, UpdateUnit> updateUnits = new HashMap<>();
     // Neo4jGraphUtility.printNode(node);
     // handle the SIP(node, 0)
@@ -321,7 +375,7 @@ public class Maintenance {
       updateUnits.put(0, new UpdateUnit(GeoReachType.GeoB, null, null, false));
     }
     // handle SIP(node, 1) to SIP(node, B-1)
-    for (int hop = 1; hop < MAX_HOP; hop++) {
+    for (int hop = 1; hop <= max_hop; hop++) {
       GeoReachType type = getGeoReachType(node, hop);
       ImmutableRoaringBitmap immutableRoaringBitmap = null;
       MyRectangle rmbr = null;
@@ -557,6 +611,22 @@ public class Maintenance {
     // return rectangle.area() <= spaceManager.getTotalArea() * MR;
   }
 
+
+  /**
+   * Get the GeoReach types of [1, B].
+   *
+   * @param node
+   * @return
+   * @throws Exception
+   */
+  public List<GeoReachType> getGeoReachTypes(Node node) throws Exception {
+    List<GeoReachType> types = new LinkedList<>();
+    for (int hop = 1; hop <= MAX_HOP; hop++) {
+      types.add(getGeoReachType(node, hop));
+    }
+    return types;
+  }
+
   /**
    * Get the GeoReach type of a node for a hop.
    *
@@ -571,16 +641,7 @@ public class Maintenance {
       throw new Exception(String.format("Type property %s is not found!", typePropertyName));
     }
     int type = (int) node.getProperty(typePropertyName);
-    switch (type) {
-      case 0:
-        return GeoReachType.ReachGrid;
-      case 1:
-        return GeoReachType.RMBR;
-      case 2:
-        return GeoReachType.GeoB;
-      default:
-        throw new Exception(String.format("type %d does not exist!", type));
-    }
+    return GeoReachIndexUtil.getGeoReachType(type);
   }
 
   public void setGeoReachType(Node node, int hop, GeoReachType type) {
