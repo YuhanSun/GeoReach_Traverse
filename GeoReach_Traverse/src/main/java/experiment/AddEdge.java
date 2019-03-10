@@ -334,19 +334,19 @@ public class AddEdge {
     // evaluateEdgeInsersion(-1, -1, 0.25, MaintenanceStrategy.LIGHTWEIGHT);
     // evaluateEdgeInsersion(-1, -1, 0.5, MaintenanceStrategy.LIGHTWEIGHT);
     // evaluateEdgeInsersion(-1, -1, 0.75, MaintenanceStrategy.LIGHTWEIGHT);
-    evaluateEdgeInsersion(-1, -1, 1.0, MaintenanceStrategy.RECONSTRUCT);
+    // evaluateEdgeInsersion(-1, -1, 1.0, MaintenanceStrategy.RECONSTRUCT);
 
     // // All rmbr
     // evaluateEdgeInsersion(-1, 2.0, 0.25, MaintenanceStrategy.LIGHTWEIGHT);
     // evaluateEdgeInsersion(-1, 2.0, 0.5, MaintenanceStrategy.LIGHTWEIGHT);
     // evaluateEdgeInsersion(-1, 2.0, 0.75, MaintenanceStrategy.LIGHTWEIGHT);
-    evaluateEdgeInsersion(-1, 2.0, 1.0, MaintenanceStrategy.RECONSTRUCT);
+    // evaluateEdgeInsersion(-1, 2.0, 1.0, MaintenanceStrategy.RECONSTRUCT);
 
     // // All reachgrid
     // evaluateEdgeInsersion(1.0, 2.0, 0.25, MaintenanceStrategy.LIGHTWEIGHT);
     // evaluateEdgeInsersion(1.0, 2.0, 0.5, MaintenanceStrategy.LIGHTWEIGHT);
     // evaluateEdgeInsersion(1.0, 2.0, 0.75, MaintenanceStrategy.LIGHTWEIGHT);
-    evaluateEdgeInsersion(1.0, 2.0, 1.0, MaintenanceStrategy.RECONSTRUCT);
+    evaluateEdgeInsersion(2.0, 2.0, 1.0, 4, MaintenanceStrategy.RECONSTRUCT);
 
     // MG = 0.5, ReachGrid + RMBR
     // evaluateEdgeInsersion(0.5, 2.0, 0.25, MaintenanceStrategy.LIGHTWEIGHT);
@@ -363,7 +363,7 @@ public class AddEdge {
    * @param testCount how many edges in the edge.txt file will be tested
    * @throws Exception
    */
-  public void evaluateEdgeInsersion(double MG, double MR, double testRatio,
+  public void evaluateEdgeInsersion(double MG, double MR, double testRatio, int partCount,
       MaintenanceStrategy strategy) throws Exception {
     String dbFileName = Neo4jGraphUtility.getDbNormalName(piecesX, piecesY, MG, MR, MC, MAX_HOP);
     dbPath = dataDir + "/" + dbFileName;
@@ -412,16 +412,13 @@ public class AddEdge {
     List<Edge> edges = GraphUtil.readEdges(edgePath);
     ArrayList<Edge> edgeArray = new ArrayList<>(edges);
 
-    int partCount = 4;
-    int partSize = edges.size() / 4;
+    int testCount = (int) (edges.size() * testRatio);
+    int partSize = testCount / partCount;
+    Util.println("test count: " + testCount);
+    Util.println("part count: " + partCount);
     Util.println("part size: " + partSize);
 
     int index = 0;
-    // List<Edge> edgesNeo4j = new ArrayList<>()
-    // for (Edge edge : edges) {
-    //
-    // }
-
     for (int i = 0; i < partCount; i++) {
       List<Edge> edgesNeo4j = new ArrayList<>(partSize);
       for (int j = 0; j < partSize; j++) {

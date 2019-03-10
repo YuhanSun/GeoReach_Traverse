@@ -79,9 +79,10 @@ public class Driver {
         double MRVal = Double.parseDouble(cmd.getOptionValue(MR));
         switch (functionName) {
           case insertion:
+            int partCount = 1;
             addEdge.readGraphEntityAndLabelList();
             addEdge.evaluateEdgeInsersion(MGVal, MRVal,
-                Double.parseDouble(cmd.getOptionValue(testRatio)),
+                Double.parseDouble(cmd.getOptionValue(testRatio)), partCount,
                 MaintenanceStrategy.valueOf(cmd.getOptionValue(strategy)));
             break;
           case query:
