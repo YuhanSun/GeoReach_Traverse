@@ -420,6 +420,7 @@ public class AddEdge {
     Util.println("part size: " + partSize);
 
     int index = 0;
+    List<ResultRecord> resultRecords = new ArrayList<>(partCount);
     for (int i = 0; i < partCount; i++) {
       List<Edge> edgesNeo4j = new ArrayList<>(partSize);
       for (int j = 0; j < partSize; j++) {
@@ -431,6 +432,17 @@ public class AddEdge {
       }
       Util.println("maintenance test part " + i + "...");
       ResultRecord resultRecord = addEdgeMaintenance(edgesNeo4j, maintenance, strategy);
+
+      // generate the sum up until each part end
+      if (resultRecords.size() == 0) {
+        resultRecords.add(resultRecord);
+      } else {
+        ResultRecord prev = resultRecords.get(resultRecords.size() - 1);
+        ResultRecord insertResultRecord = new ResultRecord(prev.runTime + resultRecord.runTime,
+            prev.commitTime + resultRecord.commitTime,
+            prev.visitedCount + resultRecord.visitedCount, -1);
+        resultRecords.add(insertResultRecord);
+      }
 
       String resultPath = resultDir + "/add_edge_time.txt";
       FileWriter writer = new FileWriter(resultPath, true);
@@ -450,6 +462,26 @@ public class AddEdge {
       writer.close();
     }
     service.shutdown();
+
+    int count = partSize;
+    for (ResultRecord resultRecord : resultRecords) {
+      String resultPath = resultDir + "/add_edge_time.txt";
+      FileWriter writer = new FileWriter(resultPath, true);
+      writer.write("Summary:\n");
+      writer.write(String.format("part%d, MAX_HOP=%d, MG=%s, MR=%s, strategy=%s\n", count, MAX_HOP,
+          String.valueOf(MG), String.valueOf(MR), strategy));
+      writer.write(String.format("total time: %d\n", resultRecord.runTime));
+      writer.write(String.format("average time: %f\n", (double) resultRecord.runTime / count));
+      writer.write(String.format("commit time: %d\n", resultRecord.commitTime));
+      writer.write(String.format("visited count: %d\n", resultRecord.visitedCount));
+      writer.write(
+          String.format("average visited count: %f\n", (double) resultRecord.visitedCount / count));
+      writer.write(String.format("Reconstruct ratio: %s\n", maintenance.reconstructCount));
+
+      writer.write("\n");
+      writer.close();
+      count += partSize;
+    }
 
     // int testCount = (int) (edges.size() * testRatio);
     // List<Edge> edgesNeo4j = new ArrayList<>(testCount);
