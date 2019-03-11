@@ -122,7 +122,7 @@ public class AddEdge {
 
   public static int piecesX = 128, piecesY = 128;
   public static int MC = 0;
-  public static int MAX_HOP = 3;
+  public static int MAX_HOP = 2;
   public static double minx = -180, miny = -90, maxx = 180, maxy = 90;
   public static SpaceManager spaceManager =
       new SpaceManager(minx, miny, maxx, maxy, piecesX, piecesY);
