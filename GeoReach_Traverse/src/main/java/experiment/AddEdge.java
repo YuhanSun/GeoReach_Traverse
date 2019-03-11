@@ -412,6 +412,7 @@ public class AddEdge {
     List<Edge> edges = GraphUtil.readEdges(edgePath);
     ArrayList<Edge> edgeArray = new ArrayList<>(edges);
 
+    Util.println("test ratio: " + testRatio);
     int testCount = (int) (edges.size() * testRatio);
     int partSize = testCount / partCount;
     Util.println("test count: " + testCount);
