@@ -638,7 +638,8 @@ public class Maintenance {
   public GeoReachType getGeoReachType(Node node, int hop) throws Exception {
     String typePropertyName = GeoReachTypeName + "_" + hop;
     if (!node.hasProperty(typePropertyName)) {
-      throw new Exception(String.format("Type property %s is not found!", typePropertyName));
+      throw new Exception(String.format("Type property %s is not found in node %s!\n%s",
+          typePropertyName, node, node.getAllProperties()));
     }
     int type = (int) node.getProperty(typePropertyName);
     return GeoReachIndexUtil.getGeoReachType(type);

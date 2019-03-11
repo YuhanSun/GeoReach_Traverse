@@ -51,10 +51,10 @@ java -Xmx100g -jar ${jar_path} -h
 # java -Xmx100g -jar ${jar_path} -f query -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG -1.0 -MR -1.0 -us RECONSTRUCT -ex SPATRAVERSAL
 
 # evaluate the insertion speed
-java -Xmx100g -jar ${jar_path} -f insertion -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG -1.0 -MR 2.0 -testRatio 1.0 -us LIGHTWEIGHT
-java -Xmx100g -jar ${jar_path} -f insertion -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG -1.0 -MR -1.0 -testRatio 1.0 -us LIGHTWEIGHT
+# java -Xmx100g -jar ${jar_path} -f insertion -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG -1.0 -MR 2.0 -testRatio 1.0 -us LIGHTWEIGHT
+# java -Xmx100g -jar ${jar_path} -f insertion -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG -1.0 -MR -1.0 -testRatio 1.0 -us LIGHTWEIGHT
 java -Xmx100g -jar ${jar_path} -f insertion -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG 2.0 -MR 2.0 -testRatio 1.0 -us LIGHTWEIGHT
 
-java -Xmx100g -jar ${jar_path} -f insertion -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG -1.0 -MR 2.0 -testRatio 1.0 -us RECONSTRUCT
-java -Xmx100g -jar ${jar_path} -f insertion -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG -1.0 -MR -1.0 -testRatio 1.0 -us RECONSTRUCT
+# java -Xmx100g -jar ${jar_path} -f insertion -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG -1.0 -MR 2.0 -testRatio 1.0 -us RECONSTRUCT
+# java -Xmx100g -jar ${jar_path} -f insertion -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG -1.0 -MR -1.0 -testRatio 1.0 -us RECONSTRUCT
 java -Xmx100g -jar ${jar_path} -f insertion -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG 2.0 -MR 2.0 -testRatio 1.0 -us RECONSTRUCT
