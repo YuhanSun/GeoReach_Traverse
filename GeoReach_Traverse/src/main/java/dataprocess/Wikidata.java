@@ -19,9 +19,12 @@ import commons.Util;
 public class Wikidata {
 
   private static final Logger LOGGER = Logger.getLogger(Wikidata.class.getName());
-  private static Level loggingLevel = Level.FINE;
+  private static Level loggingLevel = Level.INFO;
 
+  // for test
   // static String dir = "D:\\Project_Data\\wikidata-20180308-truthy-BETA.nt";
+  // static String fullfilePath = dir + "/slice_100000.nt";
+
   static String dir = "/hdd/code/yuhansun/data/wikidata";
   static String fullfilePath = dir + "/wikidata-20180308-truthy-BETA.nt";
   static String sliceDataPath = dir + "/slice_100000.nt";
@@ -159,13 +162,17 @@ public class Wikidata {
       // outputArray.add(String.valueOf(id));
       // ReadWriteUtil.WriteArray(filePath, outputArray);
 
+      Util.println(labels);
       String filePath = dir + "\\graph_label.txt";
       FileWriter writer = new FileWriter(new File(filePath));
+      FileWriter logwriter = new FileWriter(logPath, true);
       writer.write(labels.size() + "\n");
       for (int key = 0; key < idMap.size(); key++) {
         TreeSet<Integer> keyLabels = labels.get(key);
         if (keyLabels == null) {
-          ReadWriteUtil.WriteFile(logPath, true, String.format("%d does not have label", key));
+          logwriter.write(String.format("%d does not have label\n", key));
+          writer.write(String.format("%d,0\n", key));
+          continue;
         }
         writer.write(String.format("%d,%d", key, keyLabels.size()));
         for (int id : keyLabels)
@@ -173,6 +180,7 @@ public class Wikidata {
         writer.write("\n");
       }
       writer.close();
+      logwriter.close();
 
     } catch (Exception e) {
       Util.println(line);
