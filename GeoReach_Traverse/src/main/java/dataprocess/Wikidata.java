@@ -16,14 +16,15 @@ import commons.Util;
 
 public class Wikidata {
 
-  static String dir = "D:\\Project_Data\\wikidata-20180308-truthy-BETA.nt";
-  static String fullfilePath = dir + "\\wikidata-20180308-truthy-BETA.nt";
-  static String sliceDataPath = dir + "\\slice_100000.nt";
-  static String logPath = dir + "\\extract.log";
-  static String locationPath = dir + "\\locations.txt";
-  static String entityMapPath = dir + "\\entity_map.txt";
-  static String graphPath = dir + "\\graph.txt";
-  static String entityPath = dir + "\\entity.txt";
+  // static String dir = "D:\\Project_Data\\wikidata-20180308-truthy-BETA.nt";
+  static String dir = "/hdd/code/yuhansun/data/wikidata";
+  static String fullfilePath = dir + "/wikidata-20180308-truthy-BETA.nt";
+  static String sliceDataPath = dir + "/slice_100000.nt";
+  static String logPath = dir + "/extract.log";
+  static String locationPath = dir + "/locations.txt";
+  static String entityMapPath = dir + "/entity_map.txt";
+  static String graphPath = dir + "/graph.txt";
+  static String entityPath = dir + "/entity.txt";
 
   public static void main(String[] args) {
     // TODO Auto-generated method stub
@@ -53,9 +54,10 @@ public class Wikidata {
     // removeLocationOutOfBound();
     // getEdgeCount();
 
-    extractPropertyID();
+    // extractPropertyID();
 
     // getLabelCount();
+    extractLabels();
   }
 
   public static void checkPropertyEntityID() {
@@ -63,14 +65,17 @@ public class Wikidata {
     ArrayList<Integer> propertySet = ReadWriteUtil.readIntegerArray(dir + "\\propertyID.txt");
     int count = 0;
     for (int id : propertySet) {
-      if (idMap.containsKey(id)) {
-        Util.println(String.format("%d,%d", id, idMap.get(id)));
+      if (idMap.containsKey((long) id)) {
+        Util.println(String.format("%d,%d", id, idMap.get((long) id)));
         count++;
       }
     }
     Util.println("count: " + count);
   }
 
+  /**
+   * Extract all property id.
+   */
   public static void extractPropertyID() {
     BufferedReader reader = null;
     String line = "";
@@ -106,6 +111,72 @@ public class Wikidata {
     }
   }
 
+  /**
+   * Extract labels of format <graphID, list of labels>.
+   */
+  public static void extractLabels() {
+    BufferedReader reader = null;
+    String line = "";
+    HashMap<Long, Integer> idMap = readMap(entityMapPath);
+    TreeSet<Integer> hasLabelVertices = new TreeSet<>();
+    HashMap<Integer, TreeSet<Integer>> labels = new HashMap<>();
+    int count = 0;
+    try {
+      reader = new BufferedReader(new FileReader(new File(fullfilePath)));
+      while ((line = reader.readLine()) != null) {
+        String[] strList = line.split(" ");
+        String predicate = strList[1];
+        if (predicate.equals("<http://www.wikidata.org/prop/direct/P31>")) {
+          count++;
+          String subject = strList[0];
+          String object = strList[2];
+
+          if (!isEntity(subject) || !isEntity(object))
+            continue;
+
+          int graphID = idMap.get(getEntityID(subject));
+          hasLabelVertices.add(graphID);
+
+          int labelID = idMap.get(getEntityID(object));
+          if (!labels.containsKey(graphID))
+            labels.put(graphID, new TreeSet<>());
+          labels.get(graphID).add(labelID);
+
+          if (count % 1000000 == 0)
+            Util.println(count);
+        }
+      }
+
+      // String filePath = dir + "\\hasLabelVertices.txt";
+      // ArrayList<String> outputArray = new ArrayList<>(hasLabelVertices.size());
+      // for (int id : hasLabelVertices)
+      // outputArray.add(String.valueOf(id));
+      // ReadWriteUtil.WriteArray(filePath, outputArray);
+
+      String filePath = dir + "\\graph_label.txt";
+      FileWriter writer = new FileWriter(new File(filePath));
+      writer.write(labels.size() + "\n");
+      for (int key = 0; key < idMap.size(); key++) {
+        TreeSet<Integer> keyLabels = labels.get(key);
+        if (keyLabels == null) {
+          ReadWriteUtil.WriteFile(logPath, true, String.format("%d does not have label", key));
+        }
+        writer.write(String.format("%d,%d", key, keyLabels.size()));
+        for (int id : keyLabels)
+          writer.write(String.format(",%d", id));
+        writer.write("\n");
+      }
+      writer.close();
+
+    } catch (Exception e) {
+      Util.println(line);
+      e.printStackTrace();
+    }
+  }
+
+  /**
+   * Extract labels of format <labelID, set of graphIds>.
+   */
   public static void getLabelCount() {
     BufferedReader reader = null;
     String line = "";
@@ -383,6 +454,9 @@ public class Wikidata {
     }
   }
 
+  /**
+   * Generate the graph.txt file.
+   */
   public static void extractEntityToEntityRelation() {
     BufferedReader reader;
     FileWriter writer;
@@ -402,6 +476,8 @@ public class Wikidata {
 
       long curWikiID = 26;
       TreeSet<Integer> neighbors = new TreeSet<>();
+      // Process node by node. Assume that all the spo for the same node are clustered rather than
+      // interleaved.
       while ((line = reader.readLine()) != null) {
         String[] strList = line.split(" ");
         String subject = strList[0];
@@ -448,9 +524,11 @@ public class Wikidata {
     }
   }
 
+  /**
+   * Generate the final entity file from location.txt.
+   */
   public static void generateEntityFile() {
     BufferedReader reader = null;
-    FileWriter writer = null;
     int lineIndex = 0;
     String line = "";
     try {
@@ -462,6 +540,7 @@ public class Wikidata {
         entities.add(new Entity(i));
 
       Util.println("read locations from " + locationPath);
+      // Process the spatial entities.
       reader = new BufferedReader(new FileReader(new File(locationPath)));
       while ((line = reader.readLine()) != null) {
         String[] strList = line.split(",");
@@ -491,14 +570,17 @@ public class Wikidata {
   }
 
   /**
-   * Extract entity full url, location map. Not used.
+   * Extract only the spatial entities. The input example is '''<http://www.wikidata.org/entity/Q26>
+   * <http://www.wikidata.org/prop/direct/P625> "Point(-5.84
+   * 54.590933333333)"^^<http://www.opengis.net/ont/geosparql#wktLiteral> .''' The output format is
+   * '''wikiId,POINT(lon lat)'''.
    */
   public static void extract() {
     BufferedReader reader;
     FileWriter writer;
     FileWriter logWriter;
     String line = "";
-    int p276Count = 0, p625Count = 0;
+    int p276Count = 0, p625Count = 0; // p276 is not for coordinate
     long index = 0;
     try {
       reader = new BufferedReader(new FileReader(new File(fullfilePath)));
@@ -538,11 +620,17 @@ public class Wikidata {
     }
   }
 
+  /**
+   * Read the map <wikiID, graphID>.
+   *
+   * @param mapPath
+   * @return
+   */
   public static HashMap<Long, Integer> readMap(String mapPath) {
     BufferedReader reader = null;
     String line = "";
     try {
-      reader = new BufferedReader(new FileReader(new File(entityMapPath)));
+      reader = new BufferedReader(new FileReader(new File(mapPath)));
       HashMap<Long, Integer> idMap = new HashMap<>();
       while ((line = reader.readLine()) != null) {
         String[] strList = line.split(",");
@@ -557,14 +645,18 @@ public class Wikidata {
         try {
           reader.close();
         } catch (IOException e1) {
-          // TODO Auto-generated catch block
           e1.printStackTrace();
         }
-      // TODO: handle exception
     }
     return null;
   }
 
+  /**
+   * Extract the id of a property.
+   *
+   * @param string
+   * @return
+   */
   public static long getPropertyID(String string) {
     if (!string.contains("http://www.wikidata.org/prop/direct/P")) {
       Util.println(string + " does not match property format");

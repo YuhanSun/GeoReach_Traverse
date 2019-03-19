@@ -8,13 +8,14 @@ import org.apache.commons.cli.Options;
 import commons.EnumVariables.Expand;
 import commons.EnumVariables.MaintenanceStrategy;
 import commons.Util;
+import dataprocess.Wikidata;
 import experiment.AddEdge;
 
 public class Driver {
 
   // function names
   private static enum FunctionName {
-    query, insertion, generateAccurateDb,
+    query, insertion, generateAccurateDb, wikidataprocess,
   }
 
   private String[] args = null;
@@ -92,6 +93,9 @@ public class Driver {
             break;
           case generateAccurateDb:
             addEdge.generateAccurateDbAfterAddEdges(MGVal, MRVal);
+            break;
+          case wikidataprocess:
+            Wikidata.extractLabels();
             break;
           default:
             Util.println(String.format("Function %s does not exist!", functionNameString));
