@@ -9,12 +9,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import commons.Entity;
 import commons.GraphUtil;
 import commons.ReadWriteUtil;
 import commons.Util;
 
 public class Wikidata {
+
+  private static final Logger LOGGER = Logger.getLogger(Wikidata.class.getName());
+  private static Level loggingLevel = Level.FINE;
 
   // static String dir = "D:\\Project_Data\\wikidata-20180308-truthy-BETA.nt";
   static String dir = "/hdd/code/yuhansun/data/wikidata";
@@ -25,6 +30,7 @@ public class Wikidata {
   static String entityMapPath = dir + "/entity_map.txt";
   static String graphPath = dir + "/graph.txt";
   static String entityPath = dir + "/entity.txt";
+
 
   public static void main(String[] args) {
     // TODO Auto-generated method stub
@@ -627,6 +633,7 @@ public class Wikidata {
    * @return
    */
   public static HashMap<Long, Integer> readMap(String mapPath) {
+    LOGGER.log(loggingLevel, "readMap from {0}", mapPath);
     BufferedReader reader = null;
     String line = "";
     try {
