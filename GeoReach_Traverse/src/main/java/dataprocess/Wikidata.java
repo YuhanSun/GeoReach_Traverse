@@ -2,6 +2,7 @@ package dataprocess;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -11,6 +12,10 @@ import java.util.HashSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import commons.Entity;
 import commons.GraphUtil;
 import commons.ReadWriteUtil;
@@ -22,10 +27,10 @@ public class Wikidata {
   private static Level loggingLevel = Level.INFO;
 
   // for test
-  // static String dir = "D:\\Project_Data\\wikidata-20180308-truthy-BETA.nt";
+  static String dir = "D:/Project_Data/wikidata-20180308-truthy-BETA.nt";
   // static String fullfilePath = dir + "/slice_100000.nt";
 
-  static String dir = "/hdd/code/yuhansun/data/wikidata";
+  // static String dir = "/hdd/code/yuhansun/data/wikidata";
   static String fullfilePath = dir + "/wikidata-20180308-truthy-BETA.nt";
   static String sliceDataPath = dir + "/slice_100000.nt";
   static String logPath = dir + "/extract.log";
@@ -34,8 +39,11 @@ public class Wikidata {
   static String graphPath = dir + "/graph.txt";
   static String entityPath = dir + "/entity.txt";
 
+  static String propertiesJsonFile = dir + "/properties.json";
+  static String propertyMapPath = dir + "/property_map.txt";
 
-  public static void main(String[] args) {
+
+  public static void main(String[] args) throws Exception {
     // TODO Auto-generated method stub
     // extract();
 
@@ -66,7 +74,8 @@ public class Wikidata {
     // extractPropertyID();
 
     // getLabelCount();
-    extractLabels();
+    // extractLabels();
+    extractPropertyLabelMap();
   }
 
   public static void checkPropertyEntityID() {
@@ -80,6 +89,30 @@ public class Wikidata {
       }
     }
     Util.println("count: " + count);
+  }
+
+  /**
+   * Extract the map <id, label> from properties.json
+   * 
+   * @throws ParseException
+   * @throws IOException
+   * @throws FileNotFoundException
+   */
+  public static void extractPropertyLabelMap()
+      throws FileNotFoundException, IOException, ParseException {
+    FileWriter writer = new FileWriter(propertyMapPath);
+    JSONParser parser = new JSONParser();
+    JSONObject jsonObject = (JSONObject) parser.parse(new FileReader(propertiesJsonFile));
+    JSONArray jsonArray = (JSONArray) jsonObject.get("rows");
+    for (Object object : jsonArray) {
+      JSONArray propertyMap = (JSONArray) object;
+      LOGGER.log(loggingLevel, propertyMap.toString());
+      String property = (String) propertyMap.get(0);
+      String label = (String) propertyMap.get(1);
+      int propertyId = Integer.parseInt(property.replaceAll("P", ""));
+      writer.write(String.format("%d,%s\n", propertyId, label));
+    }
+    writer.close();
   }
 
   /**
@@ -163,7 +196,7 @@ public class Wikidata {
       // ReadWriteUtil.WriteArray(filePath, outputArray);
 
       Util.println(labels);
-      String filePath = dir + "\\graph_label.txt";
+      String filePath = dir + "/graph_label.txt";
       FileWriter writer = new FileWriter(new File(filePath));
       FileWriter logwriter = new FileWriter(logPath, true);
       writer.write(labels.size() + "\n");
