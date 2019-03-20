@@ -6,6 +6,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -81,7 +83,16 @@ public class Wikidata {
 
     // convert data for GraphFrame
     // GraphUtil.convertGraphToEdgeFormat(graphPath, edgePath);
-    GraphUtil.extractSpatialEntities(entityPath, dir + "/entity_spatial.txt");
+    // GraphUtil.extractSpatialEntities(entityPath, dir + "/entity_spatial.txt");
+
+    App();
+  }
+
+  public static void App() throws Exception {
+    ArrayList<ArrayList<Integer>> graph = GraphUtil.ReadGraph(graphPath);
+    // LOGGER.log(loggingLevel, "Edge count in graph: {0}", GraphUtil.getEdgeCount(graph));
+    LOGGER.log(loggingLevel, "Edge count in edges file: {0}",
+        Files.lines(Paths.get(edgePath)).count());
   }
 
   public static void checkPropertyEntityID() {

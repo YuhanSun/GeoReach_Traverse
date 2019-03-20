@@ -67,6 +67,14 @@ public class GraphUtil {
     return count;
   }
 
+  public static int getEdgeCount(ArrayList<ArrayList<Integer>> graph) {
+    int count = 0;
+    for (Collection<Integer> neighbors : graph) {
+      count += neighbors.size();
+    }
+    return count;
+  }
+
   /**
    * Read graph from a file.
    * 
