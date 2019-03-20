@@ -41,6 +41,7 @@ public class Wikidata {
 
   static String propertiesJsonFile = dir + "/properties.json";
   static String propertyMapPath = dir + "/property_map.txt";
+  static String edgePath = dir + "/graph_edges.txt";
 
 
   public static void main(String[] args) throws Exception {
@@ -75,7 +76,11 @@ public class Wikidata {
 
     // getLabelCount();
     // extractLabels();
-    extractPropertyLabelMap();
+
+    // extractPropertyLabelMap();
+    
+    // convert to GraphFrame
+    GraphUtil.convertGraphToEdgeFormat(graphPath, edgePath);
   }
 
   public static void checkPropertyEntityID() {
@@ -89,6 +94,25 @@ public class Wikidata {
       }
     }
     Util.println("count: " + count);
+  }
+
+  /**
+   * Extract all node properties from the source file.
+   *
+   * @throws Exception
+   */
+  public static void extractProperties() throws Exception {
+    BufferedReader reader = new BufferedReader(new FileReader(fullfilePath));
+    String line = null;
+    long entityId = -1;
+    while ((line = reader.readLine()) != null) {
+      String[] spo = decodeRow(line);
+      if (!isEntity(spo[0])) {
+        continue;
+      }
+      long curEntityId = getEntityID(spo[0]);
+      // if (curEntityId)
+    }
   }
 
   /**
@@ -502,7 +526,7 @@ public class Wikidata {
   }
 
   /**
-   * Generate the graph.txt file.
+   * Generate the graph.txt file (single directional).
    */
   public static void extractEntityToEntityRelation() {
     BufferedReader reader;
@@ -724,16 +748,12 @@ public class Wikidata {
   }
 
   /**
-   * Extract the id of an entity.
+   * Extract the id of an entity. An entity means Q-entity.
    *
    * @param string
    * @return
    */
   public static long getEntityID(String string) {
-    if (!string.contains("http://www.wikidata.org/entity/")) {
-      Util.println(string + " does not match entity format");
-      System.exit(-1);
-    }
     String tempString = string.replace("<", "").replace(">", "");
     String[] stringList = tempString.split("/entity/Q");
     long id = Long.parseLong(stringList[1]);
@@ -758,10 +778,20 @@ public class Wikidata {
       return false;
   }
 
+  /**
+   * Whether is an Q-entity.
+   *
+   * @param string
+   * @return
+   */
   public static boolean isEntity(String string) {
     if (string.matches("<http://www.wikidata.org/entity/Q\\d+>"))
       return true;
     else
       return false;
+  }
+
+  public static String[] decodeRow(String line) {
+    return line.split(" ");
   }
 }

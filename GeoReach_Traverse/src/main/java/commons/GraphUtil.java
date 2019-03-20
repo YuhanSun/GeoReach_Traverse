@@ -13,6 +13,18 @@ import java.util.TreeSet;
 
 public class GraphUtil {
 
+  public static void convertGraphToEdgeFormat(String graphPath, String edgePath) throws Exception {
+    ArrayList<ArrayList<Integer>> graph = ReadGraph(graphPath);
+    FileWriter writer = new FileWriter(edgePath);
+    int id = 0;
+    for (ArrayList<Integer> neighbors : graph) {
+      for (int neighbor : neighbors) {
+        writer.write(String.format("%d,%d\n", id, neighbor));
+      }
+    }
+    writer.close();
+  }
+
   public static List<Edge> readEdges(String edgePath) throws Exception {
     List<Edge> edges = new LinkedList<>();
     BufferedReader reader = new BufferedReader(new FileReader(new File(edgePath)));
