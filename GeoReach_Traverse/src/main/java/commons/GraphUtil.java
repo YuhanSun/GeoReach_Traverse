@@ -13,6 +13,25 @@ import java.util.TreeSet;
 
 public class GraphUtil {
 
+  public static void extractSpatialEntities(String entityPath, String outputPath) throws Exception {
+    ArrayList<Entity> entities = ReadEntity(entityPath);
+    FileWriter writer = new FileWriter(outputPath);
+    for (Entity entity : entities) {
+      if (entity.IsSpatial) {
+        writer.write(String.format("%d,1,%s,%s\n", entity.id, String.valueOf(entity.lon),
+            String.valueOf(entity.lat)));
+      }
+    }
+    writer.close();
+  }
+
+  /**
+   * Convert a bidirectional graph to bidirectional edge format.
+   *
+   * @param graphPath
+   * @param edgePath
+   * @throws Exception
+   */
   public static void convertGraphToEdgeFormat(String graphPath, String edgePath) throws Exception {
     ArrayList<ArrayList<Integer>> graph = ReadGraph(graphPath);
     FileWriter writer = new FileWriter(edgePath);

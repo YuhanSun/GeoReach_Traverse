@@ -78,9 +78,10 @@ public class Wikidata {
     // extractLabels();
 
     // extractPropertyLabelMap();
-    
-    // convert to GraphFrame
-    GraphUtil.convertGraphToEdgeFormat(graphPath, edgePath);
+
+    // convert data for GraphFrame
+    // GraphUtil.convertGraphToEdgeFormat(graphPath, edgePath);
+    GraphUtil.extractSpatialEntities(entityPath, dir + "/entity_spatial.txt");
   }
 
   public static void checkPropertyEntityID() {
