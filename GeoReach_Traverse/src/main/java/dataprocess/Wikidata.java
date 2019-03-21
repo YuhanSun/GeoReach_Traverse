@@ -11,19 +11,48 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import commons.Entity;
 import commons.GraphUtil;
 import commons.ReadWriteUtil;
 import commons.Util;
 
 public class Wikidata {
+
+  /**
+   * entity with Q-start
+   */
+  private final static Pattern entityPattern =
+      Pattern.compile("<http://www.wikidata.org/entity/Q(\\d+)>");
+
+  /**
+   * property treated as entity in the subject.
+   */
+  private final static Pattern propertyEntityPattern =
+      Pattern.compile("<http://www.wikidata.org/entity/P(\\d+)>");
+
+  /**
+   * property treated as predicate
+   */
+  private final static Pattern propertyPredicatePattern =
+      Pattern.compile("<http://www.wikidata.org/prop/direct/P(\\d+)>");
+
+  private final static String labelStr = "rdf-schema#label";
+  private final static String labelPropertyName = "name";
+  private final static String descriptionStr = "<http://schema.org/description>";
+  private final static String descriptionPropertyName = "description";
+
+  private final static String enStr = "@en";
+  private final static String instanceOfStr = "<http://www.wikidata.org/prop/direct/P31>";
+  private final static String coordinateStr = "<http://www.wikidata.org/prop/direct/P625>";
 
   private static final Logger LOGGER = Logger.getLogger(Wikidata.class.getName());
   private static Level loggingLevel = Level.INFO;
@@ -44,6 +73,7 @@ public class Wikidata {
   static String propertiesJsonFile = dir + "/properties.json";
   static String propertyMapPath = dir + "/property_map.txt";
   static String edgePath = dir + "/graph_edges.txt";
+  static String entityPropertiesPath = dir + "/entity_properties.txt";
 
 
   public static void main(String[] args) throws Exception {
@@ -85,12 +115,18 @@ public class Wikidata {
     // GraphUtil.convertGraphToEdgeFormat(graphPath, edgePath);
     // GraphUtil.extractSpatialEntities(entityPath, dir + "/entity_spatial.txt");
 
-    App();
+    // edgeCountCheck();
   }
 
-  public static void App() throws Exception {
+
+  /**
+   * Check the number of edges in graph.txt and edges.txt.
+   *
+   * @throws Exception
+   */
+  public static void edgeCountCheck() throws Exception {
     ArrayList<ArrayList<Integer>> graph = GraphUtil.ReadGraph(graphPath);
-    // LOGGER.log(loggingLevel, "Edge count in graph: {0}", GraphUtil.getEdgeCount(graph));
+    LOGGER.log(loggingLevel, "Edge count in graph: {0}", GraphUtil.getEdgeCount(graph));
     LOGGER.log(loggingLevel, "Edge count in edges file: {0}",
         Files.lines(Paths.get(edgePath)).count());
   }
@@ -114,17 +150,59 @@ public class Wikidata {
    * @throws Exception
    */
   public static void extractProperties() throws Exception {
+    Map<Integer, String> propertyMap = readPropertyMap(propertyMapPath);
     BufferedReader reader = new BufferedReader(new FileReader(fullfilePath));
+    FileWriter writer = new FileWriter(entityPropertiesPath);
     String line = null;
     long entityId = -1;
+    JsonObject properties = null;
     while ((line = reader.readLine()) != null) {
       String[] spo = decodeRow(line);
-      if (!isEntity(spo[0])) {
+      if (!isQEntity(spo[0])) {
         continue;
       }
-      long curEntityId = getEntityID(spo[0]);
-      // if (curEntityId)
+      long curEntityId = getQEntityID(spo[0]);
+      if (curEntityId != entityId) {
+        // entityId = -1, initialize the properties for the first entity.
+        if (entityId < 0) {
+          properties = new JsonObject();
+          continue;
+        }
+        // output the properties as json format for this entity.
+        properties.addProperty("id", entityId);
+        writer.write(properties.toString() + "\n");
+      }
+
+      String predicate = spo[1];
+      String object = spo[2];
+      // extract the label and description in language English.
+      if (object.endsWith(enStr)) {
+        if (predicate.equals(labelStr)) {
+          properties.addProperty(labelPropertyName, object);
+        } else if (predicate.equals(descriptionStr)) {
+          properties.addProperty(descriptionPropertyName, object);
+        }
+      } else if (isQEntity(object)) {
+        // skip the entity-to-entity edges.
+        continue;
+      } else if (isPropertyPredicate(predicate)) {
+        // only extract the rows with existing property predicate.
+        int propertyId = getPropertyPredicateID(predicate);
+        String propertyName = propertyMap.get(propertyId);
+        if (properties.has(propertyName)) {
+          properties.remove(propertyName);
+        }
+        properties.addProperty(propertyName, object);
+      }
     }
+
+    if (properties.size() > 0) {
+      properties.addProperty("id", entityId);
+      writer.write(properties.toString() + "\n");
+    }
+
+    reader.close();
+    writer.close();
   }
 
   /**
@@ -134,17 +212,16 @@ public class Wikidata {
    * @throws IOException
    * @throws FileNotFoundException
    */
-  public static void extractPropertyLabelMap()
-      throws FileNotFoundException, IOException, ParseException {
+  public static void extractPropertyLabelMap() throws Exception {
     FileWriter writer = new FileWriter(propertyMapPath);
-    JSONParser parser = new JSONParser();
-    JSONObject jsonObject = (JSONObject) parser.parse(new FileReader(propertiesJsonFile));
-    JSONArray jsonArray = (JSONArray) jsonObject.get("rows");
+    JsonParser parser = new JsonParser();
+    JsonObject jsonObject = (JsonObject) parser.parse(new FileReader(propertiesJsonFile));
+    JsonArray jsonArray = (JsonArray) jsonObject.get("rows");
     for (Object object : jsonArray) {
-      JSONArray propertyMap = (JSONArray) object;
+      JsonArray propertyMap = (JsonArray) object;
       LOGGER.log(loggingLevel, propertyMap.toString());
-      String property = (String) propertyMap.get(0);
-      String label = (String) propertyMap.get(1);
+      String property = propertyMap.get(0).toString();
+      String label = propertyMap.get(1).toString();
       int propertyId = Integer.parseInt(property.replaceAll("P", ""));
       writer.write(String.format("%d,%s\n", propertyId, label));
     }
@@ -165,12 +242,12 @@ public class Wikidata {
         lineIndex++;
         String[] strings = line.split(" ");
         String subject = strings[0];
-        long id = getPropertyEntityID(subject);
+        long id = getPropertySubjectID(subject);
         if (id != -1)
           idSet.add(id);
 
         String object = strings[2];
-        id = getPropertyEntityID(object);
+        id = getPropertySubjectID(object);
         if (id != -1)
           idSet.add(id);
 
@@ -204,18 +281,18 @@ public class Wikidata {
       while ((line = reader.readLine()) != null) {
         String[] strList = line.split(" ");
         String predicate = strList[1];
-        if (predicate.equals("<http://www.wikidata.org/prop/direct/P31>")) {
+        if (predicate.equals(instanceOfStr)) {
           count++;
           String subject = strList[0];
           String object = strList[2];
 
-          if (!isEntity(subject) || !isEntity(object))
+          if (!isQEntity(subject) || !isQEntity(object))
             continue;
 
-          int graphID = idMap.get(getEntityID(subject));
+          int graphID = idMap.get(getQEntityID(subject));
           hasLabelVertices.add(graphID);
 
-          int labelID = idMap.get(getEntityID(object));
+          int labelID = idMap.get(getQEntityID(object));
           if (!labels.containsKey(graphID))
             labels.put(graphID, new TreeSet<>());
           labels.get(graphID).add(labelID);
@@ -272,18 +349,18 @@ public class Wikidata {
       while ((line = reader.readLine()) != null) {
         String[] strList = line.split(" ");
         String predicate = strList[1];
-        if (predicate.equals("<http://www.wikidata.org/prop/direct/P31>")) {
+        if (predicate.equals(instanceOfStr)) {
           count++;
           String subject = strList[0];
           String object = strList[2];
 
-          if (!isEntity(subject) || !isEntity(object))
+          if (!isQEntity(subject) || !isQEntity(object))
             continue;
 
-          int graphID = idMap.get(getEntityID(subject));
+          int graphID = idMap.get(getQEntityID(subject));
           hasLabelVertices.add(graphID);
 
-          int labelID = idMap.get(getEntityID(object));
+          int labelID = idMap.get(getQEntityID(object));
           if (!labels.containsKey(labelID))
             labels.put(labelID, new TreeSet<>());
           labels.get(labelID).add(graphID);
@@ -385,17 +462,17 @@ public class Wikidata {
       while ((line = reader.readLine()) != null) {
         String[] strList = line.split(" ");
         String predicate = strList[1];
-        if (predicate.matches("<http://www.wikidata.org/prop/direct/P\\d+>")) {
+        if (predicate.matches(propertyPredicatePattern.pattern())) {
           predicateCount++;
-          long propertyID = getPropertyID(predicate);
+          long propertyID = getPropertyPredicateID(predicate);
           if (propertyID == 376) {
             String object = strList[2];
-            if (object.matches("<http://www.wikidata.org/entity/Q\\d+>")) {
-              long planetID = getEntityID(object);
+            if (object.matches(entityPattern.pattern())) {
+              long planetID = getQEntityID(object);
               if (planetID != 2) {
                 String subject = strList[0];
-                if (isEntity(subject)) {
-                  long subjectWikiID = getEntityID(subject);
+                if (isQEntity(subject)) {
+                  long subjectWikiID = getQEntityID(subject);
                   writer.write(subjectWikiID + "\n");
                 }
               }
@@ -487,8 +564,8 @@ public class Wikidata {
         String[] strList = line.split(" ");
         String subject = strList[0];
 
-        if (subject.matches("<http://www.wikidata.org/entity/Q\\d+>")) {
-          long startID = getEntityID(subject);
+        if (subject.matches(entityPattern.pattern())) {
+          long startID = getQEntityID(subject);
           if (startID != curWikiID) {
             if (startIdSet.contains(startID)) {
               throw new Exception(startID + "already exists before here!");
@@ -503,8 +580,8 @@ public class Wikidata {
         }
 
         String object = strList[2];
-        if (object.matches("<http://www.wikidata.org/entity/Q\\d+>")) {
-          long endID = getEntityID(object);
+        if (object.matches(entityPattern.pattern())) {
+          long endID = getQEntityID(object);
           if (startIdSet.contains(endID) == false)
             leafVerticesSet.add(endID);
         }
@@ -565,8 +642,8 @@ public class Wikidata {
         String[] strList = line.split(" ");
         String subject = strList[0];
 
-        if (subject.matches("<http://www.wikidata.org/entity/Q\\d+>")) {
-          long startID = getEntityID(subject);
+        if (subject.matches(entityPattern.pattern())) {
+          long startID = getQEntityID(subject);
           if (curWikiID != startID) {
             writer.write(String.format("%d,%d", idMap.get(curWikiID), neighbors.size()));
             for (int neighbor : neighbors)
@@ -577,8 +654,8 @@ public class Wikidata {
           }
 
           String object = strList[2];
-          if (object.matches("<http://www.wikidata.org/entity/Q\\d+>")) {
-            long endID = getEntityID(object);
+          if (object.matches(entityPattern.pattern())) {
+            long endID = getQEntityID(object);
             int graphID = idMap.get(endID);
             neighbors.add(graphID);
           }
@@ -672,11 +749,11 @@ public class Wikidata {
       while ((line = reader.readLine()) != null) {
         String[] strList = line.split(" ");
         String predicate = strList[1];
-        if (predicate.equals("<http://www.wikidata.org/prop/direct/P625>")) {
+        if (predicate.equals(coordinateStr)) {
           p625Count++;
           if (line.contains("\"")) {
             String subject = strList[0];
-            Long wikiID = getEntityID(subject);
+            Long wikiID = getQEntityID(subject);
             strList = line.split("\"");
             String pointString = strList[1];
             writer.write(wikiID + "," + pointString + "\n");
@@ -736,27 +813,49 @@ public class Wikidata {
   }
 
   /**
-   * Extract the id of a property.
+   * Extract the id of a property when it is a predicate.
    *
    * @param string
    * @return
+   * @throws Exception
    */
-  public static long getPropertyID(String string) {
-    if (!string.contains("http://www.wikidata.org/prop/direct/P")) {
-      Util.println(string + " does not match property format");
-      System.exit(-1);
+  public static int getPropertyPredicateID(String string) throws Exception {
+    Matcher matcher = propertyPredicatePattern.matcher(string);
+    if (matcher.find()) {
+      return Integer.parseInt(matcher.group(1));
     }
-    String tempString = string.replace("<", "").replace(">", "");
-    String[] stringList = tempString.split("prop/direct/P");
-    long id = Long.parseLong(stringList[1]);
-    return id;
+    throw new Exception(string + " is not a property in predicate!");
   }
 
-  public static boolean isProperty(String string) {
-    if (string.matches("<https://www.wikidata.org/wiki/Property:P\\d+>"))
-      return true;
-    else
-      return false;
+  public static boolean isPropertyPredicate(String string) {
+    return string.matches(propertyPredicatePattern.pattern());
+  }
+
+  // public static boolean isProperty(String string) {
+  // if (string.matches("<https://www.wikidata.org/wiki/Property:P\\d+>"))
+  // return true;
+  // else
+  // return false;
+  // }
+
+
+  /**
+   * Get the id of a property in subject.
+   * 
+   * @param string
+   * @return
+   * @throws Exception
+   */
+  public static long getPropertySubjectID(String string) throws Exception {
+    Matcher m = propertyEntityPattern.matcher(string);
+    if (m.find()) {
+      return Long.parseLong(m.group(1));
+    }
+    throw new Exception(string + " is not a property entity!");
+  }
+
+  public static boolean isPropertySubject(String string) {
+    return string.matches(propertyEntityPattern.pattern());
   }
 
   /**
@@ -764,30 +863,14 @@ public class Wikidata {
    *
    * @param string
    * @return
+   * @throws Exception
    */
-  public static long getEntityID(String string) {
-    String tempString = string.replace("<", "").replace(">", "");
-    String[] stringList = tempString.split("/entity/Q");
-    long id = Long.parseLong(stringList[1]);
-    return id;
-  }
-
-
-  public static long getPropertyEntityID(String string) {
-    String tempString = string.replace("<", "").replace(">", "");
-    if (tempString.matches("http://www.wikidata.org/entity/P\\d+")) {
-      String[] stringList = tempString.split("/entity/P");
-      long id = Long.parseLong(stringList[1]);
-      return id;
-    } else
-      return -1;
-  }
-
-  public static boolean isPropertyEntity(String string) {
-    if (string.matches("<http://www.wikidata.org/entity/P\\d+>"))
-      return true;
-    else
-      return false;
+  public static long getQEntityID(String string) throws Exception {
+    Matcher m = entityPattern.matcher(string);
+    if (m.find()) {
+      return Long.parseLong(m.group(1));
+    }
+    throw new Exception(string + " is not an Q-entity!");
   }
 
   /**
@@ -796,14 +879,27 @@ public class Wikidata {
    * @param string
    * @return
    */
-  public static boolean isEntity(String string) {
-    if (string.matches("<http://www.wikidata.org/entity/Q\\d+>"))
-      return true;
-    else
-      return false;
+  public static boolean isQEntity(String string) {
+    return string.matches(entityPattern.pattern());
   }
 
+  /**
+   * Decode the row into [subject, predicate, object].
+   *
+   * @param line
+   * @return
+   */
   public static String[] decodeRow(String line) {
     return line.split(" ");
+  }
+
+  public static Map<Integer, String> readPropertyMap(String filepath) {
+    LOGGER.info("read map from " + filepath);
+    HashMap<String, String> map = ReadWriteUtil.ReadMap(filepath);
+    HashMap<Integer, String> propertyMap = new HashMap<>();
+    for (String key : map.keySet()) {
+      propertyMap.put(Integer.parseInt(key), map.get(key));
+    }
+    return propertyMap;
   }
 }
