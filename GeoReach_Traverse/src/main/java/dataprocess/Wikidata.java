@@ -2,7 +2,6 @@ package dataprocess;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -17,9 +16,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import com.google.gson.JsonArray;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import commons.Entity;
 import commons.GraphUtil;
 import commons.ReadWriteUtil;
@@ -45,6 +45,9 @@ public class Wikidata {
   private final static Pattern propertyPredicatePattern =
       Pattern.compile("<http://www.wikidata.org/prop/direct/P(\\d+)>");
 
+  // private final static Pattern patternContainLanguageMark =
+  // Pattern.compile("\\\"(.*?)\\\"@\\S+(-*)(\\S*)");
+
   private final static String labelStr = "rdf-schema#label";
   private final static String labelPropertyName = "name";
   private final static String descriptionStr = "<http://schema.org/description>";
@@ -55,13 +58,13 @@ public class Wikidata {
   private final static String coordinateStr = "<http://www.wikidata.org/prop/direct/P625>";
 
   private static final Logger LOGGER = Logger.getLogger(Wikidata.class.getName());
-  private static Level loggingLevel = Level.INFO;
+  private static Level loggingLevel = Level.ALL;
 
   // for test
-  static String dir = "D:/Project_Data/wikidata-20180308-truthy-BETA.nt";
+  // static String dir = "D:/Project_Data/wikidata-20180308-truthy-BETA.nt";
   // static String fullfilePath = dir + "/slice_100000.nt";
 
-  // static String dir = "/hdd/code/yuhansun/data/wikidata";
+  static String dir = "/hdd/code/yuhansun/data/wikidata";
   static String fullfilePath = dir + "/wikidata-20180308-truthy-BETA.nt";
   static String sliceDataPath = dir + "/slice_100000.nt";
   static String logPath = dir + "/extract.log";
@@ -70,7 +73,7 @@ public class Wikidata {
   static String graphPath = dir + "/graph.txt";
   static String entityPath = dir + "/entity.txt";
 
-  static String propertiesJsonFile = dir + "/properties.json";
+  static String propertiesJsonFile = dir + "/properties_from_query.json";
   static String propertyMapPath = dir + "/property_map.txt";
   static String edgePath = dir + "/graph_edges.txt";
   static String entityPropertiesPath = dir + "/entity_properties.txt";
@@ -108,6 +111,7 @@ public class Wikidata {
 
     // getLabelCount();
     // extractLabels();
+    extractProperties();
 
     // extractPropertyLabelMap();
 
@@ -164,13 +168,14 @@ public class Wikidata {
       long curEntityId = getQEntityID(spo[0]);
       if (curEntityId != entityId) {
         // entityId = -1, initialize the properties for the first entity.
-        if (entityId < 0) {
+        if (properties == null) {
           properties = new JsonObject();
-          continue;
+        } else {
+          // output the properties as json format for this entity.
+          properties.addProperty("id", entityId);
+          writer.write(properties.toString() + "\n");
         }
-        // output the properties as json format for this entity.
-        properties.addProperty("id", entityId);
-        writer.write(properties.toString() + "\n");
+        entityId = curEntityId;
       }
 
       String predicate = spo[1];
@@ -186,9 +191,21 @@ public class Wikidata {
         // skip the entity-to-entity edges.
         continue;
       } else if (isPropertyPredicate(predicate)) {
+
+        if (!(object.endsWith("\"") && object.startsWith("\""))) {
+          continue;
+        }
+
+        object = object.substring(1, object.length() - 1);
+
         // only extract the rows with existing property predicate.
         int propertyId = getPropertyPredicateID(predicate);
+        LOGGER.log(loggingLevel, propertyId + "");
         String propertyName = propertyMap.get(propertyId);
+        // the propertyId does not exist in latest properties ids.
+        if (propertyName == null) {
+          continue;
+        }
         if (properties.has(propertyName)) {
           properties.remove(propertyName);
         }
@@ -206,23 +223,23 @@ public class Wikidata {
   }
 
   /**
-   * Extract the map <id, label> from properties.json
-   * 
-   * @throws ParseException
-   * @throws IOException
-   * @throws FileNotFoundException
+   * Extract the map <id, label> from properties.json. Since the json file is not up-to-date, I
+   * change the code extractProperty() to get the correct result.
+   *
+   * @throws Exception
    */
   public static void extractPropertyLabelMap() throws Exception {
     FileWriter writer = new FileWriter(propertyMapPath);
-    JsonParser parser = new JsonParser();
-    JsonObject jsonObject = (JsonObject) parser.parse(new FileReader(propertiesJsonFile));
-    JsonArray jsonArray = (JsonArray) jsonObject.get("rows");
+    JSONParser parser = new JSONParser();
+    LOGGER.log(loggingLevel, "read from " + propertiesJsonFile);
+    JSONArray jsonArray = (JSONArray) parser.parse(new FileReader(propertiesJsonFile));
     for (Object object : jsonArray) {
-      JsonArray propertyMap = (JsonArray) object;
+      JSONObject propertyMap = (JSONObject) object;
       LOGGER.log(loggingLevel, propertyMap.toString());
-      String property = propertyMap.get(0).toString();
-      String label = propertyMap.get(1).toString();
-      int propertyId = Integer.parseInt(property.replaceAll("P", ""));
+      String property = propertyMap.get("property").toString();
+      String label = propertyMap.get("propertyLabel").toString();
+      int propertyId =
+          Integer.parseInt(property.replaceAll("http://www.wikidata.org/entity/P", ""));
       writer.write(String.format("%d,%s\n", propertyId, label));
     }
     writer.close();
@@ -894,7 +911,7 @@ public class Wikidata {
   }
 
   public static Map<Integer, String> readPropertyMap(String filepath) {
-    LOGGER.info("read map from " + filepath);
+    LOGGER.log(loggingLevel, "read map from " + filepath);
     HashMap<String, String> map = ReadWriteUtil.ReadMap(filepath);
     HashMap<Integer, String> propertyMap = new HashMap<>();
     for (String key : map.keySet()) {

@@ -95,7 +95,7 @@ public class Driver {
             addEdge.generateAccurateDbAfterAddEdges(MGVal, MRVal);
             break;
           case wikidataprocess:
-            Wikidata.extractLabels();
+            Wikidata.main(null);
             break;
           default:
             Util.println(String.format("Function %s does not exist!", functionNameString));
