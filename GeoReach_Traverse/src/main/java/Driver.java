@@ -20,7 +20,8 @@ public class Driver {
     wikidataExtractStringLabel, //
     wikidataExtractEntityToEntityRelationEdgeFormat, //
     wikidataLoadGraph, //
-    extractEntityToEntityRelationEdgeFormat,//
+    wikiExtractEntityToEntityRelationEdgeFormat, //
+    wikiLoadEdges, wikiLoadAttributes,
   }
 
   private String[] args = null;
@@ -115,9 +116,17 @@ public class Driver {
             wikidata = new Wikidata(cmd.getOptionValue(homeDir));
             wikidata.loadAllEntities();
             break;
-          case extractEntityToEntityRelationEdgeFormat:
+          case wikiExtractEntityToEntityRelationEdgeFormat:
             wikidata = new Wikidata(cmd.getOptionValue(homeDir));
             wikidata.extractEntityToEntityRelationEdgeFormat();
+            break;
+          case wikiLoadEdges:
+            wikidata = new Wikidata(cmd.getOptionValue(homeDir));
+            wikidata.loadEdges();
+            break;
+          case wikiLoadAttributes:
+            wikidata = new Wikidata(cmd.getOptionValue(homeDir));
+            wikidata.loadAttributes();
             break;
           default:
             Util.println(String.format("Function %s does not exist!", functionNameString));

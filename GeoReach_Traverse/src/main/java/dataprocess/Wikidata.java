@@ -24,9 +24,12 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.neo4j.graphdb.Label;
+import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.unsafe.batchinsert.BatchInserter;
 import org.neo4j.unsafe.batchinsert.BatchInserters;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import commons.Config;
 import commons.Entity;
 import commons.GraphUtil;
@@ -177,6 +180,48 @@ public class Wikidata {
     // edgeCountCheck();
   }
 
+  public void loadAttributes() throws Exception {
+    int[] idMap = readQIdToGraphIdMap(entityMapPath);
+    BufferedReader reader = new BufferedReader(new FileReader(entityPropertiesPath));
+    LOGGER.info("Batch insert properties into: " + dbPath);
+    Map<String, String> config = new HashMap<String, String>();
+    config.put("dbms.pagecache.memory", "80g");
+    BatchInserter inserter = BatchInserters.inserter(new File(dbPath).getAbsoluteFile(), config);
+    String line = null;
+    JsonParser jsonParser = new JsonParser();
+    while ((line = reader.readLine()) != null) {
+      JsonElement jsonElement = jsonParser.parse(line);
+      JsonObject object = jsonElement.getAsJsonObject();
+      int QId = object.get("id").getAsInt();
+      int graphId = idMap[QId];
+      Map<String, Object> properties = inserter.getNodeProperties(graphId);
+      for (String key : object.keySet()) {
+        properties.put(key, object.get(key).getAsString());
+      }
+      inserter.setNodeProperties(graphId, properties);
+    }
+    reader.close();
+    inserter.shutdown();
+  }
+
+  public void loadEdges() throws Exception {
+    BufferedReader reader = new BufferedReader(new FileReader(graphPropertyEdgePath));
+    LOGGER.info("Batch insert edges into: " + dbPath);
+    Map<String, String> config = new HashMap<String, String>();
+    config.put("dbms.pagecache.memory", "80g");
+    BatchInserter inserter = BatchInserters.inserter(new File(dbPath).getAbsoluteFile(), config);
+    String line = null;
+    while ((line = reader.readLine()) != null) {
+      String[] strings = line.split(",");
+      int startId = Integer.parseInt(strings[0]);
+      int endId = Integer.parseInt(strings[2]);
+      String label = strings[1];
+      inserter.createRelationship(startId, endId, RelationshipType.withName(label), null);
+    }
+    reader.close();
+    inserter.shutdown();
+  }
+
   public void loadAllEntities() throws Exception {
     ArrayList<Entity> entities = GraphUtil.ReadEntity(entityPath);
     ArrayList<ArrayList<Integer>> labels = GraphUtil.ReadGraph(graphLabelPath);
@@ -195,7 +240,7 @@ public class Wikidata {
    */
   public static void loadAllEntity(List<Entity> entities, String[] labelStringMap,
       ArrayList<ArrayList<Integer>> labelList, String dbPath) throws Exception {
-    Util.println("Batch insert into: " + dbPath);
+    LOGGER.info("Batch insert into: " + dbPath);
     Map<String, String> config = new HashMap<String, String>();
     config.put("dbms.pagecache.memory", "80g");
     BatchInserter inserter = BatchInserters.inserter(new File(dbPath).getAbsoluteFile(), config);
@@ -1124,6 +1169,7 @@ public class Wikidata {
     }
     return propertyMap;
   }
+
 
   public static int[] readQIdToGraphIdMap(String filepath) throws Exception {
     List<Integer> entityIdMap = readGraphIdToQIdMap(filepath);
