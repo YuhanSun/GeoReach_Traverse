@@ -15,7 +15,7 @@ public class Driver {
 
   // function names
   private static enum FunctionName {
-    query, insertion, generateAccurateDb, wikidataprocess,
+    query, insertion, generateAccurateDb, wikidataprocessExtractProperties, wikidataprocessExtractStringLabel,
   }
 
   private String[] args = null;
@@ -94,9 +94,11 @@ public class Driver {
           case generateAccurateDb:
             addEdge.generateAccurateDbAfterAddEdges(MGVal, MRVal);
             break;
-          case wikidataprocess:
-            Wikidata.main(null);
+          case wikidataprocessExtractProperties:
+            Wikidata.extractProperties();
             break;
+          case wikidataprocessExtractStringLabel:
+            Wikidata.extractStringLabels();
           default:
             Util.println(String.format("Function %s does not exist!", functionNameString));
             break;
