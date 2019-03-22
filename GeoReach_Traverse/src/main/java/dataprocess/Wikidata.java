@@ -244,9 +244,11 @@ public class Wikidata {
     String line = null;
     int count = 0;
     while ((line = reader.readLine()) != null) {
-      if (count % 1000000 == 0) {
+      if (count % 10000000 == 0) {
         LOGGER.info("" + count);
       }
+      count++;
+
       String[] spo = decodeRow(line);
       if (!isQEntity(spo[0])) {
         continue;
