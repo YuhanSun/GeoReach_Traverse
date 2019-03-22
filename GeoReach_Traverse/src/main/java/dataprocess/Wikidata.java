@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
@@ -174,10 +175,6 @@ public class Wikidata {
     // GraphUtil.extractSpatialEntities(entityPath, dir + "/entity_spatial.txt");
 
     // edgeCountCheck();
-  }
-
-  public void loadEdges() {
-
   }
 
   public void loadAllEntities() throws Exception {
@@ -824,9 +821,9 @@ public class Wikidata {
             LOGGER.info("" + lineIndex);
           }
         }
-        reader.close();
-        writer.close();
       }
+      reader.close();
+      writer.close();
     } catch (Exception e) {
       Util.println(String.format("line %d:\n%s", lineIndex, line));
       e.printStackTrace();
@@ -1155,7 +1152,7 @@ public class Wikidata {
     LOGGER.log(loggingLevel, "read map from " + filepath);
     BufferedReader reader = new BufferedReader(new FileReader(filepath));
     String line = null;
-    List<Integer> entityIdMap = new ArrayList<>(nodeCountLimit);
+    List<Integer> entityIdMap = new LinkedList<>();
     int index = 0;
     while ((line = reader.readLine()) != null) {
       String[] strings = line.split(",");
