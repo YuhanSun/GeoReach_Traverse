@@ -165,6 +165,9 @@ public class Wikidata {
     long entityId = -1;
     JsonObject properties = null;
     while ((line = reader.readLine()) != null) {
+      if (line.contains("\\")) {
+        continue;
+      }
       String[] spo = decodeRow(line);
       if (!isQEntity(spo[0])) {
         continue;
