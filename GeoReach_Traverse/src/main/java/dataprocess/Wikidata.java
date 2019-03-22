@@ -237,7 +237,7 @@ public class Wikidata {
     int maxQId = Collections.max(entityIdMap);
     // get the reversed map from <graphid, Qid> to generate the map <Qid, graphid>.
     LOGGER.log(loggingLevel, "generate reversed map");
-    int[] map = new int[maxQId];
+    int[] map = new int[maxQId + 1];
     Arrays.fill(map, -1);
 
     int graphId = 0;
