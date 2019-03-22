@@ -8,8 +8,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -230,12 +233,17 @@ public class Wikidata {
    * @throws Exception
    */
   public static void extractStringLabels() throws Exception {
-    Map<Integer, Long> entityIdMap = readEntityIdMap(entityMapPath);
+    List<Integer> entityIdMap = readEntityIdMap(entityMapPath);
+    int maxQId = Collections.max(entityIdMap);
     // get the reversed map from <graphid, Qid> to generate the map <Qid, graphid>.
     LOGGER.log(loggingLevel, "generate reversed map");
-    Map<Long, Integer> map = new HashMap<>();
-    for (int key : entityIdMap.keySet()) {
-      map.put(entityIdMap.get(key), key);
+    int[] map = new int[maxQId];
+    Arrays.fill(map, -1);
+
+    int graphId = 0;
+    for (int QId : entityIdMap) {
+      map[QId] = graphId;
+      graphId++;
     }
 
     LOGGER.info("read from " + fullfilePath);;
@@ -260,7 +268,7 @@ public class Wikidata {
       if (object.endsWith(enStr) && predicate.contains(labelStr)) {
         object = object.substring(1, object.length() - 4);
         long curEntityId = getQEntityID(spo[0]);
-        int graphId = map.get(curEntityId);
+        graphId = map[(int) curEntityId];
         writer.write(String.format("%d,%s", graphId, object));
 
         if (graphId % 1000000 == 0) {
@@ -975,13 +983,23 @@ public class Wikidata {
     return propertyMap;
   }
 
-  public static Map<Integer, Long> readEntityIdMap(String filepath) {
+  public static List<Integer> readEntityIdMap(String filepath) throws Exception {
     LOGGER.log(loggingLevel, "read map from " + filepath);
-    HashMap<String, String> map = ReadWriteUtil.ReadMap(filepath);
-    HashMap<Integer, Long> entityIdMap = new HashMap<>();
-    for (String key : map.keySet()) {
-      entityIdMap.put(Integer.parseInt(key), Long.parseLong(map.get(key)));
+    BufferedReader reader = new BufferedReader(new FileReader(filepath));
+    String line = null;
+    List<Integer> entityIdMap = new ArrayList<>(5000000);
+    int index = 0;
+    while ((line = reader.readLine()) != null) {
+      String[] strings = line.split(",");
+      int graphId = Integer.parseInt(strings[0]);
+      if (index != graphId) {
+        throw new Exception("graph id inconsistency!");
+      }
+
+      int Qid = Integer.parseInt(strings[1]);
+      entityIdMap.add(Qid);
     }
+    reader.close();
     return entityIdMap;
   }
 }
