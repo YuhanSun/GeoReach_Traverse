@@ -58,7 +58,7 @@ public class Wikidata {
   private final static String coordinateStr = "<http://www.wikidata.org/prop/direct/P625>";
 
   private static final Logger LOGGER = Logger.getLogger(Wikidata.class.getName());
-  private static Level loggingLevel = Level.ALL;
+  private static Level loggingLevel = Level.INFO;
 
   // for test
   // static String dir = "D:/Project_Data/wikidata-20180308-truthy-BETA.nt";
