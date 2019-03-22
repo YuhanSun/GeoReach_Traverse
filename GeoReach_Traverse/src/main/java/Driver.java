@@ -98,13 +98,16 @@ public class Driver {
             addEdge.generateAccurateDbAfterAddEdges(MGVal, MRVal);
             break;
           case wikidataExtractProperties:
-            Wikidata.extractProperties();
+            Wikidata wikidata = new Wikidata(cmd.getOptionValue(homeDir));
+            wikidata.extractProperties();
             break;
           case wikidataExtractStringLabel:
-            Wikidata.extractStringLabels();
+            wikidata = new Wikidata(cmd.getOptionValue(homeDir));
+            wikidata.extractStringLabels();
             break;
           case wikidataExtractEntityToEntityRelationEdgeFormat:
-            Wikidata.extractEntityToEntityRelationEdgeFormat();
+            wikidata = new Wikidata(cmd.getOptionValue(homeDir));
+            wikidata.extractEntityToEntityRelationEdgeFormat();
             break;
           default:
             Util.println(String.format("Function %s does not exist!", functionNameString));

@@ -4,7 +4,7 @@
 homeDir="/hdd/code/yuhansun"
 
 dataset="wikidata"
-# data_dir="${dir}/data/${dataset}"
+data_dir="${dir}/data/${dataset}"
 code_dir="${homeDir}/code"
 resultDir="${homeDir}/result"
 
@@ -18,6 +18,6 @@ jar_path="${code_dir}/GeoReach_Traverse/GeoReach_Traverse/target/GeoReach_Traver
 echo "java -Xmx100g -jar ${jar_path} -h"
 java -Xmx100g -jar ${jar_path} -h
 
-java -Xmx100g -jar ${jar_path} -f wikidataExtractProperties -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG 2.0 -MR 2.0
-# java -Xmx100g -jar ${jar_path} -f wikidataExtractStringLabel -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG 2.0 -MR 2.0
-# java -Xmx100g -jar ${jar_path} -f wikidataExtractEntityToEntityRelationEdgeFormat -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG 2.0 -MR 2.0
+java -Xmx100g -jar ${jar_path} -f wikidataExtractProperties -hd ${data_dir} -rd ${resultDir} -d ${dataset} -MG 2.0 -MR 2.0
+# java -Xmx100g -jar ${jar_path} -f wikidataExtractStringLabel -hd ${data_dir} -rd ${resultDir} -d ${dataset} -MG 2.0 -MR 2.0
+# java -Xmx100g -jar ${jar_path} -f wikidataExtractEntityToEntityRelationEdgeFormat -hd ${data_dir} -rd ${resultDir} -d ${dataset} -MG 2.0 -MR 2.0

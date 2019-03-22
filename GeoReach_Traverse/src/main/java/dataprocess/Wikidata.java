@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,7 +23,12 @@ import java.util.regex.Pattern;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.neo4j.graphdb.DynamicLabel;
+import org.neo4j.graphdb.Label;
+import org.neo4j.unsafe.batchinsert.BatchInserter;
+import org.neo4j.unsafe.batchinsert.BatchInserters;
 import com.google.gson.JsonObject;
+import commons.Config;
 import commons.Entity;
 import commons.GraphUtil;
 import commons.ReadWriteUtil;
@@ -64,29 +70,61 @@ public class Wikidata {
   private static Level loggingLevel = Level.INFO;
 
   // for test
-  // static String dir = "D:/Project_Data/wikidata-20180308-truthy-BETA.nt";
-  // static String fullfilePath = dir + "/slice_100000.nt";
+  String dir = "";
+  String fullfilePath;
 
-  static String dir = "/hdd/code/yuhansun/data/wikidata";
-  static String fullfilePath = dir + "/wikidata-20180308-truthy-BETA.nt";
-  static String sliceDataPath = dir + "/slice_100000.nt";
-  static String logPath = dir + "/extract.log";
-  static String locationPath = dir + "/locations.txt";
-  static String entityMapPath = dir + "/entity_map.txt";
-  static String graphPath = dir + "/graph.txt";
-  static String entityPath = dir + "/entity.txt";
+  // static String dir = "/hdd/code/yuhansun/data/wikidata";
+  // static String fullfilePath = dir + "/wikidata-20180308-truthy-BETA.nt";
+  String logPath = dir + "/extract.log";
+  String locationPath = dir + "/locations.txt";
+  String entityMapPath = dir + "/entity_map.txt";
+  String graphPath = dir + "/graph.txt";
+  String entityPath = dir + "/entity.txt";
 
-  static String propertiesJsonFile = dir + "/properties_from_query.json";
-  static String propertyMapPath = dir + "/property_map.txt";
-  static String edgePath = dir + "/graph_edges.txt";
-  static String entityPropertiesPath = dir + "/entity_properties.txt";
-  static String entityStringLabelMapPath = dir + "/entity_string_label.txt";
+  String propertiesJsonFile = dir + "/properties_from_query.json";
+  String propertyMapPath = dir + "/property_map.txt";
+  String edgePath = dir + "/graph_edges.txt";
+  String entityPropertiesPath = dir + "/entity_properties.txt";
+  String entityStringLabelMapPath = dir + "/entity_string_label.txt";
 
   // for loading
-  static String propertyEdgePath = dir + "/edges_properties.txt";
+  String propertyEdgePath = dir + "/edges_properties.txt";
+
+  private static Config config = new Config();
+  private static String lon_name = config.GetLongitudePropertyName();
+  private static String lat_name = config.GetLatitudePropertyName();
+
+  public Wikidata(String homeDir) {
+    this(homeDir, "wikidata-20180308-truthy-BETA.nt");
+  }
+
+  public Wikidata(String homeDir, String sourceFileName) {
+    this.dir = homeDir;
+    fullfilePath = dir + "/" + sourceFileName;
+    // static String dir = "/hdd/code/yuhansun/data/wikidata";
+    // static String fullfilePath = dir + "/wikidata-20180308-truthy-BETA.nt";
+    logPath = dir + "/extract.log";
+    locationPath = dir + "/locations.txt";
+    entityMapPath = dir + "/entity_map.txt";
+    graphPath = dir + "/graph.txt";
+    entityPath = dir + "/entity.txt";
+
+    propertiesJsonFile = dir + "/properties_from_query.json";
+    propertyMapPath = dir + "/property_map.txt";
+    edgePath = dir + "/graph_edges.txt";
+    entityPropertiesPath = dir + "/entity_properties.txt";
+    entityStringLabelMapPath = dir + "/entity_string_label.txt";
+
+    // for loading
+    propertyEdgePath = dir + "/edges_properties.txt";
+  }
 
   public static void main(String[] args) throws Exception {
     // TODO Auto-generated method stub
+    String dir = "D:/Project_Data/wikidata-20180308-truthy-BETA.nt";
+    String sourceFilename = "slice_100000.nt";
+    Wikidata wikidata = new Wikidata(dir, sourceFilename);
+
     // extract();
 
     // extractEntityMap();
@@ -117,8 +155,8 @@ public class Wikidata {
 
     // getLabelCount();
     // extractLabels();
-    extractProperties();
-    // extractStringLabels();
+    // extractProperties();
+    wikidata.extractStringLabels();
 
     // extractPropertyLabelMap();
 
@@ -129,20 +167,58 @@ public class Wikidata {
     // edgeCountCheck();
   }
 
+  /**
+   * Load all entities and generate the id map.
+   *
+   * @param entities
+   * @param labelList
+   * @param dbPath
+   * @param mapPath
+   * @throws Exception
+   */
+  public static void loadAllEntityAndCreateIdMap(List<Entity> entities, List<Integer> labelList,
+      String dbPath, String mapPath) throws Exception {
+    Util.println("Batch insert into: " + dbPath);
+    Map<Object, Object> id_map = new TreeMap<Object, Object>();
+    Map<String, String> config = new HashMap<String, String>();
+    config.put("dbms.pagecache.memory", "80g");
+    BatchInserter inserter = BatchInserters.inserter(new File(dbPath).getAbsoluteFile(), config);
+    for (int i = 0; i < entities.size(); i++) {
+      Entity entity = entities.get(i);
+      Map<String, Object> properties = new HashMap<String, Object>();
+      properties.put("id", entity.id);
+      int labelID = labelList.get(i);
+      Label label = DynamicLabel.label(String.format("GRAPH_%d", labelID));
+      if (entity.IsSpatial) {
+        if (labelID != 1) {
+          throw new Exception(String.format("entity %d is spatial but label in labellist is %d!",
+              entity.id, labelID));
+        }
+        properties.put(lon_name, entity.lon);
+        properties.put(lat_name, entity.lat);
+      }
+      Long pos_id = inserter.createNode(properties, label);
+      id_map.put(entity.id, pos_id);
+
+    }
+    inserter.shutdown();
+    Util.println("Write all node map to " + mapPath + "\n");
+    ReadWriteUtil.WriteMap(mapPath, false, id_map);
+  }
 
   /**
    * Check the number of edges in graph.txt and edges.txt.
    *
    * @throws Exception
    */
-  public static void edgeCountCheck() throws Exception {
+  public void edgeCountCheck() throws Exception {
     ArrayList<ArrayList<Integer>> graph = GraphUtil.ReadGraph(graphPath);
     LOGGER.log(loggingLevel, "Edge count in graph: {0}", GraphUtil.getEdgeCount(graph));
     LOGGER.log(loggingLevel, "Edge count in edges file: {0}",
         Files.lines(Paths.get(edgePath)).count());
   }
 
-  public static void checkPropertyEntityID() {
+  public void checkPropertyEntityID() {
     HashMap<Long, Integer> idMap = readMap(entityMapPath);
     ArrayList<Integer> propertySet = ReadWriteUtil.readIntegerArray(dir + "\\propertyID.txt");
     int count = 0;
@@ -160,7 +236,7 @@ public class Wikidata {
    *
    * @throws Exception
    */
-  public static void extractProperties() throws Exception {
+  public void extractProperties() throws Exception {
     Map<Integer, String> propertyMap = readPropertyMap(propertyMapPath);
     BufferedReader reader = new BufferedReader(new FileReader(fullfilePath));
     FileWriter writer = new FileWriter(entityPropertiesPath);
@@ -244,7 +320,7 @@ public class Wikidata {
    * 
    * @throws Exception
    */
-  public static void extractStringLabels() throws Exception {
+  public void extractStringLabels() throws Exception {
     int[] map = readQIdToGraphIdMap(entityMapPath);
 
     LOGGER.info("read from " + fullfilePath);;
@@ -270,7 +346,7 @@ public class Wikidata {
         object = object.substring(1, object.length() - 4);
         long curEntityId = getQEntityID(spo[0]);
         int graphId = map[(int) curEntityId];
-        writer.write(String.format("%d,%s", graphId, object));
+        writer.write(String.format("%d,%s\n", graphId, object));
 
         if (graphId % 1000000 == 0) {
           LOGGER.log(loggingLevel, graphId + "");
@@ -287,7 +363,7 @@ public class Wikidata {
    *
    * @throws Exception
    */
-  public static void extractPropertyLabelMap() throws Exception {
+  public void extractPropertyLabelMap() throws Exception {
     FileWriter writer = new FileWriter(propertyMapPath);
     JSONParser parser = new JSONParser();
     LOGGER.log(loggingLevel, "read from " + propertiesJsonFile);
@@ -307,7 +383,7 @@ public class Wikidata {
   /**
    * Extract all property id.
    */
-  public static void extractPropertyID() {
+  public void extractPropertyID() {
     BufferedReader reader = null;
     String line = "";
     HashSet<Long> idSet = new HashSet<>();
@@ -342,14 +418,14 @@ public class Wikidata {
     }
   }
 
-  public static void extractLabelMap() {
+  public void extractLabelMap() {
 
   }
 
   /**
    * Extract labels of format <graphID, list of labels>.
    */
-  public static void extractEntityLabels() {
+  public void extractEntityLabels() {
     BufferedReader reader = null;
     String line = "";
     HashMap<Long, Integer> idMap = readMap(entityMapPath);
@@ -418,7 +494,7 @@ public class Wikidata {
   /**
    * Extract labels of format <labelID, set of graphIds>.
    */
-  public static void getLabelCount() {
+  public void getLabelCount() {
     BufferedReader reader = null;
     String line = "";
     HashMap<Long, Integer> idMap = readMap(entityMapPath);
@@ -475,7 +551,7 @@ public class Wikidata {
     }
   }
 
-  public static void getEdgeCount() {
+  public void getEdgeCount() {
     ArrayList<ArrayList<Integer>> graph = GraphUtil.ReadGraph(graphPath);
     int edgeCount = 0;
     for (ArrayList<Integer> neighbors : graph)
@@ -483,7 +559,7 @@ public class Wikidata {
     Util.println(edgeCount);
   }
 
-  public static void removeLocationOutOfBound() {
+  public void removeLocationOutOfBound() {
     ArrayList<Entity> entities = GraphUtil.ReadEntity(entityPath);
     int count = 0;
     for (Entity entity : entities) {
@@ -500,7 +576,7 @@ public class Wikidata {
     GraphUtil.writeEntityToFile(entities, entityPath);
   }
 
-  public static void removeLocationOutOfEarth() {
+  public void removeLocationOutOfEarth() {
     BufferedReader reader = null;
     HashMap<Long, Integer> idMap = readMap(entityMapPath);
     ArrayList<Entity> entities = GraphUtil.ReadEntity(entityPath);
@@ -531,7 +607,7 @@ public class Wikidata {
     }
   }
 
-  public static void findEntitiesNotOnEarth() {
+  public void findEntitiesNotOnEarth() {
     String outputPath = dir + "\\outofearth_local.csv";
     FileWriter writer = null;
     BufferedReader reader = null;
@@ -574,7 +650,7 @@ public class Wikidata {
   /**
    * Find some entities are not on earth.
    */
-  public static void checkLocation() {
+  public void checkLocation() {
     ArrayList<Entity> entities = GraphUtil.ReadEntity(entityPath);
     HashMap<String, String> map = ReadWriteUtil.ReadMap(entityMapPath);
     int count = 0;
@@ -589,20 +665,20 @@ public class Wikidata {
     Util.println(count);
   }
 
-  public static void getRange() {
+  public void getRange() {
     ArrayList<Entity> entities = GraphUtil.ReadEntity(entityPath);
     // ArrayList<Entity> entities = Util.ReadEntity(dir + "\\new_entity.txt");
     Util.println(Util.GetEntityRange(entities));
   }
 
-  public static void readGraphTest() {
+  public void readGraphTest() {
     ArrayList<ArrayList<Integer>> graph = GraphUtil.ReadGraph(graphPath);
   }
 
   /**
    * Check graph file first line and real number of vertices
    */
-  public static void checkGraphVerticesCount() {
+  public void checkGraphVerticesCount() {
     BufferedReader reader = null;
     try {
       reader = new BufferedReader(new FileReader(new File(graphPath)));
@@ -623,7 +699,7 @@ public class Wikidata {
     }
   }
 
-  public static void extractEntityMap() {
+  public void extractEntityMap() {
     BufferedReader reader;
     FileWriter writer;
     FileWriter logWriter;
@@ -698,7 +774,7 @@ public class Wikidata {
   /**
    * Extract the file of '''startGraphId,propertyName,endGraphId'''.
    */
-  public static void extractEntityToEntityRelationEdgeFormat() {
+  public void extractEntityToEntityRelationEdgeFormat() {
     BufferedReader reader;
     FileWriter writer;
     String line = "";
@@ -748,7 +824,7 @@ public class Wikidata {
   /**
    * Generate the graph.txt file (single directional).
    */
-  public static void extractEntityToEntityRelation() {
+  public void extractEntityToEntityRelation() {
     BufferedReader reader;
     FileWriter writer;
     FileWriter logWriter;
@@ -818,7 +894,7 @@ public class Wikidata {
   /**
    * Generate the final entity file from location.txt.
    */
-  public static void generateEntityFile() {
+  public void generateEntityFile() {
     BufferedReader reader = null;
     int lineIndex = 0;
     String line = "";
@@ -866,7 +942,7 @@ public class Wikidata {
    * 54.590933333333)"^^<http://www.opengis.net/ont/geosparql#wktLiteral> .''' The output format is
    * '''wikiId,POINT(lon lat)'''.
    */
-  public static void extract() {
+  public void extract() {
     BufferedReader reader;
     FileWriter writer;
     FileWriter logWriter;
