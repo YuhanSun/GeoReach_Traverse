@@ -18,7 +18,8 @@ public class Driver {
     query, insertion, generateAccurateDb, //
     wikidataExtractProperties, //
     wikidataExtractStringLabel, //
-    wikidataExtractEntityToEntityRelationEdgeFormat,//
+    wikidataExtractEntityToEntityRelationEdgeFormat, //
+    wikidataLoadGraph,
   }
 
   private String[] args = null;
@@ -109,6 +110,9 @@ public class Driver {
             wikidata = new Wikidata(cmd.getOptionValue(homeDir));
             wikidata.extractEntityToEntityRelationEdgeFormat();
             break;
+          case wikidataLoadGraph:
+            wikidata = new Wikidata(cmd.getOptionValue(homeDir));
+            wikidata.loadAllEntityAndCreateIdMap();
           default:
             Util.println(String.format("Function %s does not exist!", functionNameString));
             break;

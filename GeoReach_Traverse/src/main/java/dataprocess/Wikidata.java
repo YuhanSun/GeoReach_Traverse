@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -23,7 +22,6 @@ import java.util.regex.Pattern;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.Label;
 import org.neo4j.unsafe.batchinsert.BatchInserter;
 import org.neo4j.unsafe.batchinsert.BatchInserters;
@@ -69,6 +67,9 @@ public class Wikidata {
   private static final Logger LOGGER = Logger.getLogger(Wikidata.class.getName());
   private static Level loggingLevel = Level.INFO;
 
+  private final static int nodeCountLimit = 50000000;
+  private final static int logInterval = 1000000;
+
   // for test
   String dir = "";
   String fullfilePath;
@@ -89,6 +90,9 @@ public class Wikidata {
 
   // for loading
   String propertyEdgePath = dir + "/edges_properties.txt";
+
+  String graphLabelPath;
+  String dbPath;
 
   private static Config config = new Config();
   private static String lon_name = config.GetLongitudePropertyName();
@@ -117,6 +121,9 @@ public class Wikidata {
 
     // for loading
     propertyEdgePath = dir + "/edges_properties.txt";
+    graphLabelPath = dir + "/graph_label.txt";
+    dbPath = dir + "/neo4j-community-3.4.12/data/databases/graph.db";
+
   }
 
   public static void main(String[] args) throws Exception {
@@ -167,6 +174,13 @@ public class Wikidata {
     // edgeCountCheck();
   }
 
+  public void loadAllEntityAndCreateIdMap() throws Exception {
+    ArrayList<Entity> entities = GraphUtil.ReadEntity(entityPath);
+    ArrayList<ArrayList<Integer>> labels = GraphUtil.ReadGraph(graphLabelPath);
+    String[] labelStringMap = readLabelMap(entityStringLabelMapPath);
+    loadAllEntityAndCreateIdMap(entities, labelStringMap, labels, dbPath);
+  }
+
   /**
    * Load all entities and generate the id map.
    *
@@ -176,34 +190,32 @@ public class Wikidata {
    * @param mapPath
    * @throws Exception
    */
-  public static void loadAllEntityAndCreateIdMap(List<Entity> entities, List<Integer> labelList,
-      String dbPath, String mapPath) throws Exception {
+  public static void loadAllEntityAndCreateIdMap(List<Entity> entities, String[] labelStringMap,
+      ArrayList<ArrayList<Integer>> labelList, String dbPath) throws Exception {
     Util.println("Batch insert into: " + dbPath);
-    Map<Object, Object> id_map = new TreeMap<Object, Object>();
     Map<String, String> config = new HashMap<String, String>();
     config.put("dbms.pagecache.memory", "80g");
     BatchInserter inserter = BatchInserters.inserter(new File(dbPath).getAbsoluteFile(), config);
     for (int i = 0; i < entities.size(); i++) {
       Entity entity = entities.get(i);
       Map<String, Object> properties = new HashMap<String, Object>();
-      properties.put("id", entity.id);
-      int labelID = labelList.get(i);
-      Label label = DynamicLabel.label(String.format("GRAPH_%d", labelID));
-      if (entity.IsSpatial) {
-        if (labelID != 1) {
-          throw new Exception(String.format("entity %d is spatial but label in labellist is %d!",
-              entity.id, labelID));
+      List<Label> labels = new ArrayList<>();
+      for (int labelId : labelList.get(i)) {
+        String labelString = labelStringMap[labelId];
+        if (labelString == null) {
+          continue;
         }
+        Label label = Label.label(labelString);
+        labels.add(label);
+      }
+      if (entity.IsSpatial) {
         properties.put(lon_name, entity.lon);
         properties.put(lat_name, entity.lat);
       }
-      Long pos_id = inserter.createNode(properties, label);
-      id_map.put(entity.id, pos_id);
+      inserter.createNode(i, properties, labels.toArray(new Label[labels.size()]));
 
     }
     inserter.shutdown();
-    Util.println("Write all node map to " + mapPath + "\n");
-    ReadWriteUtil.WriteMap(mapPath, false, id_map);
   }
 
   /**
@@ -246,7 +258,7 @@ public class Wikidata {
     JsonObject properties = null;
     while ((line = reader.readLine()) != null) {
       lineIndex++;
-      if (lineIndex % 1000000 == 0) {
+      if (lineIndex % logInterval == 0) {
         LOGGER.info("" + lineIndex);
       }
 
@@ -316,7 +328,8 @@ public class Wikidata {
   }
 
   /**
-   * Extract all the string labels for all Q entities.
+   * Extract all the string labels for all Q entities. <graphId, Stringlabel>. It can happen <0,
+   * "ab">, <0, "bc">. But this is handled in the read. Only the first will be read.
    * 
    * @throws Exception
    */
@@ -329,7 +342,7 @@ public class Wikidata {
     String line = null;
     int count = 0;
     while ((line = reader.readLine()) != null) {
-      if (count % 10000000 == 0) {
+      if (count % logInterval == 0) {
         LOGGER.info("" + count);
       }
       count++;
@@ -348,7 +361,7 @@ public class Wikidata {
         int graphId = map[(int) curEntityId];
         writer.write(String.format("%d,%s\n", graphId, object));
 
-        if (graphId % 1000000 == 0) {
+        if (graphId % logInterval == 0) {
           LOGGER.log(loggingLevel, graphId + "");
         }
       }
@@ -403,7 +416,7 @@ public class Wikidata {
         if (id != -1)
           idSet.add(id);
 
-        if (lineIndex % 10000000 == 0)
+        if (lineIndex % logInterval == 0)
           Util.println(lineIndex);
       }
       reader.close();
@@ -416,10 +429,6 @@ public class Wikidata {
       // TODO: handle exception
       e.printStackTrace();
     }
-  }
-
-  public void extractLabelMap() {
-
   }
 
   /**
@@ -454,7 +463,7 @@ public class Wikidata {
             labels.put(graphID, new TreeSet<>());
           labels.get(graphID).add(labelID);
 
-          if (count % 1000000 == 0)
+          if (count % logInterval == 0)
             Util.println(count);
         }
       }
@@ -466,10 +475,9 @@ public class Wikidata {
       // ReadWriteUtil.WriteArray(filePath, outputArray);
 
       Util.println(labels);
-      String filePath = dir + "/graph_label.txt";
-      FileWriter writer = new FileWriter(filePath);
+      FileWriter writer = new FileWriter(graphLabelPath);
       FileWriter logwriter = new FileWriter(logPath, true);
-      writer.write(labels.size() + "\n");
+      writer.write(idMap.size() + "\n");
       for (int key = 0; key < idMap.size(); key++) {
         TreeSet<Integer> keyLabels = labels.get(key);
         if (keyLabels == null) {
@@ -494,7 +502,7 @@ public class Wikidata {
   /**
    * Extract labels of format <labelID, set of graphIds>.
    */
-  public void getLabelCount() {
+  public void extractLabelGraphIds() {
     BufferedReader reader = null;
     String line = "";
     HashMap<Long, Integer> idMap = readMap(entityMapPath);
@@ -522,7 +530,7 @@ public class Wikidata {
             labels.put(labelID, new TreeSet<>());
           labels.get(labelID).add(graphID);
 
-          if (count % 1000000 == 0)
+          if (count % logInterval == 0)
             Util.println(count);
         }
       }
@@ -635,7 +643,7 @@ public class Wikidata {
               }
             }
           }
-          if (predicateCount % 10000000 == 0)
+          if (predicateCount % logInterval == 0)
             Util.println(predicateCount);
         }
       }
@@ -744,7 +752,7 @@ public class Wikidata {
         }
 
         lineIndex++;
-        if (lineIndex % 10000000 == 0)
+        if (lineIndex % logInterval == 0)
           Util.println(lineIndex);
 
         if (lineIndex == 10000000)
@@ -806,7 +814,7 @@ public class Wikidata {
           writer.write(String.format("%d,%s,%d\n", startGraphId, propertyName, endGraphID));
 
           lineIndex++;
-          if (lineIndex % 10000000 == 0) {
+          if (lineIndex % logInterval == 0) {
             LOGGER.info("" + lineIndex);
           }
         }
@@ -869,7 +877,7 @@ public class Wikidata {
         }
 
         lineIndex++;
-        if (lineIndex % 10000000 == 0)
+        if (lineIndex % logInterval == 0)
           Util.println(lineIndex);
 
         // if (lineIndex == 10000000)
@@ -970,7 +978,7 @@ public class Wikidata {
 
         index++;
 
-        if (index % 10000000 == 0)
+        if (index % logInterval == 0)
           Util.println(index);
 
         // if (index == 100000)
@@ -1143,7 +1151,7 @@ public class Wikidata {
     LOGGER.log(loggingLevel, "read map from " + filepath);
     BufferedReader reader = new BufferedReader(new FileReader(filepath));
     String line = null;
-    List<Integer> entityIdMap = new ArrayList<>(5000000);
+    List<Integer> entityIdMap = new ArrayList<>(nodeCountLimit);
     int index = 0;
     while ((line = reader.readLine()) != null) {
       String[] strings = line.split(",");
@@ -1159,5 +1167,28 @@ public class Wikidata {
     }
     reader.close();
     return entityIdMap;
+  }
+
+  /**
+   * Read the map <entity graphId, label String label>.
+   *
+   * @param filepath
+   * @return
+   * @throws Exception
+   */
+  public static String[] readLabelMap(String filepath) throws Exception {
+    BufferedReader reader = new BufferedReader(new FileReader(filepath));
+    String line = null;
+    String[] map = new String[nodeCountLimit];
+    Arrays.fill(map, null);
+    while ((line = reader.readLine()) != null) {
+      String[] strings = line.split(",");
+      int graphId = Integer.parseInt(strings[0]);
+      if (map[graphId] == null) {
+        map[graphId] = strings[1];
+      }
+    }
+    reader.close();
+    return map;
   }
 }
