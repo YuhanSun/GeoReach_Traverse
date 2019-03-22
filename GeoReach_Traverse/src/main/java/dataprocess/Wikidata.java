@@ -251,7 +251,12 @@ public class Wikidata {
       if (object.endsWith(enStr) && predicate.contains(labelStr)) {
         object = object.substring(1, object.length() - 4);
         long curEntityId = getQEntityID(spo[0]);
-        writer.write(String.format("%d,%s", map.get(curEntityId), object));
+        int graphId = map.get(curEntityId);
+        writer.write(String.format("%d,%s", graphId, object));
+
+        if (graphId % 10000000 == 0) {
+          LOGGER.log(loggingLevel, graphId + "");
+        }
       }
     }
     reader.close();
