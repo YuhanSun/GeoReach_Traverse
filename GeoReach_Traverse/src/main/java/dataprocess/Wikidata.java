@@ -117,8 +117,8 @@ public class Wikidata {
 
     // getLabelCount();
     // extractLabels();
-    // extractProperties();
-    extractStringLabels();
+    extractProperties();
+    // extractStringLabels();
 
     // extractPropertyLabelMap();
 
@@ -166,8 +166,14 @@ public class Wikidata {
     FileWriter writer = new FileWriter(entityPropertiesPath);
     String line = null;
     long entityQId = -1;
+    int lineIndex = 0;
     JsonObject properties = null;
     while ((line = reader.readLine()) != null) {
+      lineIndex++;
+      if (lineIndex % 1000000 == 0) {
+        LOGGER.info("" + lineIndex);
+      }
+
       if (line.contains("\\")) {
         continue;
       }
@@ -184,6 +190,7 @@ public class Wikidata {
           // output the properties as json format for this entity.
           properties.addProperty("id", entityQId);
           writer.write(properties.toString() + "\n");
+          properties = new JsonObject();
         }
         entityQId = curEntityId;
       }
