@@ -112,7 +112,8 @@ public class Wikidata {
 
     // getLabelCount();
     // extractLabels();
-    extractProperties();
+    // extractProperties();
+    extractStringLabels();
 
     // extractPropertyLabelMap();
 
