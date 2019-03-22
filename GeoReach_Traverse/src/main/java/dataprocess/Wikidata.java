@@ -82,6 +82,9 @@ public class Wikidata {
   static String entityPropertiesPath = dir + "/entity_properties.txt";
   static String entityStringLabelMapPath = dir + "/entity_string_label.txt";
 
+  // for loading
+  static String propertyEdgePath = dir + "/edges_properties.txt";
+
   public static void main(String[] args) throws Exception {
     // TODO Auto-generated method stub
     // extract();
@@ -162,7 +165,7 @@ public class Wikidata {
     BufferedReader reader = new BufferedReader(new FileReader(fullfilePath));
     FileWriter writer = new FileWriter(entityPropertiesPath);
     String line = null;
-    long entityId = -1;
+    long entityQId = -1;
     JsonObject properties = null;
     while ((line = reader.readLine()) != null) {
       if (line.contains("\\")) {
@@ -173,16 +176,16 @@ public class Wikidata {
         continue;
       }
       long curEntityId = getQEntityID(spo[0]);
-      if (curEntityId != entityId) {
+      if (curEntityId != entityQId) {
         // entityId = -1, initialize the properties for the first entity.
         if (properties == null) {
           properties = new JsonObject();
         } else {
           // output the properties as json format for this entity.
-          properties.addProperty("id", entityId);
+          properties.addProperty("id", entityQId);
           writer.write(properties.toString() + "\n");
         }
-        entityId = curEntityId;
+        entityQId = curEntityId;
       }
 
       String predicate = spo[1];
@@ -221,7 +224,7 @@ public class Wikidata {
     }
 
     if (properties.size() > 0) {
-      properties.addProperty("id", entityId);
+      properties.addProperty("id", entityQId);
       writer.write(properties.toString() + "\n");
     }
 
@@ -235,18 +238,7 @@ public class Wikidata {
    * @throws Exception
    */
   public static void extractStringLabels() throws Exception {
-    List<Integer> entityIdMap = readEntityIdMap(entityMapPath);
-    int maxQId = Collections.max(entityIdMap);
-    // get the reversed map from <graphid, Qid> to generate the map <Qid, graphid>.
-    LOGGER.log(loggingLevel, "generate reversed map");
-    int[] map = new int[maxQId + 1];
-    Arrays.fill(map, -1);
-
-    int graphId = 0;
-    for (int QId : entityIdMap) {
-      map[QId] = graphId;
-      graphId++;
-    }
+    int[] map = readQIdToGraphIdMap(entityMapPath);
 
     LOGGER.info("read from " + fullfilePath);;
     BufferedReader reader = new BufferedReader(new FileReader(fullfilePath));
@@ -270,7 +262,7 @@ public class Wikidata {
       if (object.endsWith(enStr) && predicate.contains(labelStr)) {
         object = object.substring(1, object.length() - 4);
         long curEntityId = getQEntityID(spo[0]);
-        graphId = map[(int) curEntityId];
+        int graphId = map[(int) curEntityId];
         writer.write(String.format("%d,%s", graphId, object));
 
         if (graphId % 1000000 == 0) {
@@ -697,6 +689,56 @@ public class Wikidata {
   }
 
   /**
+   * Extract the file of '''startGraphId,propertyName,endGraphId'''.
+   */
+  public static void extractEntityToEntityRelationEdgeFormat() {
+    BufferedReader reader;
+    FileWriter writer;
+    String line = "";
+    long lineIndex = 0;
+
+    try {
+      int[] idMap = readQIdToGraphIdMap(entityMapPath);
+      Map<Integer, String> propertyMap = readPropertyMap(propertyMapPath);
+
+      reader = new BufferedReader(new FileReader(new File(fullfilePath)));
+      writer = new FileWriter(graphPath);
+
+      while ((line = reader.readLine()) != null) {
+        String[] strList = decodeRow(line);
+        String subject = strList[0];
+        String predicate = strList[1];
+        String object = strList[2];
+
+        if (isQEntity(subject) && isPropertyPredicate(predicate) && isQEntity(object)) {
+          int startQId = getQEntityID(subject);
+          int startGraphId = idMap[startQId];
+
+          int endQID = getQEntityID(object);
+          int endGraphID = idMap[endQID];
+
+          int propertyId = getPropertyPredicateID(predicate);
+          String propertyName = propertyMap.get(propertyId);
+
+          writer.write(String.format("%d,%s,%d\n", startGraphId, propertyName, endGraphID));
+
+          lineIndex++;
+          if (lineIndex % 10000000 == 0) {
+            LOGGER.info("" + lineIndex);
+          }
+        }
+        reader.close();
+        writer.close();
+      }
+    } catch (
+
+    Exception e) {
+      Util.println(String.format("line %d:\n%s", lineIndex, line));
+      e.printStackTrace();
+    }
+  }
+
+  /**
    * Generate the graph.txt file (single directional).
    */
   public static void extractEntityToEntityRelation() {
@@ -835,7 +877,7 @@ public class Wikidata {
           p625Count++;
           if (line.contains("\"")) {
             String subject = strList[0];
-            Long wikiID = getQEntityID(subject);
+            int wikiID = getQEntityID(subject);
             strList = line.split("\"");
             String pointString = strList[1];
             writer.write(wikiID + "," + pointString + "\n");
@@ -947,10 +989,10 @@ public class Wikidata {
    * @return
    * @throws Exception
    */
-  public static long getQEntityID(String string) throws Exception {
+  public static int getQEntityID(String string) throws Exception {
     Matcher m = entityPattern.matcher(string);
     if (m.find()) {
-      return Long.parseLong(m.group(1));
+      return Integer.parseInt(m.group(1));
     }
     throw new Exception(string + " is not an Q-entity!");
   }
@@ -975,8 +1017,14 @@ public class Wikidata {
     return line.split(" ");
   }
 
+  /**
+   * Read the property map <PId, StringLabel>.
+   *
+   * @param filepath
+   * @return
+   */
   public static Map<Integer, String> readPropertyMap(String filepath) {
-    LOGGER.log(loggingLevel, "read map from " + filepath);
+    LOGGER.log(loggingLevel, "read property map from " + filepath);
     HashMap<String, String> map = ReadWriteUtil.ReadMap(filepath);
     HashMap<Integer, String> propertyMap = new HashMap<>();
     for (String key : map.keySet()) {
@@ -985,7 +1033,30 @@ public class Wikidata {
     return propertyMap;
   }
 
-  public static List<Integer> readEntityIdMap(String filepath) throws Exception {
+  public static int[] readQIdToGraphIdMap(String filepath) throws Exception {
+    List<Integer> entityIdMap = readGraphIdToQIdMap(filepath);
+    int maxQId = Collections.max(entityIdMap);
+    // get the reversed map from <graphid, Qid> to generate the map <Qid, graphid>.
+    LOGGER.log(loggingLevel, "generate reversed map");
+    int[] map = new int[maxQId + 1];
+    Arrays.fill(map, -1);
+
+    int graphId = 0;
+    for (int QId : entityIdMap) {
+      map[QId] = graphId;
+      graphId++;
+    }
+    return map;
+  }
+
+  /**
+   * Read the map <graphId, QId>.
+   *
+   * @param filepath
+   * @return
+   * @throws Exception
+   */
+  public static List<Integer> readGraphIdToQIdMap(String filepath) throws Exception {
     LOGGER.log(loggingLevel, "read map from " + filepath);
     BufferedReader reader = new BufferedReader(new FileReader(filepath));
     String line = null;
@@ -995,6 +1066,7 @@ public class Wikidata {
       String[] strings = line.split(",");
       int graphId = Integer.parseInt(strings[0]);
       if (index != graphId) {
+        reader.close();
         throw new Exception("graph id inconsistency!");
       }
 

@@ -20,3 +20,4 @@ java -Xmx100g -jar ${jar_path} -h
 
 java -Xmx100g -jar ${jar_path} -f wikidataprocessExtractProperties -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG 2.0 -MR 2.0
 # java -Xmx100g -jar ${jar_path} -f wikidataprocessExtractStringLabel -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG 2.0 -MR 2.0
+java -Xmx100g -jar ${jar_path} -f wikidataextractEntityToEntityRelationEdgeFormat -hd ${homeDir} -rd ${resultDir} -d ${dataset} -MG 2.0 -MR 2.0
