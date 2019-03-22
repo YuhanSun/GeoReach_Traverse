@@ -197,8 +197,11 @@ public class Wikidata {
       int QId = object.get("id").getAsInt();
       int graphId = idMap[QId];
       Map<String, Object> properties = inserter.getNodeProperties(graphId);
+      if (properties == null) {
+        properties = new HashMap<>();
+      }
       for (String key : object.keySet()) {
-        properties.put(key, (Object) object.get(key).getAsString());
+        properties.put(key, object.get(key).getAsString());
       }
       inserter.setNodeProperties(graphId, properties);
     }
