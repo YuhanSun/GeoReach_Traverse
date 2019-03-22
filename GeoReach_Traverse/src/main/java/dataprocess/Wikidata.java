@@ -202,7 +202,7 @@ public class Wikidata {
 
         // only extract the rows with existing property predicate.
         int propertyId = getPropertyPredicateID(predicate);
-        LOGGER.log(loggingLevel, propertyId + "");
+        // LOGGER.log(loggingLevel, propertyId + "");
         String propertyName = propertyMap.get(propertyId);
         // the propertyId does not exist in latest properties ids.
         if (propertyName == null) {
@@ -232,15 +232,21 @@ public class Wikidata {
   public static void extractStringLabels() throws Exception {
     Map<Integer, Long> entityIdMap = readEntityIdMap(entityMapPath);
     // get the reversed map from <graphid, Qid> to generate the map <Qid, graphid>.
+    LOGGER.log(loggingLevel, "generate reversed map");
     Map<Long, Integer> map = new HashMap<>();
     for (int key : entityIdMap.keySet()) {
       map.put(entityIdMap.get(key), key);
     }
 
+    LOGGER.info("read from " + fullfilePath);;
     BufferedReader reader = new BufferedReader(new FileReader(fullfilePath));
     FileWriter writer = new FileWriter(entityPropertiesPath);
     String line = null;
+    int count = 0;
     while ((line = reader.readLine()) != null) {
+      if (count % 1000000 == 0) {
+        LOGGER.info("" + count);
+      }
       String[] spo = decodeRow(line);
       if (!isQEntity(spo[0])) {
         continue;
@@ -255,7 +261,7 @@ public class Wikidata {
         int graphId = map.get(curEntityId);
         writer.write(String.format("%d,%s", graphId, object));
 
-        if (graphId % 10000000 == 0) {
+        if (graphId % 1000000 == 0) {
           LOGGER.log(loggingLevel, graphId + "");
         }
       }
