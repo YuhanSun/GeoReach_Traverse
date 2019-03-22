@@ -82,7 +82,6 @@ public class Wikidata {
   static String entityPropertiesPath = dir + "/entity_properties.txt";
   static String entityStringLabelMapPath = dir + "/entity_string_label.txt";
 
-
   public static void main(String[] args) throws Exception {
     // TODO Auto-generated method stub
     // extract();
@@ -248,7 +247,7 @@ public class Wikidata {
 
     LOGGER.info("read from " + fullfilePath);;
     BufferedReader reader = new BufferedReader(new FileReader(fullfilePath));
-    FileWriter writer = new FileWriter(entityPropertiesPath);
+    FileWriter writer = new FileWriter(entityStringLabelMapPath);
     String line = null;
     int count = 0;
     while ((line = reader.readLine()) != null) {
