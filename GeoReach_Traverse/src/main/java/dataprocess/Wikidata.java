@@ -201,6 +201,7 @@ public class Wikidata {
         properties = new HashMap<>();
       }
       for (String key : object.keySet()) {
+        LOGGER.info(String.format("key: %s, value:　%s", key, object.get(key)));
         properties.put(key, object.get(key).getAsString());
       }
       inserter.setNodeProperties(graphId, properties);
