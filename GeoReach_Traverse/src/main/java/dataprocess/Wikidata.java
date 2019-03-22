@@ -169,7 +169,7 @@ public class Wikidata {
     // getLabelCount();
     // extractLabels();
     // extractProperties();
-    wikidata.extractStringLabels();
+    // wikidata.extractStringLabels();
 
     // extractPropertyLabelMap();
 
@@ -178,6 +178,8 @@ public class Wikidata {
     // GraphUtil.extractSpatialEntities(entityPath, dir + "/entity_spatial.txt");
 
     // edgeCountCheck();
+
+    wikidata.loadAllEntities();
   }
 
   public void loadAttributes() throws Exception {
@@ -196,7 +198,7 @@ public class Wikidata {
       int graphId = idMap[QId];
       Map<String, Object> properties = inserter.getNodeProperties(graphId);
       for (String key : object.keySet()) {
-        properties.put(key, object.get(key).getAsString());
+        properties.put(key, (Object) object.get(key).getAsString());
       }
       inserter.setNodeProperties(graphId, properties);
     }
