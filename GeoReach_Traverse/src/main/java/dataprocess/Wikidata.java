@@ -80,6 +80,7 @@ public class Wikidata {
   String locationPath = dir + "/locations.txt";
   String entityMapPath = dir + "/entity_map.txt";
   String graphPath = dir + "/graph.txt";
+  String graphPropertyEdgePath;
   String entityPath = dir + "/entity.txt";
 
   String propertiesJsonFile = dir + "/properties_from_query.json";
@@ -111,6 +112,7 @@ public class Wikidata {
     locationPath = dir + "/locations.txt";
     entityMapPath = dir + "/entity_map.txt";
     graphPath = dir + "/graph.txt";
+    graphPropertyEdgePath = dir + "/graph_property_edge.txt";
     entityPath = dir + "/entity.txt";
 
     propertiesJsonFile = dir + "/properties_from_query.json";
@@ -174,11 +176,15 @@ public class Wikidata {
     // edgeCountCheck();
   }
 
-  public void loadAllEntityAndCreateIdMap() throws Exception {
+  public void loadEdges() {
+
+  }
+
+  public void loadAllEntities() throws Exception {
     ArrayList<Entity> entities = GraphUtil.ReadEntity(entityPath);
     ArrayList<ArrayList<Integer>> labels = GraphUtil.ReadGraph(graphLabelPath);
     String[] labelStringMap = readLabelMap(entityStringLabelMapPath);
-    loadAllEntityAndCreateIdMap(entities, labelStringMap, labels, dbPath);
+    loadAllEntity(entities, labelStringMap, labels, dbPath);
   }
 
   /**
@@ -190,7 +196,7 @@ public class Wikidata {
    * @param mapPath
    * @throws Exception
    */
-  public static void loadAllEntityAndCreateIdMap(List<Entity> entities, String[] labelStringMap,
+  public static void loadAllEntity(List<Entity> entities, String[] labelStringMap,
       ArrayList<ArrayList<Integer>> labelList, String dbPath) throws Exception {
     Util.println("Batch insert into: " + dbPath);
     Map<String, String> config = new HashMap<String, String>();
@@ -793,7 +799,7 @@ public class Wikidata {
       Map<Integer, String> propertyMap = readPropertyMap(propertyMapPath);
 
       reader = new BufferedReader(new FileReader(new File(fullfilePath)));
-      writer = new FileWriter(graphPath);
+      writer = new FileWriter(graphPropertyEdgePath);
 
       while ((line = reader.readLine()) != null) {
         String[] strList = decodeRow(line);
@@ -821,9 +827,7 @@ public class Wikidata {
         reader.close();
         writer.close();
       }
-    } catch (
-
-    Exception e) {
+    } catch (Exception e) {
       Util.println(String.format("line %d:\n%s", lineIndex, line));
       e.printStackTrace();
     }
@@ -1177,6 +1181,7 @@ public class Wikidata {
    * @throws Exception
    */
   public static String[] readLabelMap(String filepath) throws Exception {
+    LOGGER.info("read Label map from " + filepath);
     BufferedReader reader = new BufferedReader(new FileReader(filepath));
     String line = null;
     String[] map = new String[nodeCountLimit];
