@@ -998,6 +998,7 @@ public class Wikidata {
 
       int Qid = Integer.parseInt(strings[1]);
       entityIdMap.add(Qid);
+      index++;
     }
     reader.close();
     return entityIdMap;
