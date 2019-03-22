@@ -77,6 +77,7 @@ public class Wikidata {
   static String propertyMapPath = dir + "/property_map.txt";
   static String edgePath = dir + "/graph_edges.txt";
   static String entityPropertiesPath = dir + "/entity_properties.txt";
+  static String entityStringLabelMapPath = dir + "/entity_string_label.txt";
 
 
   public static void main(String[] args) throws Exception {
@@ -182,7 +183,7 @@ public class Wikidata {
       String object = spo[2];
       // extract the label and description in language English.
       if (object.endsWith(enStr)) {
-        if (predicate.equals(labelStr)) {
+        if (predicate.contains(labelStr)) {
           properties.addProperty(labelPropertyName, object);
         } else if (predicate.equals(descriptionStr)) {
           properties.addProperty(descriptionPropertyName, object);
@@ -218,6 +219,41 @@ public class Wikidata {
       writer.write(properties.toString() + "\n");
     }
 
+    reader.close();
+    writer.close();
+  }
+
+  /**
+   * Extract all the string labels for all Q entities.
+   * 
+   * @throws Exception
+   */
+  public static void extractStringLabels() throws Exception {
+    Map<Integer, Long> entityIdMap = readEntityIdMap(entityMapPath);
+    // get the reversed map from <graphid, Qid> to generate the map <Qid, graphid>.
+    Map<Long, Integer> map = new HashMap<>();
+    for (int key : entityIdMap.keySet()) {
+      map.put(entityIdMap.get(key), key);
+    }
+
+    BufferedReader reader = new BufferedReader(new FileReader(fullfilePath));
+    FileWriter writer = new FileWriter(entityPropertiesPath);
+    String line = null;
+    while ((line = reader.readLine()) != null) {
+      String[] spo = decodeRow(line);
+      if (!isQEntity(spo[0])) {
+        continue;
+      }
+
+      String predicate = spo[1];
+      String object = spo[2];
+      // extract the label and description in language English.
+      if (object.endsWith(enStr) && predicate.contains(labelStr)) {
+        object = object.substring(1, object.length() - 4);
+        long curEntityId = getQEntityID(spo[0]);
+        writer.write(String.format("%d,%s", map.get(curEntityId), object));
+      }
+    }
     reader.close();
     writer.close();
   }
@@ -283,10 +319,14 @@ public class Wikidata {
     }
   }
 
+  public static void extractLabelMap() {
+
+  }
+
   /**
    * Extract labels of format <graphID, list of labels>.
    */
-  public static void extractLabels() {
+  public static void extractEntityLabels() {
     BufferedReader reader = null;
     String line = "";
     HashMap<Long, Integer> idMap = readMap(entityMapPath);
@@ -296,7 +336,7 @@ public class Wikidata {
     try {
       reader = new BufferedReader(new FileReader(new File(fullfilePath)));
       while ((line = reader.readLine()) != null) {
-        String[] strList = line.split(" ");
+        String[] strList = decodeRow(line);
         String predicate = strList[1];
         if (predicate.equals(instanceOfStr)) {
           count++;
@@ -309,6 +349,7 @@ public class Wikidata {
           int graphID = idMap.get(getQEntityID(subject));
           hasLabelVertices.add(graphID);
 
+          // labelId is the mapped id of the entity.
           int labelID = idMap.get(getQEntityID(object));
           if (!labels.containsKey(graphID))
             labels.put(graphID, new TreeSet<>());
@@ -327,7 +368,7 @@ public class Wikidata {
 
       Util.println(labels);
       String filePath = dir + "/graph_label.txt";
-      FileWriter writer = new FileWriter(new File(filePath));
+      FileWriter writer = new FileWriter(filePath);
       FileWriter logwriter = new FileWriter(logPath, true);
       writer.write(labels.size() + "\n");
       for (int key = 0; key < idMap.size(); key++) {
@@ -918,5 +959,15 @@ public class Wikidata {
       propertyMap.put(Integer.parseInt(key), map.get(key));
     }
     return propertyMap;
+  }
+
+  public static Map<Integer, Long> readEntityIdMap(String filepath) {
+    LOGGER.log(loggingLevel, "read map from " + filepath);
+    HashMap<String, String> map = ReadWriteUtil.ReadMap(filepath);
+    HashMap<Integer, Long> entityIdMap = new HashMap<>();
+    for (String key : map.keySet()) {
+      entityIdMap.put(Integer.parseInt(key), Long.parseLong(map.get(key)));
+    }
+    return entityIdMap;
   }
 }
