@@ -196,15 +196,12 @@ public class Wikidata {
       JsonObject object = jsonElement.getAsJsonObject();
       int QId = object.get("id").getAsInt();
       int graphId = idMap[QId];
-      Map<String, Object> properties = inserter.getNodeProperties(graphId);
-      if (properties == null) {
-        properties = new HashMap<>();
-      }
+      Map<String, Object> addProperties = new HashMap<>();
       for (String key : object.keySet()) {
         LOGGER.info(String.format("key: %s, value:　%s", key, object.get(key)));
-        properties.put(key, object.get(key).getAsString());
+        addProperties.put(key, object.get(key).getAsString());
       }
-      inserter.setNodeProperties(graphId, properties);
+      inserter.setNodeProperties(graphId, addProperties);
     }
     reader.close();
     inserter.shutdown();
