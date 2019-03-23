@@ -33,21 +33,21 @@ public class WikidataTest {
   @Test
   public void isQEntityTest() throws Exception {
     String string = "<http://www.wikidata.org/entity/Q26>";
-    assertTrue(Wikidata.isQEntity(string));
+    assertTrue(Wikidata.isQEntityReg(string));
     assertTrue(Wikidata.getQEntityIdReg(string) == 26);
   }
 
   @Test
   public void isPropertySubjectTest() throws Exception {
     String string = "<http://www.wikidata.org/entity/P22>";
-    assertTrue(Wikidata.isPropertySubject(string));
-    assertTrue(Wikidata.getPropertySubjectID(string) == 22);
+    assertTrue(Wikidata.isPropertySubjectReg(string));
+    assertTrue(Wikidata.getPropertySubjectIdReg(string) == 22);
   }
 
   @Test
   public void isPropertyPredicateTest() throws Exception {
     String string = "<http://www.wikidata.org/prop/direct/P1549>";
-    assertTrue(Wikidata.isPropertyPredicate(string));
+    assertTrue(Wikidata.isPropertyPredicateReg(string));
     assertTrue(Wikidata.getPropertyPredicateIdReg(string) == 1549);
   }
 

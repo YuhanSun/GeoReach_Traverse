@@ -383,7 +383,7 @@ public class Wikidata {
         continue;
       }
       String[] spo = decodeRow(line);
-      if (!isQEntity(spo[0])) {
+      if (!isQEntityReg(spo[0])) {
         continue;
       }
       long curEntityId = getQEntityIdReg(spo[0]);
@@ -409,10 +409,10 @@ public class Wikidata {
         } else if (predicate.equals(descriptionStr)) {
           properties.addProperty(descriptionPropertyName, object);
         }
-      } else if (isQEntity(object)) {
+      } else if (isQEntityReg(object)) {
         // skip the entity-to-entity edges.
         continue;
-      } else if (isPropertyPredicate(predicate)) {
+      } else if (isPropertyPredicateReg(predicate)) {
 
         if (!(object.endsWith("\"") && object.startsWith("\""))) {
           continue;
@@ -465,7 +465,7 @@ public class Wikidata {
       count++;
 
       String[] spo = decodeRow(line);
-      if (!isQEntity(spo[0])) {
+      if (!isQEntityReg(spo[0])) {
         continue;
       }
 
@@ -524,12 +524,12 @@ public class Wikidata {
         lineIndex++;
         String[] strings = line.split(" ");
         String subject = strings[0];
-        long id = getPropertySubjectID(subject);
+        long id = getPropertySubjectIdReg(subject);
         if (id != -1)
           idSet.add(id);
 
         String object = strings[2];
-        id = getPropertySubjectID(object);
+        id = getPropertySubjectIdReg(object);
         if (id != -1)
           idSet.add(id);
 
@@ -568,7 +568,7 @@ public class Wikidata {
           String subject = strList[0];
           String object = strList[2];
 
-          if (!isQEntity(subject) || !isQEntity(object))
+          if (!isQEntityReg(subject) || !isQEntityReg(object))
             continue;
 
           int graphID = idMap.get(getQEntityIdReg(subject));
@@ -636,7 +636,7 @@ public class Wikidata {
           String subject = strList[0];
           String object = strList[2];
 
-          if (!isQEntity(subject) || !isQEntity(object))
+          if (!isQEntityReg(subject) || !isQEntityReg(object))
             continue;
 
           int graphID = idMap.get(getQEntityIdReg(subject));
@@ -753,7 +753,7 @@ public class Wikidata {
               long planetID = getQEntityIdReg(object);
               if (planetID != 2) {
                 String subject = strList[0];
-                if (isQEntity(subject)) {
+                if (isQEntityReg(subject)) {
                   long subjectWikiID = getQEntityIdReg(subject);
                   writer.write(subjectWikiID + "\n");
                 }
@@ -918,7 +918,7 @@ public class Wikidata {
         String predicate = strList[1];
         String object = strList[2];
 
-        if (isQEntity(subject) && isPropertyPredicate(predicate) && isQEntity(object)) {
+        if (isQEntityReg(subject) && isPropertyPredicateReg(predicate) && isQEntityReg(object)) {
           int startQId = getQEntityIdReg(subject);
           int startGraphId = idMap[startQId];
 
@@ -1169,7 +1169,7 @@ public class Wikidata {
     throw new Exception(string + " is not a property in predicate!");
   }
 
-  public static boolean isPropertyPredicate(String string) {
+  public static boolean isPropertyPredicateReg(String string) {
     return string.matches(propertyPredicatePattern.pattern());
   }
 
@@ -1188,7 +1188,7 @@ public class Wikidata {
    * @return
    * @throws Exception
    */
-  public static long getPropertySubjectID(String string) throws Exception {
+  public static long getPropertySubjectIdReg(String string) throws Exception {
     Matcher m = propertyEntityPattern.matcher(string);
     if (m.find()) {
       return Long.parseLong(m.group(1));
@@ -1196,7 +1196,7 @@ public class Wikidata {
     throw new Exception(string + " is not a property entity!");
   }
 
-  public static boolean isPropertySubject(String string) {
+  public static boolean isPropertySubjectReg(String string) {
     return string.matches(propertyEntityPattern.pattern());
   }
 
@@ -1232,7 +1232,7 @@ public class Wikidata {
    * @param string
    * @return
    */
-  public static boolean isQEntity(String string) {
+  public static boolean isQEntityReg(String string) {
     return string.matches(entityPattern.pattern());
   }
 
