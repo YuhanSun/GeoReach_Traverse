@@ -132,6 +132,7 @@ public class Driver {
           case wikicutLabelFile:
             wikidata = new Wikidata(cmd.getOptionValue(homeDir));
             wikidata.cutLabelFile();
+            break;
           default:
             Util.println(String.format("Function %s does not exist!", functionNameString));
             break;
