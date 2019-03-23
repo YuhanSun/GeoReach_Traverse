@@ -1144,7 +1144,8 @@ public class Wikidata {
 
 
   /**
-   * Assume that the string is valid.
+   * Assume that the string is following the format '''%digit+%'''. Will extract all digits and
+   * return them as a number.
    *
    * @param string
    * @return

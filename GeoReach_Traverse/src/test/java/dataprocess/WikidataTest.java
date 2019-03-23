@@ -17,8 +17,10 @@ public class WikidataTest {
   public void tearDown() throws Exception {}
 
   @Test
-  public void getPropertyPredicateIdTest() {
-    assertTrue(Wikidata.getPropertyPredicateId("http://www.wikidata.org/prop/direct/P138") == 138);
+  public void getIdTest() {
+    assertTrue(Wikidata.getId("http://www.wikidata.org/prop/direct/P138") == 138);
+    assertTrue(Wikidata.getId("<http://www.wikidata.org/entity/Q36>") == 36);
+
   }
 
   @Test
@@ -32,7 +34,7 @@ public class WikidataTest {
   public void isQEntityTest() throws Exception {
     String string = "<http://www.wikidata.org/entity/Q26>";
     assertTrue(Wikidata.isQEntity(string));
-    assertTrue(Wikidata.getQEntityID(string) == 26);
+    assertTrue(Wikidata.getQEntityIdReg(string) == 26);
   }
 
   @Test
