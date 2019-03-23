@@ -20,6 +20,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -65,6 +66,9 @@ public class Wikidata {
   private final static String descriptionPropertyName = "description";
 
   private final static String enStr = "@en";
+  private final static String propertyStr = "<http://www.wikidata.org/prop/direct/P";
+  private final static String entityStr = "<http://www.wikidata.org/entity/Q";
+
   private final static String instanceOfStr = "<http://www.wikidata.org/prop/direct/P31>";
   private final static String coordinateStr = "<http://www.wikidata.org/prop/direct/P625>";
 
@@ -78,6 +82,8 @@ public class Wikidata {
   String dir = "";
   String fullfilePath;
   String wikiLabelPath;
+  String wikiAttributePath;
+  String wikiEdgePath;
 
   // static String dir = "/hdd/code/yuhansun/data/wikidata";
   // static String fullfilePath = dir + "/wikidata-20180308-truthy-BETA.nt";
@@ -99,7 +105,6 @@ public class Wikidata {
 
   String graphLabelPath;
   String dbPath;
-
 
   private static Config config = new Config();
   private static String lon_name = config.GetLongitudePropertyName();
@@ -185,6 +190,26 @@ public class Wikidata {
   }
 
 
+  public void cutPropertyAndEdge() throws Exception {
+    BufferedReader reader = new BufferedReader(new FileReader(fullfilePath));
+    FileWriter attrbuteWriter = new FileWriter(wikiAttributePath);
+    FileWriter edgeWriter = new FileWriter(wikiEdgePath);
+    String line = null;
+    while ((line = reader.readLine()) != null) {
+      if (!line.contains(propertyStr)) {
+        continue;
+      }
+      String[] strings = decodeRow(line);
+
+      // if ()
+    }
+  }
+
+  /**
+   * Cut only the wikidata that contains label "@en" information.
+   *
+   * @throws Exception
+   */
   public void cutLabelFile() throws Exception {
     BufferedReader reader = new BufferedReader(new FileReader(fullfilePath));
     FileWriter writer = new FileWriter(wikiLabelPath);
@@ -193,7 +218,7 @@ public class Wikidata {
       if (!line.contains("@en")) {
         continue;
       }
-      if (org.apache.commons.lang3.StringUtils.containsIgnoreCase(line, "label")) {
+      if (StringUtils.containsIgnoreCase(line, "label")) {
         writer.write(line + "\n");
       }
     }
@@ -395,7 +420,7 @@ public class Wikidata {
         object = object.substring(1, object.length() - 1);
 
         // only extract the rows with existing property predicate.
-        int propertyId = getPropertyPredicateID(predicate);
+        int propertyId = getPropertyPredicateIdReg(predicate);
         // LOGGER.log(loggingLevel, propertyId + "");
         String propertyName = propertyMap.get(propertyId);
         // the propertyId does not exist in latest properties ids.
@@ -720,7 +745,7 @@ public class Wikidata {
         String predicate = strList[1];
         if (predicate.matches(propertyPredicatePattern.pattern())) {
           predicateCount++;
-          long propertyID = getPropertyPredicateID(predicate);
+          long propertyID = getPropertyPredicateIdReg(predicate);
           if (propertyID == 376) {
             String object = strList[2];
             if (object.matches(entityPattern.pattern())) {
@@ -899,7 +924,7 @@ public class Wikidata {
           int endQID = getQEntityID(object);
           int endGraphID = idMap[endQID];
 
-          int propertyId = getPropertyPredicateID(predicate);
+          int propertyId = getPropertyPredicateIdReg(predicate);
           String propertyName = propertyMap.get(propertyId);
 
           writer.write(String.format("%d,%s,%d\n", startGraphId, propertyName, endGraphID));
@@ -1116,6 +1141,8 @@ public class Wikidata {
     return null;
   }
 
+
+
   /**
    * Extract the id of a property when it is a predicate.
    *
@@ -1123,7 +1150,7 @@ public class Wikidata {
    * @return
    * @throws Exception
    */
-  public static int getPropertyPredicateID(String string) throws Exception {
+  public static int getPropertyPredicateIdReg(String string) throws Exception {
     Matcher matcher = propertyPredicatePattern.matcher(string);
     if (matcher.find()) {
       return Integer.parseInt(matcher.group(1));
@@ -1175,6 +1202,16 @@ public class Wikidata {
       return Integer.parseInt(m.group(1));
     }
     throw new Exception(string + " is not an Q-entity!");
+  }
+
+  /**
+   * Check whether a line contains a property (either edge or attribute).
+   *
+   * @param string
+   * @return
+   */
+  public static boolean isPropertyLine(String string) {
+    return string.contains(propertyStr);
   }
 
   /**
