@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -19,11 +20,30 @@ import java.util.Random;
 import org.neo4j.graphdb.ExecutionPlanDescription;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.unsafe.batchinsert.BatchInserter;
 import org.roaringbitmap.RoaringBitmap;
 import org.roaringbitmap.buffer.ImmutableRoaringBitmap;
 import commons.EnumVariables.BoundaryLocationStatus;
 
 public class Util {
+
+  public static void close(BufferedReader reader) throws Exception {
+    if (reader != null) {
+      reader.close();
+    }
+  }
+
+  public static void close(FileWriter writer) throws Exception {
+    if (writer != null) {
+      writer.close();
+    }
+  }
+
+  public static void close(BatchInserter inserter) {
+    if (inserter != null) {
+      inserter.shutdown();
+    }
+  }
 
   public static void extendBoundary(int[] boundary, int[] xyId) {
     extendBoundary(boundary, xyId[0], xyId[1]);

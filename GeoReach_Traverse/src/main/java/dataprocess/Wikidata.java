@@ -188,23 +188,32 @@ public class Wikidata {
     LOGGER.info("Batch insert properties into: " + dbPath);
     Map<String, String> config = new HashMap<String, String>();
     config.put("dbms.pagecache.memory", "80g");
-    BatchInserter inserter = BatchInserters.inserter(new File(dbPath).getAbsoluteFile(), config);
+    BatchInserter inserter = null;
     String line = null;
     JsonParser jsonParser = new JsonParser();
-    while ((line = reader.readLine()) != null) {
-      JsonElement jsonElement = jsonParser.parse(line);
-      JsonObject object = jsonElement.getAsJsonObject();
-      int QId = object.get("id").getAsInt();
-      int graphId = idMap[QId];
-      Map<String, Object> addProperties = new HashMap<>();
-      for (String key : object.keySet()) {
-        LOGGER.info(String.format("key: %s, value:　%s", key, object.get(key)));
-        addProperties.put(key, object.get(key).getAsString());
+    try {
+      inserter = BatchInserters.inserter(new File(dbPath).getAbsoluteFile(), config);
+      while ((line = reader.readLine()) != null) {
+        JsonElement jsonElement = jsonParser.parse(line);
+        JsonObject object = jsonElement.getAsJsonObject();
+        int QId = object.get("id").getAsInt();
+        int graphId = idMap[QId];
+        Map<String, Object> addProperties = new HashMap<>();
+        for (String key : object.keySet()) {
+          LOGGER.info(String.format("key: %s, value:　%s", key, object.get(key)));
+          addProperties.put(key, object.get(key).getAsString());
+        }
+        inserter.setNodeProperties(graphId, addProperties);
       }
-      inserter.setNodeProperties(graphId, addProperties);
+
+    } catch (Exception e) {
+      e.printStackTrace();
+      inserter.shutdown();
+      reader.close();
     }
-    reader.close();
-    inserter.shutdown();
+
+    Util.close(reader);
+    Util.close(inserter);
   }
 
   public void loadEdges() throws Exception {
@@ -212,17 +221,25 @@ public class Wikidata {
     LOGGER.info("Batch insert edges into: " + dbPath);
     Map<String, String> config = new HashMap<String, String>();
     config.put("dbms.pagecache.memory", "80g");
-    BatchInserter inserter = BatchInserters.inserter(new File(dbPath).getAbsoluteFile(), config);
+    BatchInserter inserter = null;
     String line = null;
-    while ((line = reader.readLine()) != null) {
-      String[] strings = line.split(",");
-      int startId = Integer.parseInt(strings[0]);
-      int endId = Integer.parseInt(strings[2]);
-      String label = strings[1];
-      inserter.createRelationship(startId, endId, RelationshipType.withName(label), null);
+    try {
+      inserter = BatchInserters.inserter(new File(dbPath).getAbsoluteFile(), config);
+      while ((line = reader.readLine()) != null) {
+        String[] strings = line.split(",");
+        int startId = Integer.parseInt(strings[0]);
+        int endId = Integer.parseInt(strings[2]);
+        String label = strings[1];
+        inserter.createRelationship(startId, endId, RelationshipType.withName(label), null);
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      reader.close();
+      inserter.shutdown();
     }
-    reader.close();
-    inserter.shutdown();
+
+    Util.close(reader);
+    Util.close(inserter);
   }
 
   public void loadAllEntities() throws Exception {
@@ -246,27 +263,32 @@ public class Wikidata {
     LOGGER.info("Batch insert into: " + dbPath);
     Map<String, String> config = new HashMap<String, String>();
     config.put("dbms.pagecache.memory", "80g");
-    BatchInserter inserter = BatchInserters.inserter(new File(dbPath).getAbsoluteFile(), config);
-    for (int i = 0; i < entities.size(); i++) {
-      Entity entity = entities.get(i);
-      Map<String, Object> properties = new HashMap<String, Object>();
-      List<Label> labels = new ArrayList<>();
-      for (int labelId : labelList.get(i)) {
-        String labelString = labelStringMap[labelId];
-        if (labelString == null) {
-          continue;
+    BatchInserter inserter = null;
+    try {
+      inserter = BatchInserters.inserter(new File(dbPath).getAbsoluteFile(), config);
+      for (int i = 0; i < entities.size(); i++) {
+        Entity entity = entities.get(i);
+        Map<String, Object> properties = new HashMap<String, Object>();
+        List<Label> labels = new ArrayList<>();
+        for (int labelId : labelList.get(i)) {
+          String labelString = labelStringMap[labelId];
+          if (labelString == null) {
+            continue;
+          }
+          Label label = Label.label(labelString);
+          labels.add(label);
         }
-        Label label = Label.label(labelString);
-        labels.add(label);
+        if (entity.IsSpatial) {
+          properties.put(lon_name, entity.lon);
+          properties.put(lat_name, entity.lat);
+        }
+        inserter.createNode(i, properties, labels.toArray(new Label[labels.size()]));
       }
-      if (entity.IsSpatial) {
-        properties.put(lon_name, entity.lon);
-        properties.put(lat_name, entity.lat);
-      }
-      inserter.createNode(i, properties, labels.toArray(new Label[labels.size()]));
-
+    } catch (Exception e) {
+      e.printStackTrace();
+      inserter.shutdown();
     }
-    inserter.shutdown();
+    Util.close(inserter);
   }
 
   /**
