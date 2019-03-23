@@ -200,7 +200,6 @@ public class Wikidata {
         int graphId = idMap[QId];
         Map<String, Object> addProperties = new HashMap<>();
         for (String key : object.keySet()) {
-          LOGGER.info(String.format("key: %s, value:　%s", key, object.get(key)));
           addProperties.put(key, object.get(key).getAsString());
         }
         inserter.setNodeProperties(graphId, addProperties);
