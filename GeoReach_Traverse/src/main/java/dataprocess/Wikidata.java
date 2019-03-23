@@ -77,6 +77,7 @@ public class Wikidata {
   // for test
   String dir = "";
   String fullfilePath;
+  String wikiLabelPath;
 
   // static String dir = "/hdd/code/yuhansun/data/wikidata";
   // static String fullfilePath = dir + "/wikidata-20180308-truthy-BETA.nt";
@@ -99,6 +100,7 @@ public class Wikidata {
   String graphLabelPath;
   String dbPath;
 
+
   private static Config config = new Config();
   private static String lon_name = config.GetLongitudePropertyName();
   private static String lat_name = config.GetLatitudePropertyName();
@@ -110,8 +112,8 @@ public class Wikidata {
   public Wikidata(String homeDir, String sourceFileName) {
     this.dir = homeDir;
     fullfilePath = dir + "/" + sourceFileName;
-    // static String dir = "/hdd/code/yuhansun/data/wikidata";
-    // static String fullfilePath = dir + "/wikidata-20180308-truthy-BETA.nt";
+    wikiLabelPath = dir + "/wiki_label.txt";
+
     logPath = dir + "/extract.log";
     locationPath = dir + "/locations.txt";
     entityMapPath = dir + "/entity_map.txt";
@@ -180,6 +182,23 @@ public class Wikidata {
     // edgeCountCheck();
 
     wikidata.loadAllEntities();
+  }
+
+
+  public void cutLabelFile() throws Exception {
+    BufferedReader reader = new BufferedReader(new FileReader(fullfilePath));
+    FileWriter writer = new FileWriter(wikiLabelPath);
+    String line = null;
+    while ((line = reader.readLine()) != null) {
+      if (!line.contains("@en")) {
+        continue;
+      }
+      if (org.apache.commons.lang3.StringUtils.containsIgnoreCase(line, "label")) {
+        writer.write(line + "\n");
+      }
+    }
+    reader.close();
+    writer.close();
   }
 
   public void loadAttributes() throws Exception {

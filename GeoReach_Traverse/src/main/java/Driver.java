@@ -21,7 +21,8 @@ public class Driver {
     wikidataExtractEntityToEntityRelationEdgeFormat, //
     wikidataLoadGraph, //
     wikiExtractEntityToEntityRelationEdgeFormat, //
-    wikiLoadEdges, wikiLoadAttributes,
+    wikiLoadEdges, wikiLoadAttributes, //
+    wikicutLabelFile,
   }
 
   private String[] args = null;
@@ -128,6 +129,9 @@ public class Driver {
             wikidata = new Wikidata(cmd.getOptionValue(homeDir));
             wikidata.loadAttributes();
             break;
+          case wikicutLabelFile:
+            wikidata = new Wikidata(cmd.getOptionValue(homeDir));
+            wikidata.cutLabelFile();
           default:
             Util.println(String.format("Function %s does not exist!", functionNameString));
             break;
