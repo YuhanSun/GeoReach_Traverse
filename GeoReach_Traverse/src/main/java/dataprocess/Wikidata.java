@@ -386,7 +386,7 @@ public class Wikidata {
       if (!isQEntity(spo[0])) {
         continue;
       }
-      long curEntityId = getQEntityID(spo[0]);
+      long curEntityId = getQEntityIdReg(spo[0]);
       if (curEntityId != entityQId) {
         // entityId = -1, initialize the properties for the first entity.
         if (properties == null) {
@@ -474,7 +474,7 @@ public class Wikidata {
       // extract the label and description in language English.
       if (object.endsWith(enStr) && predicate.contains(labelStr)) {
         object = object.substring(1, object.length() - 4);
-        long curEntityId = getQEntityID(spo[0]);
+        long curEntityId = getQEntityIdReg(spo[0]);
         int graphId = map[(int) curEntityId];
         writer.write(String.format("%d,%s\n", graphId, object));
 
@@ -571,11 +571,11 @@ public class Wikidata {
           if (!isQEntity(subject) || !isQEntity(object))
             continue;
 
-          int graphID = idMap.get(getQEntityID(subject));
+          int graphID = idMap.get(getQEntityIdReg(subject));
           hasLabelVertices.add(graphID);
 
           // labelId is the mapped id of the entity.
-          int labelID = idMap.get(getQEntityID(object));
+          int labelID = idMap.get(getQEntityIdReg(object));
           if (!labels.containsKey(graphID))
             labels.put(graphID, new TreeSet<>());
           labels.get(graphID).add(labelID);
@@ -639,10 +639,10 @@ public class Wikidata {
           if (!isQEntity(subject) || !isQEntity(object))
             continue;
 
-          int graphID = idMap.get(getQEntityID(subject));
+          int graphID = idMap.get(getQEntityIdReg(subject));
           hasLabelVertices.add(graphID);
 
-          int labelID = idMap.get(getQEntityID(object));
+          int labelID = idMap.get(getQEntityIdReg(object));
           if (!labels.containsKey(labelID))
             labels.put(labelID, new TreeSet<>());
           labels.get(labelID).add(graphID);
@@ -750,11 +750,11 @@ public class Wikidata {
           if (propertyID == 376) {
             String object = strList[2];
             if (object.matches(entityPattern.pattern())) {
-              long planetID = getQEntityID(object);
+              long planetID = getQEntityIdReg(object);
               if (planetID != 2) {
                 String subject = strList[0];
                 if (isQEntity(subject)) {
-                  long subjectWikiID = getQEntityID(subject);
+                  long subjectWikiID = getQEntityIdReg(subject);
                   writer.write(subjectWikiID + "\n");
                 }
               }
@@ -847,7 +847,7 @@ public class Wikidata {
         String subject = strList[0];
 
         if (subject.matches(entityPattern.pattern())) {
-          long startID = getQEntityID(subject);
+          long startID = getQEntityIdReg(subject);
           if (startID != curWikiID) {
             if (startIdSet.contains(startID)) {
               throw new Exception(startID + "already exists before here!");
@@ -863,7 +863,7 @@ public class Wikidata {
 
         String object = strList[2];
         if (object.matches(entityPattern.pattern())) {
-          long endID = getQEntityID(object);
+          long endID = getQEntityIdReg(object);
           if (startIdSet.contains(endID) == false)
             leafVerticesSet.add(endID);
         }
@@ -919,10 +919,10 @@ public class Wikidata {
         String object = strList[2];
 
         if (isQEntity(subject) && isPropertyPredicate(predicate) && isQEntity(object)) {
-          int startQId = getQEntityID(subject);
+          int startQId = getQEntityIdReg(subject);
           int startGraphId = idMap[startQId];
 
-          int endQID = getQEntityID(object);
+          int endQID = getQEntityIdReg(object);
           int endGraphID = idMap[endQID];
 
           int propertyId = getPropertyPredicateIdReg(predicate);
@@ -973,7 +973,7 @@ public class Wikidata {
         String subject = strList[0];
 
         if (subject.matches(entityPattern.pattern())) {
-          long startID = getQEntityID(subject);
+          long startID = getQEntityIdReg(subject);
           if (curWikiID != startID) {
             writer.write(String.format("%d,%d", idMap.get(curWikiID), neighbors.size()));
             for (int neighbor : neighbors)
@@ -985,7 +985,7 @@ public class Wikidata {
 
           String object = strList[2];
           if (object.matches(entityPattern.pattern())) {
-            long endID = getQEntityID(object);
+            long endID = getQEntityIdReg(object);
             int graphID = idMap.get(endID);
             neighbors.add(graphID);
           }
@@ -1083,7 +1083,7 @@ public class Wikidata {
           p625Count++;
           if (line.contains("\"")) {
             String subject = strList[0];
-            int wikiID = getQEntityID(subject);
+            int wikiID = getQEntityIdReg(subject);
             strList = line.split("\"");
             String pointString = strList[1];
             writer.write(wikiID + "," + pointString + "\n");
@@ -1149,7 +1149,7 @@ public class Wikidata {
    * @param string
    * @return
    */
-  public static int getPropertyPredicateId(String string) {
+  public static int getId(String string) {
     return Integer.parseInt(CharMatcher.digit().retainFrom(string));
   }
 
@@ -1199,6 +1199,7 @@ public class Wikidata {
     return string.matches(propertyEntityPattern.pattern());
   }
 
+
   /**
    * Extract the id of an entity. An entity means Q-entity.
    *
@@ -1206,7 +1207,7 @@ public class Wikidata {
    * @return
    * @throws Exception
    */
-  public static int getQEntityID(String string) throws Exception {
+  public static int getQEntityIdReg(String string) throws Exception {
     Matcher m = entityPattern.matcher(string);
     if (m.find()) {
       return Integer.parseInt(m.group(1));
