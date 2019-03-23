@@ -17,6 +17,11 @@ public class WikidataTest {
   public void tearDown() throws Exception {}
 
   @Test
+  public void getPropertyPredicateIdTest() {
+    assertTrue(Wikidata.getPropertyPredicateId("http://www.wikidata.org/prop/direct/P138") == 138);
+  }
+
+  @Test
   public void decodeRowTest() {
     String string =
         "<http://www.wikidata.org/entity/Q27> <http://schema.org/name> \"Irland\"@de-at .";
@@ -41,7 +46,7 @@ public class WikidataTest {
   public void isPropertyPredicateTest() throws Exception {
     String string = "<http://www.wikidata.org/prop/direct/P1549>";
     assertTrue(Wikidata.isPropertyPredicate(string));
-    assertTrue(Wikidata.getPropertyPredicateID(string) == 1549);
+    assertTrue(Wikidata.getPropertyPredicateIdReg(string) == 1549);
   }
 
   @Test

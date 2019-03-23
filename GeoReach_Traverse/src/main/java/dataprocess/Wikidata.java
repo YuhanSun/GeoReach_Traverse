@@ -28,6 +28,7 @@ import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.unsafe.batchinsert.BatchInserter;
 import org.neo4j.unsafe.batchinsert.BatchInserters;
+import com.google.common.base.CharMatcher;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -1142,6 +1143,15 @@ public class Wikidata {
   }
 
 
+  /**
+   * Assume that the string is valid.
+   *
+   * @param string
+   * @return
+   */
+  public static int getPropertyPredicateId(String string) {
+    return Integer.parseInt(CharMatcher.digit().retainFrom(string));
+  }
 
   /**
    * Extract the id of a property when it is a predicate.
