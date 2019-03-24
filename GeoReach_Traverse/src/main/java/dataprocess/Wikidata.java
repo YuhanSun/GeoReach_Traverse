@@ -487,52 +487,59 @@ public class Wikidata {
     int QEntityId = -1;
     int level = 0;
     String labelString = null;
-    while ((line = reader.readLine()) != null) {
-      if (count % logInterval == 0) {
-        LOGGER.info("" + count);
-      }
-      count++;
-
-      String[] spo = decodeRow(line);
-      if (!isQEntityReg(spo[0])) {
-        continue;
-      }
-
-      int curQEntityId = getId(spo[0]);
-      String predicate = spo[1];
-      String object = spo[2];
-
-      if (QEntityId != curQEntityId) {
-        if (QEntityId == -1) {
-          QEntityId = curQEntityId;
-        } else {
-          int graphId = map[(int) curQEntityId];
-          writer.write(String.format("%d,%s\n", graphId, labelString));
-          QEntityId = curQEntityId;
-          labelString = null;
-          level = 0;
+    try {
+      while ((line = reader.readLine()) != null) {
+        if (count % logInterval == 0) {
+          LOGGER.info("" + count);
         }
-      }
+        count++;
 
-      int curLanguageLevel = getLanguageLevel(object);
-      if (curLanguageLevel > level) {
-        object = StringUtils.split("@")[0];
-        object = object.substring(1, object.length() - 1);
-        labelString = object;
-        level = curLanguageLevel;
-      }
+        String[] spo = decodeRow(line);
+        if (!isQEntityReg(spo[0])) {
+          continue;
+        }
 
-      // extract the label and description in language English.
-      // if (object.endsWith(enStr) && predicate.contains(labelStr)) {
-      //
-      // }
+        int curQEntityId = getId(spo[0]);
+        String predicate = spo[1];
+        String object = spo[2];
+
+        if (QEntityId != curQEntityId) {
+          if (QEntityId == -1) {
+            QEntityId = curQEntityId;
+          } else {
+            int graphId = map[(int) curQEntityId];
+            labelString = StringUtils.split(labelString, "@")[0];
+            object = object.substring(1, object.length() - 1);
+            writer.write(String.format("%d,%s\n", graphId, labelString));
+            QEntityId = curQEntityId;
+            labelString = null;
+            level = 0;
+          }
+        }
+
+        int curLanguageLevel = getLanguageLevel(object);
+        if (curLanguageLevel > level) {
+          labelString = object;
+          level = curLanguageLevel;
+        }
+
+        // extract the label and description in language English.
+        // if (object.endsWith(enStr) && predicate.contains(labelStr)) {
+        //
+        // }
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      Util.println(line);
+      reader.close();
+      writer.close();
     }
-    reader.close();
-    writer.close();
+    Util.close(reader);
+    Util.close(writer);
   }
 
   public static int getLanguageLevel(String object) {
-    if (object.endsWith("@en")) {
+    if (object.endsWith(enStr)) {
       return 2;
     } else {
       return 1;
