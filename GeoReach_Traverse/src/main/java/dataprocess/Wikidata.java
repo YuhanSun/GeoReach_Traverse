@@ -198,7 +198,13 @@ public class Wikidata {
     FileWriter attrbuteWriter = new FileWriter(wikiAttributePath);
     FileWriter edgeWriter = new FileWriter(wikiEdgePath);
     String line = null;
+    long count = 0;
     while ((line = reader.readLine()) != null) {
+      count++;
+      if (count % 1000000 == 0) {
+        LOGGER.info("" + count);
+      }
+
       if (!isPropertyLine(line)) {
         continue;
       }
@@ -224,7 +230,12 @@ public class Wikidata {
     BufferedReader reader = new BufferedReader(new FileReader(fullfilePath));
     FileWriter writer = new FileWriter(wikiLabelPath);
     String line = null;
+    int count = 0;
     while ((line = reader.readLine()) != null) {
+      count++;
+      if (count % 1000000 == 0) {
+        LOGGER.info("" + count);
+      }
       if (!line.contains("@en")) {
         continue;
       }
