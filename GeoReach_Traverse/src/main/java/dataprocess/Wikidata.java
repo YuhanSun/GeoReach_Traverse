@@ -434,19 +434,19 @@ public class Wikidata {
         } else if (predicate.equals(descriptionStr)) {
           properties.addProperty(descriptionPropertyName, object);
         }
-      } else if (isQEntityReg(object)) {
+      } else if (isQEntity(object)) {
         // skip the entity-to-entity edges.
         continue;
-      } else if (isPropertyPredicateReg(predicate)) {
+      } else if (isPropertyPredicate(predicate)) {
 
-        if (!(object.endsWith("\"") && object.startsWith("\""))) {
-          continue;
-        }
+        // if (!(object.endsWith("\"") && object.startsWith("\""))) {
+        // continue;
+        // }
 
-        object = object.substring(1, object.length() - 1);
+        // object = object.substring(1, object.length() - 1);
 
         // only extract the rows with existing property predicate.
-        int propertyId = getPropertyPredicateIdReg(predicate);
+        int propertyId = getId(predicate);
         // LOGGER.log(loggingLevel, propertyId + "");
         String propertyName = propertyMap.get(propertyId);
         // the propertyId does not exist in latest properties ids.
@@ -460,6 +460,7 @@ public class Wikidata {
       }
     }
 
+    // handle the last entity.
     if (properties.size() > 0) {
       properties.addProperty("id", entityQId);
       writer.write(properties.toString() + "\n");
@@ -501,12 +502,16 @@ public class Wikidata {
       String predicate = spo[1];
       String object = spo[2];
 
-      if (QEntityId != curQEntityId && QEntityId != -1) {
-        int graphId = map[(int) curQEntityId];
-        writer.write(String.format("%d,%s\n", graphId, labelString));
-        QEntityId = curQEntityId;
-        labelString = null;
-        level = 0;
+      if (QEntityId != curQEntityId) {
+        if (QEntityId == -1) {
+          QEntityId = curQEntityId;
+        } else {
+          int graphId = map[(int) curQEntityId];
+          writer.write(String.format("%d,%s\n", graphId, labelString));
+          QEntityId = curQEntityId;
+          labelString = null;
+          level = 0;
+        }
       }
 
       int curLanguageLevel = getLanguageLevel(object);
