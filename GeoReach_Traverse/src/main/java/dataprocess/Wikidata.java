@@ -212,11 +212,12 @@ public class Wikidata {
       }
       LOGGER.info(line);
 
-      if (!line.contains(propertyStr)) {
+      String[] strings = decodeRow(line);
+      String predicate = strings[1];
+      if (!isPropertyPredicate(predicate)) {
         continue;
       }
 
-      String[] strings = decodeRow(line);
       String object = strings[2];
       if (isQEntity(object)) {
         edgeWriter.write(line + "\n");
@@ -1195,6 +1196,10 @@ public class Wikidata {
       return Integer.parseInt(matcher.group(1));
     }
     throw new Exception(string + " is not a property in predicate!");
+  }
+
+  public static boolean isPropertyPredicate(String predicate) {
+    return predicate.startsWith(propertyStr);
   }
 
   public static boolean isPropertyPredicateReg(String string) {
