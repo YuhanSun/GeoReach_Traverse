@@ -2,8 +2,9 @@
 
 cd /hdd2/code/spark-2.3.2-bin-hadoop2.6/
 ./bin/spark-shell --master local[*]
-val df = spark.read.format("csv").option("header","false").option("delimiter"," ").load("/hdd/code/yuhansun/data/wikidata/wikidata-20180308-truthy-BETA.nt");
 
+
+val df = spark.read.format("csv").option("header","false").option("delimiter"," ").load("/hdd/code/yuhansun/data/wikidata/wikidata-20180308-truthy-BETA.nt");
 
 df.createOrReplaceTempView("motherTable");
 
