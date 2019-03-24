@@ -506,13 +506,11 @@ public class Wikidata {
           }
         }
 
-        Util.println(object);
         if (!object.contains(enStr)) {
           continue;
         }
 
         int curLanguageLevel = getLanguageLevel(object);
-        Util.println(curLanguageLevel);
         if (curLanguageLevel > level) {
           labelString = object;
           level = curLanguageLevel;
