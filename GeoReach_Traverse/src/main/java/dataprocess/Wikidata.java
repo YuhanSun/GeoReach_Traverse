@@ -155,19 +155,6 @@ public class Wikidata {
     // checkGraphVerticesCount();
     // generateEntityFile();
 
-    // readGraphTest();
-
-    // //test code
-    // String string = "<http://www.wikidata.org/entity/Q26>";
-    // Util.Print(isEntity(string));
-    // Util.Print(getEntityID(string));
-    // //test code
-    // String string = "<https://www.wikidata.org/wiki/Property:P1151>";
-    // Util.Print(isProperty(string));
-    // Util.Print(getPropertyID(string));
-
-
-    // getRange();
     // checkLocation();
     // findEntitiesNotOnEarth();
     // removeLocationOutOfEarth();
@@ -190,7 +177,8 @@ public class Wikidata {
     // edgeCountCheck();
 
     // wikidata.loadAllEntities();
-    wikidata.cutPropertyAndEdge();
+    // wikidata.cutPropertyAndEdge();
+    wikidata.extractStringLabels();
   }
 
 
@@ -395,7 +383,7 @@ public class Wikidata {
    */
   public void extractProperties() throws Exception {
     Map<Integer, String> propertyMap = readPropertyMap(propertyMapPath);
-    BufferedReader reader = new BufferedReader(new FileReader(fullfilePath));
+    BufferedReader reader = new BufferedReader(new FileReader(wikiAttributePath));
     FileWriter writer = new FileWriter(entityPropertiesPath);
     String line = null;
     long entityQId = -1;
@@ -489,6 +477,7 @@ public class Wikidata {
     String labelString = null;
     try {
       while ((line = reader.readLine()) != null) {
+        LOGGER.info(line);
         if (count % logInterval == 0) {
           LOGGER.info("" + count);
         }
