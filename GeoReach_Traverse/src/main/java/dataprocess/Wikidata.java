@@ -189,13 +189,19 @@ public class Wikidata {
 
     // edgeCountCheck();
 
-    wikidata.loadAllEntities();
+    // wikidata.loadAllEntities();
+    wikidata.cutPropertyAndEdge();
   }
 
 
   public void cutPropertyAndEdge() throws Exception {
+    LOGGER.info("read from " + fullfilePath);
     BufferedReader reader = new BufferedReader(new FileReader(fullfilePath));
+
+    LOGGER.info("write attribute to " + wikiAttributePath);
     FileWriter attrbuteWriter = new FileWriter(wikiAttributePath);
+
+    LOGGER.info("write egde to " + wikiEdgePath);
     FileWriter edgeWriter = new FileWriter(wikiEdgePath);
     String line = null;
     long count = 0;
@@ -204,10 +210,12 @@ public class Wikidata {
       if (count % 1000000 == 0) {
         LOGGER.info("" + count);
       }
+      LOGGER.info(line);
 
-      if (!isPropertyLine(line)) {
+      if (!line.contains(propertyStr)) {
         continue;
       }
+
       String[] strings = decodeRow(line);
       String object = strings[2];
       if (isQEntity(object)) {
@@ -1234,16 +1242,6 @@ public class Wikidata {
       return Integer.parseInt(m.group(1));
     }
     throw new Exception(string + " is not an Q-entity!");
-  }
-
-  /**
-   * Check whether a line contains a property (either edge or attribute).
-   *
-   * @param string
-   * @return
-   */
-  public static boolean isPropertyLine(String string) {
-    return string.startsWith(propertyStr);
   }
 
   public static boolean isQEntity(String string) {
