@@ -498,7 +498,9 @@ public class Wikidata {
           } else {
             int graphId = map[(int) QEntityId];
             // Util.println(labelString);
-            labelString = StringUtils.split(labelString, "\"")[1];
+            int start = labelString.indexOf("\"");
+            int end = labelString.lastIndexOf("\"");
+            labelString = labelString.substring(start + 1, end);
             writer.write(String.format("%d,%s\n", graphId, labelString));
             QEntityId = curQEntityId;
             labelString = null;
