@@ -531,6 +531,7 @@ public class Wikidata {
     } catch (Exception e) {
       e.printStackTrace();
       Util.println(line);
+      Util.println(labelString);
       reader.close();
       writer.close();
     }
