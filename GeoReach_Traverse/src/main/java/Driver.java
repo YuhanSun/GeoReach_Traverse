@@ -18,9 +18,8 @@ public class Driver {
     query, insertion, generateAccurateDb, //
     wikidataExtractProperties, //
     wikidataExtractStringLabel, //
-    wikidataExtractEntityToEntityRelationEdgeFormat, //
     wikidataLoadGraph, //
-    wikiExtractEntityToEntityRelationEdgeFormat, //
+    wikiextractEntityToEntityRelationEdgeFormat, //
     wikiLoadEdges, wikiLoadAttributes, //
     wikicutLabelFile, wikicutPropertyAndEdge;
   }
@@ -109,15 +108,11 @@ public class Driver {
             wikidata = new Wikidata(cmd.getOptionValue(homeDir));
             wikidata.extractStringLabels();
             break;
-          case wikidataExtractEntityToEntityRelationEdgeFormat:
-            wikidata = new Wikidata(cmd.getOptionValue(homeDir));
-            wikidata.extractEntityToEntityRelationEdgeFormat();
-            break;
           case wikidataLoadGraph:
             wikidata = new Wikidata(cmd.getOptionValue(homeDir));
             wikidata.loadAllEntities();
             break;
-          case wikiExtractEntityToEntityRelationEdgeFormat:
+          case wikiextractEntityToEntityRelationEdgeFormat:
             wikidata = new Wikidata(cmd.getOptionValue(homeDir));
             wikidata.extractEntityToEntityRelationEdgeFormat();
             break;

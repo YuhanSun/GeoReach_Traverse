@@ -320,7 +320,7 @@ public class Wikidata {
    */
   public static void loadAllEntity(List<Entity> entities, String[] labelStringMap,
       ArrayList<ArrayList<Integer>> labelList, String dbPath) throws Exception {
-    LOGGER.info("Batch insert into: " + dbPath);
+    LOGGER.info("Batch insert nodes into: " + dbPath);
     Map<String, String> config = new HashMap<String, String>();
     config.put("dbms.pagecache.memory", "80g");
     BatchInserter inserter = null;
@@ -999,7 +999,7 @@ public class Wikidata {
   }
 
   /**
-   * Generate the graph.txt file (single directional).
+   * Generate the graph.txt file (single directional). Not used.
    */
   public void extractEntityToEntityRelation() {
     BufferedReader reader;
