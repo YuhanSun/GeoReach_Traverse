@@ -119,6 +119,8 @@ public class Wikidata {
     this.dir = homeDir;
     fullfilePath = dir + "/" + sourceFileName;
     wikiLabelPath = dir + "/wiki_label.txt";
+    wikiAttributePath = dir + "/wiki_attribute.txt";
+    wikiEdgePath = dir + "wiki_edge.txt";
 
     logPath = dir + "/extract.log";
     locationPath = dir + "/locations.txt";
