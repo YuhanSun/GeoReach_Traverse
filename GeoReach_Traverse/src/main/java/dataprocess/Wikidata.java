@@ -481,11 +481,14 @@ public class Wikidata {
   public void extractStringLabels() throws Exception {
     int[] map = readQIdToGraphIdMap(entityMapPath);
 
-    LOGGER.info("read from " + fullfilePath);;
-    BufferedReader reader = new BufferedReader(new FileReader(fullfilePath));
+    LOGGER.info("read from " + wikiLabelPath);
+    BufferedReader reader = new BufferedReader(new FileReader(wikiLabelPath));
     FileWriter writer = new FileWriter(entityStringLabelMapPath);
     String line = null;
     int count = 0;
+    int QEntityId = -1;
+    int level = 0;
+    String labelString = null;
     while ((line = reader.readLine()) != null) {
       if (count % logInterval == 0) {
         LOGGER.info("" + count);
@@ -497,22 +500,39 @@ public class Wikidata {
         continue;
       }
 
+      int curQEntityId = getId(spo[0]);
       String predicate = spo[1];
       String object = spo[2];
-      // extract the label and description in language English.
-      if (object.endsWith(enStr) && predicate.contains(labelStr)) {
-        object = object.substring(1, object.length() - 4);
-        long curEntityId = getQEntityIdReg(spo[0]);
-        int graphId = map[(int) curEntityId];
-        writer.write(String.format("%d,%s\n", graphId, object));
 
-        if (graphId % logInterval == 0) {
-          LOGGER.log(loggingLevel, graphId + "");
-        }
+      if (QEntityId != curQEntityId && QEntityId != -1) {
+        int graphId = map[(int) curQEntityId];
+        writer.write(String.format("%d,%s\n", graphId, object));
+        QEntityId = curQEntityId;
+        labelString = null;
+        level = 0;
       }
+
+      int curLanguageLevel = getLanguageLevel(object);
+      if (curLanguageLevel > level) {
+        object = StringUtils.split("@")[0];
+        object = object.substring(1, object.length() - 1);
+      }
+
+      // extract the label and description in language English.
+      // if (object.endsWith(enStr) && predicate.contains(labelStr)) {
+      //
+      // }
     }
     reader.close();
     writer.close();
+  }
+
+  public static int getLanguageLevel(String object) {
+    if (object.endsWith("@en")) {
+      return 2;
+    } else {
+      return 1;
+    }
   }
 
   /**
