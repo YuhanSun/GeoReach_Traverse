@@ -407,14 +407,11 @@ public class Wikidata {
         LOGGER.info("" + lineIndex);
       }
 
-      if (line.contains("\\")) {
-        continue;
-      }
       String[] spo = decodeRow(line);
-      if (!isQEntityReg(spo[0])) {
+      if (!isQEntity(spo[0])) {
         continue;
       }
-      long curEntityId = getQEntityIdReg(spo[0]);
+      long curEntityId = getId(spo[0]);
       if (curEntityId != entityQId) {
         // entityId = -1, initialize the properties for the first entity.
         if (properties == null) {
@@ -506,7 +503,7 @@ public class Wikidata {
 
       if (QEntityId != curQEntityId && QEntityId != -1) {
         int graphId = map[(int) curQEntityId];
-        writer.write(String.format("%d,%s\n", graphId, object));
+        writer.write(String.format("%d,%s\n", graphId, labelString));
         QEntityId = curQEntityId;
         labelString = null;
         level = 0;
@@ -516,6 +513,8 @@ public class Wikidata {
       if (curLanguageLevel > level) {
         object = StringUtils.split("@")[0];
         object = object.substring(1, object.length() - 1);
+        labelString = object;
+        level = curLanguageLevel;
       }
 
       // extract the label and description in language English.
