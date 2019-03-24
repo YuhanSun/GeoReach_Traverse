@@ -197,13 +197,20 @@ public class Wikidata {
     FileWriter edgeWriter = new FileWriter(wikiEdgePath);
     String line = null;
     while ((line = reader.readLine()) != null) {
-      if (!line.contains(propertyStr)) {
+      if (!isPropertyLine(line)) {
         continue;
       }
       String[] strings = decodeRow(line);
-
-      // if ()
+      String object = strings[2];
+      if (isQEntity(object)) {
+        edgeWriter.write(line + "\n");
+      } else {
+        attrbuteWriter.write(line + "\n");
+      }
     }
+    reader.close();
+    attrbuteWriter.close();
+    edgeWriter.close();
   }
 
   /**
@@ -1223,7 +1230,11 @@ public class Wikidata {
    * @return
    */
   public static boolean isPropertyLine(String string) {
-    return string.contains(propertyStr);
+    return string.startsWith(propertyStr);
+  }
+
+  public static boolean isQEntity(String string) {
+    return string.startsWith("<http://www.wikidata.org/entity/Q");
   }
 
   /**
