@@ -28,6 +28,9 @@ public class WikidataTest {
     String string =
         "<http://www.wikidata.org/entity/Q27> <http://schema.org/name> \"Irland\"@de-at .";
     Util.println(Arrays.toString(Wikidata.decodeRow(string)));
+
+    Util.println(Arrays.toString(Wikidata.decodeRow(
+        "<http://www.wikidata.org/entity/Q42> <http://www.wikidata.org/prop/direct/P1559> \"Douglas Adams\"@en .")));
   }
 
   @Test
