@@ -251,10 +251,15 @@ public class Wikidata {
     config.put("dbms.pagecache.memory", "80g");
     BatchInserter inserter = null;
     String line = null;
+    int lineId = 0;
     JsonParser jsonParser = new JsonParser();
     try {
       inserter = BatchInserters.inserter(new File(dbPath).getAbsoluteFile(), config);
       while ((line = reader.readLine()) != null) {
+        lineId++;
+        if (lineId % logInterval == 0) {
+          LOGGER.info("" + lineId);
+        }
         JsonElement jsonElement = jsonParser.parse(line);
         JsonObject object = jsonElement.getAsJsonObject();
         int QId = object.get("id").getAsInt();
@@ -277,20 +282,28 @@ public class Wikidata {
   }
 
   public void loadEdges() throws Exception {
+    // read the relationshipsTypes
+    Map<String, RelationshipType> map = createStringToRelationshipTypeMap(propertyMapPath);
+
     BufferedReader reader = new BufferedReader(new FileReader(graphPropertyEdgePath));
     LOGGER.info("Batch insert edges into: " + dbPath);
     Map<String, String> config = new HashMap<String, String>();
     config.put("dbms.pagecache.memory", "80g");
     BatchInserter inserter = null;
     String line = null;
+    int lineId = 0;
     try {
       inserter = BatchInserters.inserter(new File(dbPath).getAbsoluteFile(), config);
       while ((line = reader.readLine()) != null) {
+        lineId++;
+        if (lineId % logInterval == 0) {
+          LOGGER.info("" + lineId);
+        }
         String[] strings = line.split(",");
         int startId = Integer.parseInt(strings[0]);
         int endId = Integer.parseInt(strings[2]);
         String label = strings[1];
-        inserter.createRelationship(startId, endId, RelationshipType.withName(label), null);
+        inserter.createRelationship(startId, endId, map.get(label), null);
       }
     } catch (Exception e) {
       e.printStackTrace();
@@ -300,6 +313,15 @@ public class Wikidata {
 
     Util.close(reader);
     Util.close(inserter);
+  }
+
+  private static Map<String, RelationshipType> createStringToRelationshipTypeMap(String filepath) {
+    Map<String, RelationshipType> map = new HashMap<>();
+    Map<Integer, String> strMap = readPropertyMap(filepath);
+    for (String name : strMap.values()) {
+      map.put(name, RelationshipType.withName(name));
+    }
+    return map;
   }
 
   public void loadAllEntities() throws Exception {
@@ -1309,6 +1331,16 @@ public class Wikidata {
     }
     return res;
   }
+
+  // public static Map<Integer, RelationshipType> readPropertyMapInEdgeLabel(String filepath) {
+  // LOGGER.log(loggingLevel, "read property map from " + filepath);
+  // HashMap<String, String> map = ReadWriteUtil.ReadMap(filepath);
+  // HashMap<Integer, RelationshipType> propertyMap = new HashMap<>();
+  // for (String key : map.keySet()) {
+  // propertyMap.put(Integer.parseInt(key), RelationshipType.withName(map.get(key)));
+  // }
+  // return propertyMap;
+  // }
 
   /**
    * Read the property map <PId, StringLabel>.
