@@ -496,9 +496,10 @@ public class Wikidata {
           if (QEntityId == -1) {
             QEntityId = curQEntityId;
           } else {
-            int graphId = map[(int) curQEntityId];
+            int graphId = map[(int) QEntityId];
+            Util.println(labelString);
             labelString = StringUtils.split(labelString, "@")[0];
-            object = object.substring(1, object.length() - 1);
+            labelString = labelString.substring(1, labelString.length() - 1);
             writer.write(String.format("%d,%s\n", graphId, labelString));
             QEntityId = curQEntityId;
             labelString = null;
@@ -506,11 +507,13 @@ public class Wikidata {
           }
         }
 
+        Util.println(object);
         if (!object.contains(enStr)) {
           continue;
         }
 
         int curLanguageLevel = getLanguageLevel(object);
+        Util.println(curLanguageLevel);
         if (curLanguageLevel > level) {
           labelString = object;
           level = curLanguageLevel;
@@ -1288,13 +1291,25 @@ public class Wikidata {
   }
 
   /**
-   * Decode the row into [subject, predicate, object].
+   * Decode the row into [subject, predicate, object, "."].
    *
    * @param line
    * @return
    */
   public static String[] decodeRow(String line) {
-    return line.split(" ");
+    String[] strings = StringUtils.split(line, " ");
+    if (strings.length == 4) {
+      return strings;
+    }
+    String[] res = new String[4];
+    res[0] = strings[0];
+    res[1] = strings[1];
+    res[3] = strings[strings.length - 1];
+    res[2] = "";
+    for (int i = 2; i < strings.length - 1; i++) {
+      res[2] += strings[i];
+    }
+    return res;
   }
 
   /**
