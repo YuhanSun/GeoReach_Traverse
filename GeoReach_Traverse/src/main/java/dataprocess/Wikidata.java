@@ -210,7 +210,6 @@ public class Wikidata {
       if (count % 1000000 == 0) {
         LOGGER.info("" + count);
       }
-      LOGGER.info(line);
 
       String[] strings = decodeRow(line);
       String predicate = strings[1];
