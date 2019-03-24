@@ -477,7 +477,6 @@ public class Wikidata {
     String labelString = null;
     try {
       while ((line = reader.readLine()) != null) {
-        LOGGER.info(line);
         if (count % logInterval == 0) {
           LOGGER.info("" + count);
         }
