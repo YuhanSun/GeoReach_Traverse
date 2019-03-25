@@ -243,6 +243,37 @@ public class Wikidata {
     writer.close();
   }
 
+  public void recoverSpatialProperty() {
+    ArrayList<Entity> entities = GraphUtil.ReadEntity(entityPath);
+    LOGGER.info("Batch insert spatial properties into: " + dbPath);
+    Map<String, String> config = new HashMap<String, String>();
+    config.put("dbms.pagecache.memory", "80g");
+    BatchInserter inserter = null;
+    try {
+      inserter = BatchInserters.inserter(new File(dbPath).getAbsoluteFile(), config);
+      for (Entity entity : entities) {
+        int graphId = entity.id;
+        if (graphId % logInterval == 0) {
+          LOGGER.info("" + graphId);
+        }
+        if (entity.IsSpatial) {
+          inserter.setNodeProperty(graphId, lon_name, entity.lon);
+          inserter.setNodeProperty(graphId, lat_name, entity.lat);
+        }
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      Util.close(inserter);
+    }
+
+    Util.close(inserter);
+  }
+
+  /**
+   * Lead to override of the spatial properties loaded in the node loading phase.
+   *
+   * @throws Exception
+   */
   public void loadAttributes() throws Exception {
     int[] idMap = readQIdToGraphIdMap(entityMapPath);
     BufferedReader reader = new BufferedReader(new FileReader(entityPropertiesPath));
