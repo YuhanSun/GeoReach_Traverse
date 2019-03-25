@@ -24,11 +24,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
-import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.RelationshipType;
-import org.neo4j.graphdb.Transaction;
 import org.neo4j.unsafe.batchinsert.BatchInserter;
 import org.neo4j.unsafe.batchinsert.BatchInserters;
 import com.google.common.base.CharMatcher;
@@ -38,7 +35,6 @@ import com.google.gson.JsonParser;
 import commons.Config;
 import commons.Entity;
 import commons.GraphUtil;
-import commons.Neo4jGraphUtility;
 import commons.ReadWriteUtil;
 import commons.Util;
 
@@ -196,7 +192,7 @@ public class Wikidata {
       int id = getId(decodeRow(line)[0]);
       idSet.add(id);
     }
-    reader.close();
+    Util.close(reader);
 
     // check whether QId has a string label.
     for (int QId : idList) {
@@ -270,58 +266,63 @@ public class Wikidata {
   }
 
 
-  // public void recoverName() throws Exception {
-  // String[] entityStringMap = readLabelMap(entityStringLabelMapPath);
-  // LOGGER.info("Batch insert names into: " + dbPath);
-  // Map<String, String> config = new HashMap<String, String>();
-  // config.put("dbms.pagecache.memory", "80g");
-  // BatchInserter inserter = null;
-  // try {
-  // inserter = BatchInserters.inserter(new File(dbPath).getAbsoluteFile(), config);
-  // int graphId = 0;
-  // for (String strLabel : entityStringMap) {
-  // if (graphId % logInterval == 0) {
-  // LOGGER.info("" + graphId);
-  // }
-  // if (entityStringMap[graphId] != null) {
-  // inserter.setNodeProperty(graphId, labelPropertyName, strLabel);
-  // }
-  // graphId++;
-  // }
-  // } catch (Exception e) {
-  // e.printStackTrace();
-  // Util.close(inserter);
-  // }
-  // Util.close(inserter);
-  // }
-
   public void recoverName() throws Exception {
-    GraphDatabaseService service = Neo4jGraphUtility.getDatabaseService(dbPath);
     String[] entityStringMap = readLabelMap(entityStringLabelMapPath);
-    LOGGER.info("GraphDb Insert names into: " + dbPath);
-    Transaction tx = service.beginTx();
+    LOGGER.info("Batch insert names into: " + dbPath);
+    Map<String, String> config = new HashMap<String, String>();
+    config.put("dbms.pagecache.memory", "80g");
+    BatchInserter inserter = null;
     try {
+      inserter = BatchInserters.inserter(new File(dbPath).getAbsoluteFile(), config);
       int graphId = 0;
       for (String strLabel : entityStringMap) {
         if (graphId % logInterval == 0) {
           LOGGER.info("" + graphId);
-          LOGGER.info(String.format("%s", strLabel));
         }
-        if (strLabel != null) {
-          Node node = service.getNodeById(graphId);
-          node.setProperty(labelPropertyName, strLabel);
+        if (entityStringMap[graphId] != null) {
+          inserter.setNodeProperty(graphId, labelPropertyName, strLabel);
         }
         graphId++;
       }
     } catch (Exception e) {
       e.printStackTrace();
-      tx.failure();
-      tx.close();
+      Util.close(inserter);
     }
-    tx.success();
-    tx.close();
-    service.shutdown();
+    Util.close(inserter);
   }
+
+  // /**
+  // * Recover using GraphDatabase. It is very slow..
+  // *
+  // * @throws Exception
+  // */
+  // public void recoverName() throws Exception {
+  // GraphDatabaseService service = Neo4jGraphUtility.getDatabaseService(dbPath);
+  // String[] entityStringMap = readLabelMap(entityStringLabelMapPath);
+  // LOGGER.info("GraphDb Insert names into: " + dbPath);
+  // Transaction tx = service.beginTx();
+  // try {
+  // int graphId = 0;
+  // for (String strLabel : entityStringMap) {
+  // if (graphId % logInterval == 0) {
+  // LOGGER.info("" + graphId);
+  // LOGGER.info(String.format("%s", strLabel));
+  // }
+  // if (strLabel != null) {
+  // Node node = service.getNodeById(graphId);
+  // node.setProperty(labelPropertyName, strLabel);
+  // }
+  // graphId++;
+  // }
+  // } catch (Exception e) {
+  // e.printStackTrace();
+  // tx.failure();
+  // tx.close();
+  // }
+  // tx.success();
+  // tx.close();
+  // service.shutdown();
+  // }
 
   public void recoverSpatialProperty() {
     ArrayList<Entity> entities = GraphUtil.ReadEntity(entityPath);
