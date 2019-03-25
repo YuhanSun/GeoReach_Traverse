@@ -266,6 +266,11 @@ public class Wikidata {
   }
 
 
+  /**
+   * Recover name using batchinserter.
+   *
+   * @throws Exception
+   */
   public void recoverName() throws Exception {
     String[] entityStringMap = readLabelMap(entityStringLabelMapPath);
     LOGGER.info("Batch insert names into: " + dbPath);
@@ -615,8 +620,8 @@ public class Wikidata {
     String line = null;
     int count = 0;
     int QEntityId = -1;
-    int level = 0;
-    String labelString = null;
+    int labelLevel = 0, descptionLevel = 0;
+    String labelString = null, descriptionString = null;
     try {
       while ((line = reader.readLine()) != null) {
         if (count % logInterval == 0) {
@@ -645,7 +650,7 @@ public class Wikidata {
             writer.write(String.format("%d,%s\n", graphId, labelString));
             QEntityId = curQEntityId;
             labelString = null;
-            level = 0;
+            labelLevel = 0;
           }
         }
 
@@ -654,9 +659,9 @@ public class Wikidata {
         }
 
         int curLanguageLevel = getLanguageLevel(object);
-        if (curLanguageLevel > level) {
+        if (curLanguageLevel > labelLevel) {
           labelString = object;
-          level = curLanguageLevel;
+          labelLevel = curLanguageLevel;
         }
 
         // extract the label and description in language English.
@@ -1417,7 +1422,7 @@ public class Wikidata {
   }
 
   public static boolean isQEntity(String string) {
-    return string.startsWith("<http://www.wikidata.org/entity/Q");
+    return string.startsWith(entityStr);
   }
 
   /**
