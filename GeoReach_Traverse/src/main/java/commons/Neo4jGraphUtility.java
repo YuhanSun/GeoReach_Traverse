@@ -2,6 +2,7 @@ package commons;
 
 import java.io.File;
 import java.util.HashSet;
+import java.util.logging.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -13,6 +14,8 @@ import org.neo4j.graphdb.traversal.TraversalDescription;
 
 public class Neo4jGraphUtility {
 
+  private static final Logger LOGGER = Logger.getLogger(Neo4jGraphUtility.class.getName());
+
   /**
    * Assume that the property exists. Otherwise throw exception.
    *
@@ -23,7 +26,7 @@ public class Neo4jGraphUtility {
    */
   public static Object getNodeProperty(Node node, String property) throws Exception {
     if (!node.hasProperty(property)) {
-      Neo4jGraphUtility.printNode(node);
+      printNode(node);
       throw new Exception(String.format("%s does not have property %s!", node, property));
     }
     return node.getProperty(property);
@@ -87,6 +90,7 @@ public class Neo4jGraphUtility {
    * @return
    */
   public static GraphDatabaseService getDatabaseService(String dbPath) {
+    LOGGER.info("get dbservice from " + dbPath);
     if (!Util.pathExist(dbPath)) {
       Util.println(dbPath + "does not exist!");
       System.exit(-1);
