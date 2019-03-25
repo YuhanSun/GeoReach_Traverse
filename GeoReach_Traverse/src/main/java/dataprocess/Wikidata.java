@@ -152,6 +152,8 @@ public class Wikidata {
     String sourceFilename = "slice_100000.nt";
     Wikidata wikidata = new Wikidata(dir, sourceFilename);
 
+    wikidata.checkWikiLabelData();
+
     // extract();
 
     // extractEntityMap();
@@ -183,14 +185,28 @@ public class Wikidata {
     // wikidata.loadAllEntities();
     // wikidata.cutPropertyAndEdge();
     // wikidata.extractStringLabels();
-
-    Map<String, RelationshipType> map =
-        createStringToRelationshipTypeMap(wikidata.entityStringLabelMapPath);
-
-    Util.println(map);
-
   }
 
+  public void checkWikiLabelData() throws Exception {
+    BufferedReader reader = new BufferedReader(new FileReader(wikiLabelPath));
+    List<Integer> idList = readGraphIdToQIdMap(entityMapPath);
+    String line = null;
+    TreeSet<Integer> idSet = new TreeSet<>();
+    while ((line = reader.readLine()) != null) {
+      int id = getId(decodeRow(line)[0]);
+      idSet.add(id);
+    }
+    reader.close();
+
+    // check whether QId has a string label.
+    for (int QId : idList) {
+      if (!idSet.contains(QId)) {
+        LOGGER.info("" + QId);
+      }
+    }
+
+    LOGGER.info("" + idSet.size());
+  }
 
   public void cutPropertyAndEdge() throws Exception {
     LOGGER.info("read from " + fullfilePath);

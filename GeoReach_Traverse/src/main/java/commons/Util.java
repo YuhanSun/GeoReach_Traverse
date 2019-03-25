@@ -31,15 +31,19 @@ public class Util {
   private static final Logger LOGGER = Logger.getLogger(Util.class.getName());
 
   public static void close(BufferedReader reader) throws Exception {
+    LOGGER.info("close reader...");
     if (reader != null) {
       reader.close();
     }
+    LOGGER.info("reader is closed.");
   }
 
   public static void close(FileWriter writer) throws Exception {
+    LOGGER.info("close writer...");
     if (writer != null) {
       writer.close();
     }
+    LOGGER.info("writer is closed.");
   }
 
   public static void close(BatchInserter inserter) {
