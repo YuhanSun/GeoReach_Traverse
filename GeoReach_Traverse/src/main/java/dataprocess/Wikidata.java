@@ -285,6 +285,7 @@ public class Wikidata {
     // read the relationshipsTypes
     Map<String, RelationshipType> map = createStringToRelationshipTypeMap(propertyMapPath);
 
+    LOGGER.info("read edges from " + graphPropertyEdgePath);
     BufferedReader reader = new BufferedReader(new FileReader(graphPropertyEdgePath));
     LOGGER.info("Batch insert edges into: " + dbPath);
     Map<String, String> config = new HashMap<String, String>();
@@ -322,6 +323,7 @@ public class Wikidata {
   }
 
   private static Map<String, RelationshipType> createStringToRelationshipTypeMap(String filepath) {
+    LOGGER.info("create the string to relationType map from " + filepath);
     Map<String, RelationshipType> map = new HashMap<>();
     Map<Integer, String> strMap = readPropertyMap(filepath);
     for (String name : strMap.values()) {
