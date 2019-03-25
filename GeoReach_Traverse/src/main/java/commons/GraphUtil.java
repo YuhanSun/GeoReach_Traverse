@@ -10,8 +10,11 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 
 public class GraphUtil {
+
+  private static final Logger LOGGER = Logger.getLogger(GraphUtil.class.getName());
 
   public static void extractSpatialEntities(String entityPath, String outputPath) throws Exception {
     ArrayList<Entity> entities = ReadEntity(entityPath);
@@ -45,6 +48,7 @@ public class GraphUtil {
   }
 
   public static List<Edge> readEdges(String edgePath) throws Exception {
+    LOGGER.info("read edges from " + edgePath);
     List<Edge> edges = new LinkedList<>();
     BufferedReader reader = new BufferedReader(new FileReader(new File(edgePath)));
     String string = null;
@@ -82,6 +86,7 @@ public class GraphUtil {
    * @return
    */
   public static ArrayList<ArrayList<Integer>> ReadGraph(String graph_path) {
+    LOGGER.info("read graph from " + graph_path);
     ArrayList<ArrayList<Integer>> graph = null;
     BufferedReader reader = null;
     String str = "";
@@ -167,6 +172,7 @@ public class GraphUtil {
    * @return
    */
   public static ArrayList<Entity> ReadEntity(String entity_path) {
+    LOGGER.info("read entities from " + entity_path);
     ArrayList<Entity> entities = null;
     BufferedReader reader = null;
     String str = null;
