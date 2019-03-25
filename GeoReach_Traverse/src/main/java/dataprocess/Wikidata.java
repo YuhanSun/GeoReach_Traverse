@@ -303,7 +303,13 @@ public class Wikidata {
         int startId = Integer.parseInt(strings[0]);
         int endId = Integer.parseInt(strings[2]);
         String label = strings[1];
-        inserter.createRelationship(startId, endId, map.get(label), null);
+        RelationshipType type = map.get(label);
+        if (type == null) {
+          LOGGER.info(label);
+          inserter.createRelationship(startId, endId, RelationshipType.withName(label), null);
+        } else {
+          inserter.createRelationship(startId, endId, type, null);
+        }
       }
     } catch (Exception e) {
       e.printStackTrace();
