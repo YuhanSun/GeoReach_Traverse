@@ -280,9 +280,9 @@ public class Wikidata {
   // }
 
   public void recoverName() throws Exception {
+    GraphDatabaseService service = Neo4jGraphUtility.getDatabaseService(dbPath);
     String[] entityStringMap = readLabelMap(entityStringLabelMapPath);
     LOGGER.info("GraphDb Insert names into: " + dbPath);
-    GraphDatabaseService service = Neo4jGraphUtility.getDatabaseService(dbPath);
     Transaction tx = service.beginTx();
     try {
       int graphId = 0;
