@@ -243,6 +243,32 @@ public class Wikidata {
     writer.close();
   }
 
+  public void recoverName() throws Exception {
+    String[] entityStringMap = readLabelMap(entityMapPath);
+    LOGGER.info("Batch insert names into: " + dbPath);
+    Map<String, String> config = new HashMap<String, String>();
+    config.put("dbms.pagecache.memory", "80g");
+    BatchInserter inserter = null;
+    try {
+      inserter = BatchInserters.inserter(new File(dbPath).getAbsoluteFile(), config);
+      int graphId = 0;
+      for (String strLabel : entityStringMap) {
+        if (graphId % logInterval == 0) {
+          LOGGER.info("" + graphId);
+        }
+        if (entityStringMap[graphId] != null) {
+          inserter.setNodeProperty(graphId, labelPropertyName, strLabel);
+        }
+        graphId++;
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      Util.close(inserter);
+    }
+
+    Util.close(inserter);
+  }
+
   public void recoverSpatialProperty() {
     ArrayList<Entity> entities = GraphUtil.ReadEntity(entityPath);
     LOGGER.info("Batch insert spatial properties into: " + dbPath);
@@ -520,8 +546,7 @@ public class Wikidata {
   }
 
   /**
-   * Extract all the string labels for all Q entities. <graphId, Stringlabel>. It can happen <0,
-   * "ab">, <0, "bc">. But this is handled in the read. Only the first will be read.
+   * Extract all the string labels for all Q entities. <graphId, Stringlabel>.
    * 
    * @throws Exception
    */

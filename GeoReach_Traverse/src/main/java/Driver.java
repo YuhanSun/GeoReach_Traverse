@@ -22,7 +22,7 @@ public class Driver {
     wikiextractEntityToEntityRelationEdgeFormat, //
     wikiLoadEdges, wikiLoadAttributes, //
     wikicutLabelFile, wikicutPropertyAndEdge, //
-    wikirecoverSpatialProperty,
+    wikirecoverSpatialProperty, wikirecoverName,//
   }
 
   private String[] args = null;
@@ -137,7 +137,10 @@ public class Driver {
             wikidata = new Wikidata(cmd.getOptionValue(homeDir));
             wikidata.recoverSpatialProperty();
             break;
-
+          case wikirecoverName:
+            wikidata = new Wikidata(cmd.getOptionValue(homeDir));
+            wikidata.recoverName();
+            break;
           default:
             Util.println(String.format("Function %s does not exist!", functionNameString));
             break;
