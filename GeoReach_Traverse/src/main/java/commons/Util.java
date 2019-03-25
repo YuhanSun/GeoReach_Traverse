@@ -17,6 +17,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Random;
+import java.util.logging.Logger;
 import org.neo4j.graphdb.ExecutionPlanDescription;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -26,6 +27,8 @@ import org.roaringbitmap.buffer.ImmutableRoaringBitmap;
 import commons.EnumVariables.BoundaryLocationStatus;
 
 public class Util {
+
+  private static final Logger LOGGER = Logger.getLogger(Util.class.getName());
 
   public static void close(BufferedReader reader) throws Exception {
     if (reader != null) {
@@ -40,9 +43,11 @@ public class Util {
   }
 
   public static void close(BatchInserter inserter) {
+    LOGGER.info("shut down batch inserter...");
     if (inserter != null) {
       inserter.shutdown();
     }
+    LOGGER.info("shut down is done.");
   }
 
   public static void extendBoundary(int[] boundary, int[] xyId) {

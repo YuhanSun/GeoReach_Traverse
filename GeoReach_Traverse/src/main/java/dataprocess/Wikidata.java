@@ -273,8 +273,8 @@ public class Wikidata {
 
     } catch (Exception e) {
       e.printStackTrace();
-      inserter.shutdown();
-      reader.close();
+      Util.close(reader);
+      Util.close(inserter);
     }
 
     Util.close(reader);
@@ -313,8 +313,8 @@ public class Wikidata {
       }
     } catch (Exception e) {
       e.printStackTrace();
-      reader.close();
-      inserter.shutdown();
+      Util.close(reader);
+      Util.close(inserter);
     }
 
     Util.close(reader);
@@ -374,7 +374,7 @@ public class Wikidata {
       }
     } catch (Exception e) {
       e.printStackTrace();
-      inserter.shutdown();
+      Util.close(inserter);
     }
     Util.close(inserter);
   }
