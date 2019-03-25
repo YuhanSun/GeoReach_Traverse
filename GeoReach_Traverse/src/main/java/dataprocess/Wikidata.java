@@ -24,8 +24,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
+import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.unsafe.batchinsert.BatchInserter;
 import org.neo4j.unsafe.batchinsert.BatchInserters;
 import com.google.common.base.CharMatcher;
@@ -35,6 +38,7 @@ import com.google.gson.JsonParser;
 import commons.Config;
 import commons.Entity;
 import commons.GraphUtil;
+import commons.Neo4jGraphUtility;
 import commons.ReadWriteUtil;
 import commons.Util;
 
@@ -178,7 +182,13 @@ public class Wikidata {
 
     // wikidata.loadAllEntities();
     // wikidata.cutPropertyAndEdge();
-    wikidata.extractStringLabels();
+    // wikidata.extractStringLabels();
+
+    Map<String, RelationshipType> map =
+        createStringToRelationshipTypeMap(wikidata.entityStringLabelMapPath);
+
+    Util.println(map);
+
   }
 
 
@@ -243,30 +253,58 @@ public class Wikidata {
     writer.close();
   }
 
+
+  // public void recoverName() throws Exception {
+  // String[] entityStringMap = readLabelMap(entityStringLabelMapPath);
+  // LOGGER.info("Batch insert names into: " + dbPath);
+  // Map<String, String> config = new HashMap<String, String>();
+  // config.put("dbms.pagecache.memory", "80g");
+  // BatchInserter inserter = null;
+  // try {
+  // inserter = BatchInserters.inserter(new File(dbPath).getAbsoluteFile(), config);
+  // int graphId = 0;
+  // for (String strLabel : entityStringMap) {
+  // if (graphId % logInterval == 0) {
+  // LOGGER.info("" + graphId);
+  // }
+  // if (entityStringMap[graphId] != null) {
+  // inserter.setNodeProperty(graphId, labelPropertyName, strLabel);
+  // }
+  // graphId++;
+  // }
+  // } catch (Exception e) {
+  // e.printStackTrace();
+  // Util.close(inserter);
+  // }
+  // Util.close(inserter);
+  // }
+
   public void recoverName() throws Exception {
-    String[] entityStringMap = readLabelMap(entityMapPath);
-    LOGGER.info("Batch insert names into: " + dbPath);
-    Map<String, String> config = new HashMap<String, String>();
-    config.put("dbms.pagecache.memory", "80g");
-    BatchInserter inserter = null;
+    String[] entityStringMap = readLabelMap(entityStringLabelMapPath);
+    LOGGER.info("GraphDb Insert names into: " + dbPath);
+    GraphDatabaseService service = Neo4jGraphUtility.getDatabaseService(dbPath);
+    Transaction tx = service.beginTx();
     try {
-      inserter = BatchInserters.inserter(new File(dbPath).getAbsoluteFile(), config);
       int graphId = 0;
       for (String strLabel : entityStringMap) {
         if (graphId % logInterval == 0) {
           LOGGER.info("" + graphId);
+          LOGGER.info(String.format("%s", strLabel));
         }
-        if (entityStringMap[graphId] != null) {
-          inserter.setNodeProperty(graphId, labelPropertyName, strLabel);
+        if (strLabel != null) {
+          Node node = service.getNodeById(graphId);
+          node.setProperty(labelPropertyName, strLabel);
         }
         graphId++;
       }
     } catch (Exception e) {
       e.printStackTrace();
-      Util.close(inserter);
+      tx.failure();
+      tx.close();
     }
-
-    Util.close(inserter);
+    tx.success();
+    tx.close();
+    service.shutdown();
   }
 
   public void recoverSpatialProperty() {
@@ -464,7 +502,8 @@ public class Wikidata {
   }
 
   /**
-   * Extract all node properties from the source file.
+   * Extract all node properties from the wiki_attribute.txt file. The file only contains lines like
+   * '''QEntity predicate object'''. No label or description lines are there.
    *
    * @throws Exception
    */
