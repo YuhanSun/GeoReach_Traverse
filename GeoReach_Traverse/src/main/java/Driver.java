@@ -21,7 +21,7 @@ public class Driver {
     wikidataLoadGraph, //
     wikiextractEntityToEntityRelationEdgeFormat, //
     wikiLoadEdges, wikiLoadAttributes, //
-    wikicutLabelFile, wikicutPropertyAndEdge, //
+    wikicutLabelFile, wikicutPropertyAndEdge, wikicutDescription, //
     wikirecoverSpatialProperty, wikirecoverName,//
   }
 
@@ -132,6 +132,10 @@ public class Driver {
           case wikicutPropertyAndEdge:
             wikidata = new Wikidata(cmd.getOptionValue(homeDir));
             wikidata.cutPropertyAndEdge();
+            break;
+          case wikicutDescription:
+            wikidata = new Wikidata(cmd.getOptionValue(homeDir));
+            wikidata.cutDescription();
             break;
           case wikirecoverSpatialProperty:
             wikidata = new Wikidata(cmd.getOptionValue(homeDir));

@@ -20,6 +20,7 @@ java -Xmx100g -jar ${jar_path} -h
 
 # java -Xmx100g -jar ${jar_path} -f wikicutLabelFile -hd ${data_dir} -rd ${resultDir} -d ${dataset} -MG 2.0 -MR 2.0
 # java -Xmx100g -jar ${jar_path} -f wikicutPropertyAndEdge -hd ${data_dir} -rd ${resultDir} -d ${dataset} -MG 2.0 -MR 2.0
+java -Xmx100g -jar ${jar_path} -f wikicutDescription -hd ${data_dir} -rd ${resultDir} -d ${dataset} -MG 2.0 -MR 2.0
 
 # java -Xmx100g -jar ${jar_path} -f wikidataExtractProperties -hd ${data_dir} -rd ${resultDir} -d ${dataset} -MG 2.0 -MR 2.0
 # java -Xmx100g -jar ${jar_path} -f wikidataExtractStringLabel -hd ${data_dir} -rd ${resultDir} -d ${dataset} -MG 2.0 -MR 2.0
@@ -30,4 +31,4 @@ java -Xmx100g -jar ${jar_path} -h
 # java -Xmx100g -jar ${jar_path} -f wikiLoadAttributes -hd ${data_dir} -rd ${resultDir} -d ${dataset} -MG 2.0 -MR 2.0
 
 # java -Xmx100g -jar ${jar_path} -f wikirecoverSpatialProperty -hd ${data_dir} -rd ${resultDir} -d ${dataset} -MG 2.0 -MR 2.0
-java -Xmx100g -jar ${jar_path} -f wikirecoverName -hd ${data_dir} -rd ${resultDir} -d ${dataset} -MG 2.0 -MR 2.0
+# java -Xmx100g -jar ${jar_path} -f wikirecoverName -hd ${data_dir} -rd ${resultDir} -d ${dataset} -MG 2.0 -MR 2.0
