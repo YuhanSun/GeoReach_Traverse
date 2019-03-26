@@ -146,7 +146,8 @@ public class Wikidata {
     String sourceFilename = "slice_100000.nt";
     Wikidata wikidata = new Wikidata(dir, sourceFilename);
 
-    wikidata.checkWikiLabelData();
+    wikidata.cutDescription();
+    // wikidata.checkWikiLabelData();
 
     // extract();
 
@@ -219,9 +220,6 @@ public class Wikidata {
 
       String[] strings = decodeRow(line);
       String predicate = strings[1];
-      if (!isPropertyPredicate(predicate)) {
-        continue;
-      }
 
       if (predicate.equals(descriptionStr)) {
         writer.write(line + "\n");
@@ -605,13 +603,6 @@ public class Wikidata {
         // skip the entity-to-entity edges.
         continue;
       } else if (isPropertyPredicate(predicate)) {
-
-        // if (!(object.endsWith("\"") && object.startsWith("\""))) {
-        // continue;
-        // }
-
-        // object = object.substring(1, object.length() - 1);
-
         // only extract the rows with existing property predicate.
         int propertyId = getId(predicate);
         // LOGGER.log(loggingLevel, propertyId + "");
