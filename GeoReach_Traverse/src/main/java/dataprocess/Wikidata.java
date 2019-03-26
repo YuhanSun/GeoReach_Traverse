@@ -218,6 +218,10 @@ public class Wikidata {
         LOGGER.info("" + count);
       }
 
+      if (!line.contains("@en")) {
+        continue;
+      }
+
       String[] strings = decodeRow(line);
       String predicate = strings[1];
 
