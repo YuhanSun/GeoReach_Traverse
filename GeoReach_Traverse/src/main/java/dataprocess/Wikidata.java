@@ -118,7 +118,7 @@ public class Wikidata {
     wikiLabelPath = dir + "/wiki_label.txt";
     wikiAttributePath = dir + "/wiki_attribute.txt";
     wikiEdgePath = dir + "/wiki_edge.txt";
-    wikiDescriptionPath = dir + "wiki_description.txt";
+    wikiDescriptionPath = dir + "/wiki_description.txt";
 
     logPath = dir + "/extract.log";
     locationPath = dir + "/locations.txt";
