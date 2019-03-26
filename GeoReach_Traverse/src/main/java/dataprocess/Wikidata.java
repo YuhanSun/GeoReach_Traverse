@@ -81,10 +81,7 @@ public class Wikidata {
 
   // for test
   String dir = "";
-  String fullfilePath;
-  String wikiLabelPath;
-  String wikiAttributePath;
-  String wikiEdgePath;
+  String fullfilePath, wikiLabelPath, wikiAttributePath, wikiEdgePath, wikiDescriptionPath;
 
   // static String dir = "/hdd/code/yuhansun/data/wikidata";
   // static String fullfilePath = dir + "/wikidata-20180308-truthy-BETA.nt";
@@ -121,6 +118,7 @@ public class Wikidata {
     wikiLabelPath = dir + "/wiki_label.txt";
     wikiAttributePath = dir + "/wiki_attribute.txt";
     wikiEdgePath = dir + "/wiki_edge.txt";
+    wikiDescriptionPath = dir + "wiki_description.txt";
 
     logPath = dir + "/extract.log";
     locationPath = dir + "/locations.txt";
@@ -204,6 +202,39 @@ public class Wikidata {
     LOGGER.info("" + idSet.size());
   }
 
+  public void cutDescription() throws Exception {
+    LOGGER.info("read from " + fullfilePath);
+    BufferedReader reader = new BufferedReader(new FileReader(fullfilePath));
+
+    LOGGER.info("write description to " + wikiDescriptionPath);
+    FileWriter writer = new FileWriter(wikiDescriptionPath);
+
+    String line = null;
+    long count = 0;
+    while ((line = reader.readLine()) != null) {
+      count++;
+      if (count % 1000000 == 0) {
+        LOGGER.info("" + count);
+      }
+
+      String[] strings = decodeRow(line);
+      String predicate = strings[1];
+      if (!isPropertyPredicate(predicate)) {
+        continue;
+      }
+
+      if (predicate.equals(descriptionStr)) {
+        writer.write(line + "\n");
+      }
+    }
+    reader.close();
+    writer.close();
+  }
+
+  /**
+   * 
+   * @throws Exception
+   */
   public void cutPropertyAndEdge() throws Exception {
     LOGGER.info("read from " + fullfilePath);
     BufferedReader reader = new BufferedReader(new FileReader(fullfilePath));
