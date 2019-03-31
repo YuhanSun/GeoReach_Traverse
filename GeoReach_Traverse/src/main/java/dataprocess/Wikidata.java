@@ -575,7 +575,8 @@ public class Wikidata {
 
   /**
    * Extract all node properties from the wiki_attribute.txt file. The file only contains lines like
-   * '''QEntity predicate object'''. No label or description lines are there.
+   * '''QEntity predicate object'''. No label or description lines are there. Each row in the output
+   * is a JsonObject representing a single node.
    *
    * @throws Exception
    */
@@ -613,6 +614,9 @@ public class Wikidata {
 
       String predicate = spo[1];
       String object = spo[2];
+
+      object = StringUtils.remove(object, "\"");
+
       // extract the label and description in language English.
       if (object.endsWith(enStr)) {
         if (predicate.contains(labelStr)) {
