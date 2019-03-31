@@ -394,6 +394,9 @@ public class Wikidata {
    * @throws Exception
    */
   public void loadAttributes() throws Exception {
+    ArrayList<Entity> entities = GraphUtil.ReadEntity(entityPath);
+    String[] entityStringMap = readLabelMap(entityStringLabelMapPath);
+
     int[] idMap = readQIdToGraphIdMap(entityMapPath);
     BufferedReader reader = new BufferedReader(new FileReader(entityPropertiesPath));
     LOGGER.info("Batch insert properties into: " + dbPath);
@@ -418,6 +421,20 @@ public class Wikidata {
         for (String key : object.keySet()) {
           addProperties.put(key, object.get(key).getAsString());
         }
+
+        // spatial attributes
+        Entity entity = entities.get(graphId);
+        if (entity.IsSpatial) {
+          addProperties.put(lon_name, entity.lon);
+          addProperties.put(lat_name, entity.lat);
+        }
+
+        // use wikidata label as name of a node
+        String name = entityStringMap[graphId];
+        if (name != null) {
+          addProperties.put(labelPropertyName, name);
+        }
+
         inserter.setNodeProperties(graphId, addProperties);
       }
 
