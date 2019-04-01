@@ -1147,7 +1147,7 @@ public class Wikidata {
   }
 
   /**
-   * Extract the file of '''startGraphId,propertyName,endGraphId'''.
+   * Extract the file of '''startGraphId,propertyName,endGraphId'''. Skip instance of.
    */
   public void extractEntityToEntityRelationEdgeFormat() {
     BufferedReader reader;
@@ -1159,7 +1159,7 @@ public class Wikidata {
       int[] idMap = readQIdToGraphIdMap(entityMapPath);
       Map<Integer, String> propertyMap = readPropertyMap(propertyMapPath);
 
-      reader = new BufferedReader(new FileReader(new File(fullfilePath)));
+      reader = new BufferedReader(new FileReader(new File(wikiEdgePath)));
       writer = new FileWriter(graphPropertyEdgePath);
 
       while ((line = reader.readLine()) != null) {
@@ -1168,22 +1168,23 @@ public class Wikidata {
         String predicate = strList[1];
         String object = strList[2];
 
-        if (isQEntityReg(subject) && isPropertyPredicateReg(predicate) && isQEntityReg(object)) {
-          int startQId = getQEntityIdReg(subject);
+        if (isQEntity(subject) && isPropertyPredicate(predicate) && isQEntity(object)
+            && !predicate.equals(instanceOfStr)) {
+          int startQId = getId(subject);
           int startGraphId = idMap[startQId];
 
-          int endQID = getQEntityIdReg(object);
+          int endQID = getId(object);
           int endGraphID = idMap[endQID];
 
-          int propertyId = getPropertyPredicateIdReg(predicate);
+          int propertyId = getId(predicate);
           String propertyName = propertyMap.get(propertyId);
 
           writer.write(String.format("%d,%s,%d\n", startGraphId, propertyName, endGraphID));
 
-          lineIndex++;
-          if (lineIndex % logInterval == 0) {
-            LOGGER.info("" + lineIndex);
-          }
+        }
+        lineIndex++;
+        if (lineIndex % logInterval == 0) {
+          LOGGER.info("" + lineIndex);
         }
       }
       reader.close();
