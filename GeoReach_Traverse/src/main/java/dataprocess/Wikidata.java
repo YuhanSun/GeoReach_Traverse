@@ -78,6 +78,7 @@ public class Wikidata {
 
   private final static int nodeCountLimit = 50000000;
   private final static int logInterval = 1000000;
+  private final static int nodeCount = 47116657;
 
   // for test
   String dir = "";
@@ -146,13 +147,14 @@ public class Wikidata {
     String sourceFilename = "slice_100000.nt";
     Wikidata wikidata = new Wikidata(dir, sourceFilename);
 
-    wikidata.cutDescription();
+
+    // wikidata.cutDescription();
     // wikidata.checkWikiLabelData();
 
     // extract();
 
     // extractEntityMap();
-    // extractEntityToEntityRelation();
+    wikidata.extractEntityToEntityRelation();
     // checkGraphVerticesCount();
     // generateEntityFile();
 
@@ -1193,7 +1195,7 @@ public class Wikidata {
   }
 
   /**
-   * Generate the graph.txt file (single directional). Not used.
+   * Generate the graph.txt file (single directional). Do not capture the 'instance of' edge.
    */
   public void extractEntityToEntityRelation() {
     BufferedReader reader;
@@ -1204,24 +1206,25 @@ public class Wikidata {
 
     try {
       HashMap<Long, Integer> idMap = readMap(entityMapPath);
-      Util.println(idMap.size());
+      LOGGER.info("entity map size: " + idMap.size());
 
-      reader = new BufferedReader(new FileReader(new File(fullfilePath)));
+      reader = new BufferedReader(new FileReader(new File(wikiEdgePath)));
       writer = new FileWriter(graphPath);
       logWriter = new FileWriter(logPath);
 
       writer.write(idMap.size() + "\n");
 
-      long curWikiID = 26;
+      long curWikiID = 26; // 26 is the QId of first entity in the file.
       TreeSet<Integer> neighbors = new TreeSet<>();
       // Process node by node. Assume that all the spo for the same node are clustered rather than
-      // interleaved.
+      // interleaved. So only needs to use keep one set.
       while ((line = reader.readLine()) != null) {
-        String[] strList = line.split(" ");
+        // Here do not use decode row for fast processing.
+        String[] strList = StringUtils.split(line, ' ');
         String subject = strList[0];
 
-        if (subject.matches(entityPattern.pattern())) {
-          long startID = getQEntityIdReg(subject);
+        if (isQEntity(subject)) {
+          long startID = getId(subject);
           if (curWikiID != startID) {
             writer.write(String.format("%d,%d", idMap.get(curWikiID), neighbors.size()));
             for (int neighbor : neighbors)
@@ -1231,30 +1234,33 @@ public class Wikidata {
             curWikiID = startID;
           }
 
-          String object = strList[2];
-          if (object.matches(entityPattern.pattern())) {
-            long endID = getQEntityIdReg(object);
-            int graphID = idMap.get(endID);
-            neighbors.add(graphID);
+          String predicate = strList[1];
+          // Skip 'instance of' edge.
+          if (!predicate.equals(instanceOfStr)) {
+            String object = strList[2];
+            if (isQEntity(object)) {
+              long endID = getId(object);
+              int graphID = idMap.get(endID);
+              neighbors.add(graphID);
+            }
           }
         }
 
         lineIndex++;
-        if (lineIndex % logInterval == 0)
-          Util.println(lineIndex);
+        if (lineIndex % logInterval == 0) {
+          LOGGER.info("" + lineIndex);
+        }
 
-        // if (lineIndex == 10000000)
-        // break;
       }
-      reader.close();
+      Util.close(reader);
 
       int leafID = idMap.get(curWikiID);
       leafID++;
       for (; leafID < idMap.size(); leafID++)
         writer.write(String.format("%d,0\n", leafID));
 
-      writer.close();
-      logWriter.close();
+      Util.close(writer);
+      Util.close(logWriter);
 
     } catch (Exception e) {
       Util.println(String.format("line %d:\n%s", lineIndex, line));
