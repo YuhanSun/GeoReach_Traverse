@@ -24,8 +24,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
+import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.unsafe.batchinsert.BatchInserter;
 import org.neo4j.unsafe.batchinsert.BatchInserters;
 import com.google.common.base.CharMatcher;
@@ -35,6 +38,7 @@ import com.google.gson.JsonParser;
 import commons.Config;
 import commons.Entity;
 import commons.GraphUtil;
+import commons.Neo4jGraphUtility;
 import commons.ReadWriteUtil;
 import commons.Util;
 
@@ -79,6 +83,7 @@ public class Wikidata {
   private final static int nodeCountLimit = 50000000;
   private final static int logInterval = 1000000;
   private final static int nodeCount = 47116657;
+  private final static int attributeBulkInsertSize = 1000000;
 
   // for test
   String dir = "";
@@ -114,6 +119,10 @@ public class Wikidata {
   }
 
   public Wikidata(String homeDir, String sourceFileName) {
+    this(homeDir, sourceFileName, homeDir + "/neo4j-community-3.4.12/data/databases/graph.db");
+  }
+
+  public Wikidata(String homeDir, String sourceFileName, String dbPath) {
     this.dir = homeDir;
     fullfilePath = dir + "/" + sourceFileName;
     wikiLabelPath = dir + "/wiki_label.txt";
@@ -137,24 +146,27 @@ public class Wikidata {
     // for loading
     propertyEdgePath = dir + "/edges_properties.txt";
     graphLabelPath = dir + "/graph_label.txt";
-    dbPath = dir + "/neo4j-community-3.4.12/data/databases/graph.db";
-
+    this.dbPath = dbPath;
   }
 
   public static void main(String[] args) throws Exception {
     // TODO Auto-generated method stub
     String dir = "D:/Project_Data/wikidata-20180308-truthy-BETA.nt";
     String sourceFilename = "slice_100000.nt";
-    Wikidata wikidata = new Wikidata(dir, sourceFilename);
+    String dbPath =
+        "D:\\Neo4jData\\neo4jDatabases\\database-ae5a632c-076d-42a6-ac8d-61f8f72af7f9\\installation-3.4.12\\data\\databases\\graph.db";
+    Wikidata wikidata = new Wikidata(dir, sourceFilename, dbPath);
 
+    wikidata.loadAttributesDbService();
+    // wikidata.loadAttributes();
+    // wikidata.loadEdges();
 
     // wikidata.cutDescription();
     // wikidata.checkWikiLabelData();
 
-    // extract();
-
     // extractEntityMap();
-    wikidata.extractEntityToEntityRelation();
+    // wikidata.extractEntityToEntityRelationEdgeFormat();
+    // wikidata.extractEntityToEntityRelation();
     // checkGraphVerticesCount();
     // generateEntityFile();
 
@@ -390,6 +402,70 @@ public class Wikidata {
     Util.close(inserter);
   }
 
+  public void loadAttributesDbService() throws Exception {
+    ArrayList<Entity> entities = GraphUtil.ReadEntity(entityPath);
+    String[] entityStringMap = readLabelMap(entityStringLabelMapPath);
+
+    int[] idMap = readQIdToGraphIdMap(entityMapPath);
+    BufferedReader reader = new BufferedReader(new FileReader(entityPropertiesPath));
+    GraphDatabaseService service = Neo4jGraphUtility.getDatabaseService(dbPath);
+    Transaction tx = service.beginTx();
+    String line = null;
+    int lineId = 0;
+    JsonParser jsonParser = new JsonParser();
+    try {
+      while ((line = reader.readLine()) != null) {
+        lineId++;
+        if (lineId % logInterval == 0) {
+          LOGGER.info("" + lineId);
+        }
+        if (lineId % attributeBulkInsertSize == 0) {
+          LOGGER.info("close tranction...");
+          tx.success();
+          tx.close();
+          LOGGER.info("transaction closed.");
+          Util.close(service);
+          service = Neo4jGraphUtility.getDatabaseService(dbPath);
+          tx = service.beginTx();
+        }
+        JsonElement jsonElement = jsonParser.parse(line);
+        JsonObject object = jsonElement.getAsJsonObject();
+        int QId = object.get("id").getAsInt();
+        int graphId = idMap[QId];
+        Node node = service.getNodeById(graphId);
+        for (String key : object.keySet()) {
+          node.setProperty(key, object.get(key).getAsString());
+        }
+
+        // spatial attributes
+        Entity entity = entities.get(graphId);
+        if (entity.IsSpatial) {
+          node.setProperty(lon_name, entity.lon);
+          node.setProperty(lat_name, entity.lat);
+        }
+
+        // use wikidata label as name of a node
+        String name = entityStringMap[graphId];
+        if (name != null) {
+          node.setProperty(labelPropertyName, name);
+        }
+      }
+
+    } catch (Exception e) {
+      Util.close(reader);
+      Util.close(service);
+      e.printStackTrace();
+    }
+
+    if (tx != null) {
+      tx.success();
+      tx.close();
+    }
+
+    Util.close(reader);
+    Util.close(service);
+  }
+
   /**
    * Lead to override of the spatial properties loaded in the node loading phase.
    *
@@ -414,6 +490,10 @@ public class Wikidata {
         lineId++;
         if (lineId % logInterval == 0) {
           LOGGER.info("" + lineId);
+        }
+        if (lineId % attributeBulkInsertSize == 0) {
+          Util.close(inserter);
+          inserter = BatchInserters.inserter(new File(dbPath).getAbsoluteFile(), config);
         }
         JsonElement jsonElement = jsonParser.parse(line);
         JsonObject object = jsonElement.getAsJsonObject();
