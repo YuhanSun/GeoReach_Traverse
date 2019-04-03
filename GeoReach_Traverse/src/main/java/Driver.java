@@ -20,7 +20,8 @@ public class Driver {
     wikidataExtractProperties, //
     wikidataExtractStringLabel, //
     wikidataLoadGraph, //
-    wikiextractEntityToEntityRelationEdgeFormat, //
+    wikiextractEntityToEntityRelationEdgeFormat, // edge graph
+    extractEntityToEntityRelation, // graph.single
     wikiLoadEdges, wikiLoadAttributes, //
     wikicutLabelFile, wikicutPropertyAndEdge, wikicutDescription, //
     wikirecoverSpatialProperty, wikirecoverName, //
@@ -119,6 +120,9 @@ public class Driver {
           case wikiextractEntityToEntityRelationEdgeFormat:
             wikidata = new Wikidata(cmd.getOptionValue(homeDir));
             wikidata.extractEntityToEntityRelationEdgeFormat();
+            break;
+          case extractEntityToEntityRelation:
+            new Wikidata(cmd.getOptionValue(homeDir)).extractEntityToEntityRelation();
             break;
           case wikiLoadEdges:
             wikidata = new Wikidata(cmd.getOptionValue(homeDir));
