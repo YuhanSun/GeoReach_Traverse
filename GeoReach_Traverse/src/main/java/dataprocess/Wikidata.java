@@ -158,7 +158,7 @@ public class Wikidata {
         "D:\\Neo4jData\\neo4jDatabases\\database-ae5a632c-076d-42a6-ac8d-61f8f72af7f9\\installation-3.4.12\\data\\databases\\graph.db";
     Wikidata wikidata = new Wikidata(dir, sourceFilename, dbPath);
 
-    wikidata.loadAttributesDbService();
+    // wikidata.loadAttributesDbService();
     // wikidata.loadAttributes();
     // wikidata.loadEdges();
 
@@ -167,7 +167,7 @@ public class Wikidata {
 
     // extractEntityMap();
     // wikidata.extractEntityToEntityRelationEdgeFormat();
-    // wikidata.extractEntityToEntityRelation();
+    wikidata.extractEntityToEntityRelation();
     // checkGraphVerticesCount();
     // generateEntityFile();
 
@@ -1323,7 +1323,7 @@ public class Wikidata {
               writer.write(String.format("%d,0\n", i));
             }
             neighbors = new TreeSet<>();
-            trackGraphId = startID;
+            trackGraphId = graphId;
             curWikiID = startID;
           }
 
