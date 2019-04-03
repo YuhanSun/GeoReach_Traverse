@@ -54,6 +54,14 @@ public class Util {
     LOGGER.info("shut down is done.");
   }
 
+  public static void close(GraphDatabaseService service) throws Exception {
+    LOGGER.info("shut down graph database service...");
+    if (service != null) {
+      service.shutdown();
+    }
+    LOGGER.info("service is shut down successfully.");
+  }
+
   public static void extendBoundary(int[] boundary, int[] xyId) {
     extendBoundary(boundary, xyId[0], xyId[1]);
   }

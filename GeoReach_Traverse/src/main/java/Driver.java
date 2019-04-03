@@ -16,13 +16,15 @@ public class Driver {
   // function names
   private static enum FunctionName {
     query, insertion, generateAccurateDb, //
+
     wikidataExtractProperties, //
     wikidataExtractStringLabel, //
     wikidataLoadGraph, //
     wikiextractEntityToEntityRelationEdgeFormat, //
     wikiLoadEdges, wikiLoadAttributes, //
     wikicutLabelFile, wikicutPropertyAndEdge, wikicutDescription, //
-    wikirecoverSpatialProperty, wikirecoverName,//
+    wikirecoverSpatialProperty, wikirecoverName, //
+    wikimain,
   }
 
   private String[] args = null;
@@ -80,6 +82,7 @@ public class Driver {
       if (cmd.hasOption(function)) {
         String functionNameString = cmd.getOptionValue(function);
         FunctionName functionName = FunctionName.valueOf(functionNameString);
+
         AddEdge addEdge = new AddEdge();
         addEdge.iniPaths(cmd.getOptionValue(homeDir), cmd.getOptionValue(resultDir),
             cmd.getOptionValue(dataset));
@@ -144,6 +147,9 @@ public class Driver {
           case wikirecoverName:
             wikidata = new Wikidata(cmd.getOptionValue(homeDir));
             wikidata.recoverName();
+            break;
+          case wikimain:
+            Wikidata.main(null);
             break;
           default:
             Util.println(String.format("Function %s does not exist!", functionNameString));
