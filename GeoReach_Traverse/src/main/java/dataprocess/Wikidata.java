@@ -491,10 +491,10 @@ public class Wikidata {
         if (lineId % logInterval == 0) {
           LOGGER.info("" + lineId);
         }
-        if (lineId % attributeBulkInsertSize == 0) {
-          Util.close(inserter);
-          inserter = BatchInserters.inserter(new File(dbPath).getAbsoluteFile(), config);
-        }
+        // if (lineId % attributeBulkInsertSize == 0) {
+        // Util.close(inserter);
+        // inserter = BatchInserters.inserter(new File(dbPath).getAbsoluteFile(), config);
+        // }
         JsonElement jsonElement = jsonParser.parse(line);
         JsonObject object = jsonElement.getAsJsonObject();
         int QId = object.get("id").getAsInt();
