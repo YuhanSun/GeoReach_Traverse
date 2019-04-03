@@ -124,7 +124,7 @@ public class MaintenanceTest {
     LoadData loadData = new LoadData();
     loadData.loadAllEntityAndCreateIdMap(entities, labelList, dbPath, mapPath);
     loadData.LoadGraphEdges(mapPath, dbPath, graph);
-    graph_pos_map_list = ReadWriteUtil.readMapToArray(mapPath);
+    graph_pos_map_list = ReadWriteUtil.readMapAsArray(mapPath);
   }
 
   /**
@@ -308,7 +308,7 @@ public class MaintenanceTest {
     // constructAndLoadIndex();
 
     readGraph();
-    graph_pos_map_list = ReadWriteUtil.readMapToArray(mapPath);
+    graph_pos_map_list = ReadWriteUtil.readMapAsArray(mapPath);
 
     if (dbservice == null) {
       dbservice = Neo4jGraphUtility.getDatabaseService(dbPath);
@@ -318,9 +318,9 @@ public class MaintenanceTest {
 
     String edgePath = "D:\\Google_Drive\\Projects\\GeoReachHop\\query\\Yelp\\edges.txt";
     List<Edge> edges = GraphUtil.readEdges(edgePath);
-    double testRatio = 0.25;
+    double testRatio = 0.01;
     int testCount = (int) (testRatio * edges.size());
-    testCount = 20;
+    // testCount = 100;
     int i = 0;
     for (Edge edge : edges) {
       Util.println(edge);
@@ -340,12 +340,15 @@ public class MaintenanceTest {
       maintenance.addEdgeAndUpdateIndexReconstruct(src, trg);
     }
 
-    ArrayList<VertexGeoReachList> index =
-        IndexConstruct.ConstructIndexList(graph, entities, spaceManager, MAX_HOP);
-    ArrayList<ArrayList<Integer>> typesList =
-        IndexConstruct.generateTypeListForList(index, MAX_HOP, spaceManager, MG, MR, MC);
 
-    validateAllNodeIndex(maintenance, index, typesList, graph_pos_map_list, true);
+    // ArrayList<VertexGeoReachList> index =
+    // IndexConstruct.ConstructIndexList(graph, entities, spaceManager, MAX_HOP);
+    // ArrayList<ArrayList<Integer>> typesList =
+    // IndexConstruct.generateTypeListForList(index, MAX_HOP, spaceManager, MG, MR, MC);
+    //
+    // validateAllNodeIndex(maintenance, index, typesList, graph_pos_map_list, false);
+
+    Util.println(maintenance.reconstructCount);
 
     tx.success();
     tx.close();
@@ -361,10 +364,10 @@ public class MaintenanceTest {
    */
   @Test
   public void addEdgeSingleTest() throws Exception {
-    loadGraph();
-    constructAndLoadIndex();
+    // loadGraph();
+    // constructAndLoadIndex();
 
-    // readGraph();
+    readGraph();
 
     if (dbservice == null) {
       dbservice = Neo4jGraphUtility.getDatabaseService(dbPath);
@@ -372,7 +375,7 @@ public class MaintenanceTest {
     Transaction tx = dbservice.beginTx();
     Maintenance maintenance = new Maintenance(spaceManager, MAX_HOP, MG, MR, MC, dbservice);
 
-    int srcID = 499488, trgID = 564550;
+    int srcID = 198990, trgID = 460450;
     Node src = dbservice.getNodeById(srcID);
     Node trg = dbservice.getNodeById(trgID);
     Neo4jGraphUtility.printNode(src);
