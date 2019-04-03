@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -17,6 +18,32 @@ import java.util.logging.Logger;
 public class ReadWriteUtil {
 
   private static final Logger LOGGER = Logger.getLogger(ReadWriteUtil.class.getName());
+
+  /**
+   * Read a map <Integer, String> from file and return as a String[]. Non-exist keys will have value
+   * null. The purpose is to save storage overhead and accelerate the speed of the get operation.
+   *
+   * @param filepath
+   * @param size should be >= than all integer keys in the map
+   * @return
+   * @throws Exception
+   */
+  public static String[] readMapAsArray(String filepath, int size) throws Exception {
+    LOGGER.info(String.format("read Label map from %s with size ", filepath, size));
+    BufferedReader reader = new BufferedReader(new FileReader(filepath));
+    String line = null;
+    String[] map = new String[size];
+    Arrays.fill(map, null);
+    while ((line = reader.readLine()) != null) {
+      String[] strings = line.split(",");
+      int graphId = Integer.parseInt(strings[0]);
+      if (map[graphId] == null) {
+        map[graphId] = strings[1];
+      }
+    }
+    reader.close();
+    return map;
+  }
 
   public static void writeEdges(Iterable<Edge> edges, String path, boolean app) throws IOException {
     FileWriter writer = new FileWriter(path, app);
@@ -87,12 +114,12 @@ public class ReadWriteUtil {
   }
 
   /**
-   * Read a map to a long[] array. So the key has to be in the [0, count-1].
+   * Read a map to a long[] array. So the key has to be consecutive in the [0, count-1].
    *
    * @param filename
    * @return
    */
-  public static long[] readMapToArray(String filename) {
+  public static long[] readMapAsArray(String filename) {
     HashMap<String, String> graph_pos_map = ReadMap(filename);
     long[] graph_pos_map_list = new long[graph_pos_map.size()];
     for (String key_str : graph_pos_map.keySet()) {

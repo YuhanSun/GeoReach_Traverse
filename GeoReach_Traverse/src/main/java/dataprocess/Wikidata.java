@@ -1672,18 +1672,7 @@ public class Wikidata {
    */
   public static String[] readLabelMap(String filepath) throws Exception {
     LOGGER.info("read Label map from " + filepath);
-    BufferedReader reader = new BufferedReader(new FileReader(filepath));
-    String line = null;
-    String[] map = new String[nodeCountLimit];
-    Arrays.fill(map, null);
-    while ((line = reader.readLine()) != null) {
-      String[] strings = line.split(",");
-      int graphId = Integer.parseInt(strings[0]);
-      if (map[graphId] == null) {
-        map[graphId] = strings[1];
-      }
-    }
-    reader.close();
+    String[] map = ReadWriteUtil.readMapAsArray(filepath, nodeCountLimit);
     return map;
   }
 }
