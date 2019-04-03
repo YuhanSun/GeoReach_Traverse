@@ -91,13 +91,12 @@ public class Wikidata {
 
   // static String dir = "/hdd/code/yuhansun/data/wikidata";
   // static String fullfilePath = dir + "/wikidata-20180308-truthy-BETA.nt";
-  String logPath = dir + "/extract.log";
-  String locationPath = dir + "/locations.txt";
-  String entityMapPath = dir + "/entity_map.txt";
-  String singleGraphPath = dir + "/graph_single";
-  String graphPath = dir + "/graph.txt";
+  String logPath;
+  String locationPath;
+  String entityMapPath;
+  String graphPath, singleGraphPath;
   String graphPropertyEdgePath;
-  String entityPath = dir + "/entity.txt";
+  String entityPath;
 
   String propertiesJsonFile = dir + "/properties_from_query.json";
   String propertyMapPath = dir + "/property_map.txt";
@@ -135,6 +134,7 @@ public class Wikidata {
     locationPath = dir + "/locations.txt";
     entityMapPath = dir + "/entity_map.txt";
     graphPath = dir + "/graph.txt";
+    singleGraphPath = dir + "/graph_single.txt";
     graphPropertyEdgePath = dir + "/graph_property_edge.txt";
     entityPath = dir + "/entity.txt";
 
