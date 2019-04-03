@@ -94,6 +94,7 @@ public class Wikidata {
   String logPath = dir + "/extract.log";
   String locationPath = dir + "/locations.txt";
   String entityMapPath = dir + "/entity_map.txt";
+  String singleGraphPath = dir + "/graph_single";
   String graphPath = dir + "/graph.txt";
   String graphPropertyEdgePath;
   String entityPath = dir + "/entity.txt";
@@ -1290,7 +1291,7 @@ public class Wikidata {
       LOGGER.info("entity map size: " + idMap.size());
 
       reader = new BufferedReader(new FileReader(new File(wikiEdgePath)));
-      writer = new FileWriter(graphPath);
+      writer = new FileWriter(singleGraphPath);
       logWriter = new FileWriter(logPath);
 
       writer.write(idMap.size() + "\n");
