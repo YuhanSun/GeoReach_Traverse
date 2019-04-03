@@ -12,8 +12,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.logging.Logger;
 
 public class ReadWriteUtil {
+
+  private static final Logger LOGGER = Logger.getLogger(ReadWriteUtil.class.getName());
 
   public static void writeEdges(Iterable<Edge> edges, String path, boolean app) throws IOException {
     FileWriter writer = new FileWriter(path, app);
