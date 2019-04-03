@@ -206,7 +206,7 @@ public class AddEdge {
     mapPath = curDataDir + "/"
         + Neo4jGraphUtility.getGraphNeo4jIdMapNormalName(piecesX, piecesY, MG, MR, MC, MAX_HOP);
     Util.println("Read map from " + mapPath);
-    graph_pos_map_list = ReadWriteUtil.readMapToArray(mapPath);
+    graph_pos_map_list = ReadWriteUtil.readMapAsArray(mapPath);
 
     String startIDPath = queryDir + "/" + config.getStartIDFileName();
     int offset = 0, groupCount = 10, groupSize = 500;
@@ -529,13 +529,13 @@ public class AddEdge {
       loadGraph();
 
       Util.println("Read map from " + mapPath);
-      graph_pos_map_list = ReadWriteUtil.readMapToArray(mapPath);
+      graph_pos_map_list = ReadWriteUtil.readMapAsArray(mapPath);
 
       Util.println("Construct and load index...");
       constructAndLoadIndex(MG, MR);
     } else {
       Util.println("Read map from " + mapPath);
-      graph_pos_map_list = ReadWriteUtil.readMapToArray(mapPath);
+      graph_pos_map_list = ReadWriteUtil.readMapAsArray(mapPath);
     }
   }
 
