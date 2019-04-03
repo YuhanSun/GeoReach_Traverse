@@ -1295,6 +1295,7 @@ public class Wikidata {
 
       writer.write(idMap.size() + "\n");
 
+      int trackGraphId = 0;
       long curWikiID = 26; // 26 is the QId of first entity in the file.
       TreeSet<Integer> neighbors = new TreeSet<>();
       // Process node by node. Assume that all the spo for the same node are clustered rather than
@@ -1305,13 +1306,23 @@ public class Wikidata {
         String subject = strList[0];
 
         if (isQEntity(subject)) {
-          long startID = getId(subject);
+          int startID = getId(subject);
           if (curWikiID != startID) {
-            writer.write(String.format("%d,%d", idMap.get(curWikiID), neighbors.size()));
-            for (int neighbor : neighbors)
+            // write the previous node edges
+            int graphId = idMap.get(curWikiID);
+            writer.write(String.format("%d,%d", graphId, neighbors.size()));
+            for (int neighbor : neighbors) {
               writer.write("," + neighbor);
+            }
             writer.write("\n");
+
+            // If an entity does not exist in the Subject with relations to another entity, it needs
+            // to have id,0 as its row.
+            for (int i = trackGraphId; i < graphId; i++) {
+              writer.write(String.format("%d,0\n", i));
+            }
             neighbors = new TreeSet<>();
+            trackGraphId = startID;
             curWikiID = startID;
           }
 
