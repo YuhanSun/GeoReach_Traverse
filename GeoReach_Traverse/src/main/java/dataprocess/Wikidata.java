@@ -1296,8 +1296,7 @@ public class Wikidata {
 
       writer.write(idMap.size() + "\n");
 
-      int trackGraphId = 0;
-      long curWikiID = 26; // 26 is the QId of first entity in the file.
+      long prevWikiID = 26; // 26 is the QId of first entity in the file.
       TreeSet<Integer> neighbors = new TreeSet<>();
       // Process node by node. Assume that all the spo for the same node are clustered rather than
       // interleaved. So only needs to use keep one set.
@@ -1308,23 +1307,19 @@ public class Wikidata {
 
         if (isQEntity(subject)) {
           int startID = getId(subject);
-          if (curWikiID != startID) {
+          if (prevWikiID != startID) {
             // write the previous node edges
-            int graphId = idMap.get(curWikiID);
-            writer.write(String.format("%d,%d", graphId, neighbors.size()));
-            for (int neighbor : neighbors) {
-              writer.write("," + neighbor);
-            }
-            writer.write("\n");
+            int graphId = idMap.get(prevWikiID);
+            writeGraphRow(writer, graphId, neighbors);
 
             // If an entity does not exist in the Subject with relations to another entity, it needs
             // to have id,0 as its row.
-            for (int i = trackGraphId; i < graphId; i++) {
+            int curGraphId = idMap.get(startID);
+            for (int i = graphId; i < curGraphId; i++) {
               writer.write(String.format("%d,0\n", i));
             }
             neighbors = new TreeSet<>();
-            trackGraphId = graphId;
-            curWikiID = startID;
+            prevWikiID = startID;
           }
 
           String predicate = strList[1];
@@ -1347,10 +1342,14 @@ public class Wikidata {
       }
       Util.close(reader);
 
-      int leafID = idMap.get(curWikiID);
+      int leafID = idMap.get(prevWikiID);
+      if (neighbors.size() > 0) {
+        writeGraphRow(writer, leafID, neighbors);
+      }
       leafID++;
-      for (; leafID < idMap.size(); leafID++)
+      for (; leafID < idMap.size(); leafID++) {
         writer.write(String.format("%d,0\n", leafID));
+      }
 
       Util.close(writer);
       Util.close(logWriter);
@@ -1359,6 +1358,15 @@ public class Wikidata {
       Util.println(String.format("line %d:\n%s", lineIndex, line));
       e.printStackTrace();
     }
+  }
+
+  private void writeGraphRow(FileWriter writer, int graphId, TreeSet<Integer> neighbors)
+      throws Exception {
+    writer.write(String.format("%d,%d", graphId, neighbors.size()));
+    for (int neighbor : neighbors) {
+      writer.write("," + neighbor);
+    }
+    writer.write("\n");
   }
 
   /**
