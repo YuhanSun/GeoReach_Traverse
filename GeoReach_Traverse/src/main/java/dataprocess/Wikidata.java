@@ -1287,16 +1287,15 @@ public class Wikidata {
     long lineIndex = 0;
 
     try {
-      HashMap<Long, Integer> idMap = readMap(entityMapPath);
-      LOGGER.info("entity map size: " + idMap.size());
+      int[] idMap = readQIdToGraphIdMap(entityMapPath);
 
       reader = new BufferedReader(new FileReader(new File(wikiEdgePath)));
       writer = new FileWriter(singleGraphPath);
       logWriter = new FileWriter(logPath);
 
-      writer.write(idMap.size() + "\n");
+      writer.write(nodeCount + "\n");
 
-      long prevWikiID = 26; // 26 is the QId of first entity in the file.
+      int prevWikiID = 26; // 26 is the QId of first entity in the file.
       TreeSet<Integer> neighbors = new TreeSet<>();
       // Process node by node. Assume that all the spo for the same node are clustered rather than
       // interleaved. So only needs to use keep one set.
@@ -1309,12 +1308,13 @@ public class Wikidata {
           int startID = getId(subject);
           if (prevWikiID != startID) {
             // write the previous node edges
-            int graphId = idMap.get(prevWikiID);
+            int graphId = idMap[prevWikiID];
             writeGraphRow(writer, graphId, neighbors);
 
             // If an entity does not exist in the Subject with relations to another entity, it needs
             // to have id,0 as its row.
-            int curGraphId = idMap.get(startID);
+            LOGGER.info("" + startID);
+            int curGraphId = idMap[startID];
             for (int i = graphId; i < curGraphId; i++) {
               writer.write(String.format("%d,0\n", i));
             }
@@ -1327,8 +1327,8 @@ public class Wikidata {
           if (!predicate.equals(instanceOfStr)) {
             String object = strList[2];
             if (isQEntity(object)) {
-              long endID = getId(object);
-              int graphID = idMap.get(endID);
+              int endID = getId(object);
+              int graphID = idMap[endID];
               neighbors.add(graphID);
             }
           }
@@ -1342,12 +1342,12 @@ public class Wikidata {
       }
       Util.close(reader);
 
-      int leafID = idMap.get(prevWikiID);
+      int leafID = idMap[prevWikiID];
       if (neighbors.size() > 0) {
         writeGraphRow(writer, leafID, neighbors);
       }
       leafID++;
-      for (; leafID < idMap.size(); leafID++) {
+      for (; leafID < nodeCount; leafID++) {
         writer.write(String.format("%d,0\n", leafID));
       }
 
