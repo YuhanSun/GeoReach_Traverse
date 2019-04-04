@@ -1282,7 +1282,6 @@ public class Wikidata {
   public void extractEntityToEntityRelation() {
     BufferedReader reader;
     FileWriter writer;
-    FileWriter logWriter;
     String line = "";
     long lineIndex = 0;
 
@@ -1291,8 +1290,6 @@ public class Wikidata {
 
       reader = new BufferedReader(new FileReader(new File(wikiEdgePath)));
       writer = new FileWriter(singleGraphPath);
-      logWriter = new FileWriter(logPath);
-
       writer.write(nodeCount + "\n");
 
       int prevWikiID = 26; // 26 is the QId of first entity in the file.
@@ -1313,9 +1310,8 @@ public class Wikidata {
 
             // If an entity does not exist in the Subject with relations to another entity, it needs
             // to have id,0 as its row.
-            LOGGER.info("" + startID);
             int curGraphId = idMap[startID];
-            for (int i = graphId; i < curGraphId; i++) {
+            for (int i = graphId + 1; i < curGraphId; i++) {
               writer.write(String.format("%d,0\n", i));
             }
             neighbors = new TreeSet<>();
@@ -1352,8 +1348,6 @@ public class Wikidata {
       }
 
       Util.close(writer);
-      Util.close(logWriter);
-
     } catch (Exception e) {
       Util.println(String.format("line %d:\n%s", lineIndex, line));
       e.printStackTrace();
