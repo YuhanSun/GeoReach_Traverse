@@ -3,7 +3,7 @@
 # server
 homeDir="/hdd/code/yuhansun"
 
-dataset="wikidata"
+dataset="wikidata_risotree"
 
 data_dir="${homeDir}/data/${dataset}"
 code_dir="${homeDir}/code"
