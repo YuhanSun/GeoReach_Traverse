@@ -8,7 +8,7 @@ dataset="wikidata_risotree"
 data_dir="${homeDir}/data/${dataset}"
 code_dir="${homeDir}/code"
 resultDir="${homeDir}/result"
-dbPath="${data_dir}/neo4j-community-3.1.1/data/databases/graph.db"
+dbPath="${data_dir}/neo4j-community-3.4.12/data/databases/graph.db"
 
 # local test setup
 # dir="/Users/zhouyang/Google_Drive/Projects/tmp/risotree"
