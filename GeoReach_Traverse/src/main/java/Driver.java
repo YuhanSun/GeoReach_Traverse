@@ -4,7 +4,6 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import commons.EnumVariables.Expand;
 import commons.EnumVariables.MaintenanceStrategy;
@@ -78,10 +77,7 @@ public class Driver {
     CommandLine cmd = null;
     try {
       cmd = parser.parse(options, args);
-      Option[] options = cmd.getOptions();
-      for (Option option : options) {
-        Util.println(String.format("<%s, %s>", option, option.getValue()));
-      }
+      Util.println(cmd);
 
       if (cmd.hasOption("h")) {
         help();

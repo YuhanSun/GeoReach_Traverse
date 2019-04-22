@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Random;
 import java.util.logging.Logger;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
 import org.neo4j.graphdb.ExecutionPlanDescription;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -106,6 +108,13 @@ public class Util {
 
   public static void println(Object o) {
     System.out.println(o);
+  }
+
+  public static void println(CommandLine cmd) {
+    Option[] options = cmd.getOptions();
+    for (Option option : options) {
+      Util.println(String.format("<%s, %s>", option, option.getValue()));
+    }
   }
 
   public static boolean compareFile(String file1, String file2) {
