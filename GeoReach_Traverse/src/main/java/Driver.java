@@ -1,4 +1,5 @@
 import java.util.Arrays;
+import java.util.logging.Logger;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -13,6 +14,8 @@ import experiment.AddEdge;
 
 public class Driver {
 
+  private final static Logger logger = Logger.getLogger(Driver.class.getName());
+
   // function names
   private static enum FunctionName {
     query, insertion, generateAccurateDb, //
@@ -21,7 +24,7 @@ public class Driver {
     wikidataExtractStringLabel, //
     wikidataLoadGraph, //
     wikiextractEntityToEntityRelationEdgeFormat, // edge graph
-    extractEntityToEntityRelation, // graph.single
+    wikiextractEntityToEntityRelation, // graph.single
     wikiLoadEdges, wikiLoadAttributes, //
     wikicutLabelFile, wikicutPropertyAndEdge, wikicutDescription, //
     wikirecoverSpatialProperty, wikirecoverName, //
@@ -34,6 +37,7 @@ public class Driver {
   private String help = "h";
   private String function = "f";
   private String homeDir = "hd";
+  private String dbPath = "dp";
   private String dataset = "d";
   private String resultDir = "rd";
 
@@ -53,6 +57,9 @@ public class Driver {
     options.addOption(homeDir, "home-directory", true, "home directory");
     options.addOption(dataset, "dataset", true, "dataset for folder name");
     options.addOption(resultDir, "result-directory", true, "result directory");
+
+    // specific path
+    options.addOption(dbPath, "db-path", true, "db path");
 
     // index parameter
     options.addOption(MG, "MG", true, "MG");
@@ -84,6 +91,58 @@ public class Driver {
         String functionNameString = cmd.getOptionValue(function);
         FunctionName functionName = FunctionName.valueOf(functionNameString);
 
+        if (functionNameString.startsWith("wiki")) {
+          String dbPathVal = cmd.getOptionValue(dbPath);
+          String homeDirVal = cmd.getOptionValue(homeDir);
+          Wikidata wikidata = dbPathVal == null ? new Wikidata(homeDirVal)
+              : new Wikidata(homeDirVal, "", dbPathVal);
+          switch (functionName) {
+            case wikidataExtractProperties:
+              wikidata.extractProperties();
+              break;
+            case wikidataExtractStringLabel:
+              wikidata.extractStringLabels();
+              break;
+            case wikidataLoadGraph:
+              wikidata.loadAllEntities();
+              break;
+            case wikiextractEntityToEntityRelationEdgeFormat:
+              wikidata.extractEntityToEntityRelationEdgeFormat();
+              break;
+            case wikiextractEntityToEntityRelation:
+              wikidata.extractEntityToEntityRelation();
+              break;
+            case wikiLoadEdges:
+              wikidata.loadEdges();
+              break;
+            case wikiLoadAttributes:
+              wikidata.loadAttributes();
+              break;
+            case wikicutLabelFile:
+              wikidata.cutLabelFile();
+              break;
+            case wikicutPropertyAndEdge:
+              wikidata.cutPropertyAndEdge();
+              break;
+            case wikicutDescription:
+              wikidata.cutDescription();
+              break;
+            case wikirecoverSpatialProperty:
+              wikidata.recoverSpatialProperty();
+              break;
+            case wikirecoverName:
+              wikidata.recoverName();
+              break;
+            case wikimain:
+              Wikidata.main(null);
+              break;
+            default:
+              logger.info(String.format("Function %s does not exist!", functionNameString));
+              break;
+          }
+          return;
+        }
+
         AddEdge addEdge = new AddEdge();
         addEdge.iniPaths(cmd.getOptionValue(homeDir), cmd.getOptionValue(resultDir),
             cmd.getOptionValue(dataset));
@@ -105,58 +164,8 @@ public class Driver {
           case generateAccurateDb:
             addEdge.generateAccurateDbAfterAddEdges(MGVal, MRVal);
             break;
-          case wikidataExtractProperties:
-            Wikidata wikidata = new Wikidata(cmd.getOptionValue(homeDir));
-            wikidata.extractProperties();
-            break;
-          case wikidataExtractStringLabel:
-            wikidata = new Wikidata(cmd.getOptionValue(homeDir));
-            wikidata.extractStringLabels();
-            break;
-          case wikidataLoadGraph:
-            wikidata = new Wikidata(cmd.getOptionValue(homeDir));
-            wikidata.loadAllEntities();
-            break;
-          case wikiextractEntityToEntityRelationEdgeFormat:
-            wikidata = new Wikidata(cmd.getOptionValue(homeDir));
-            wikidata.extractEntityToEntityRelationEdgeFormat();
-            break;
-          case extractEntityToEntityRelation:
-            new Wikidata(cmd.getOptionValue(homeDir)).extractEntityToEntityRelation();
-            break;
-          case wikiLoadEdges:
-            wikidata = new Wikidata(cmd.getOptionValue(homeDir));
-            wikidata.loadEdges();
-            break;
-          case wikiLoadAttributes:
-            wikidata = new Wikidata(cmd.getOptionValue(homeDir));
-            wikidata.loadAttributes();
-            break;
-          case wikicutLabelFile:
-            wikidata = new Wikidata(cmd.getOptionValue(homeDir));
-            wikidata.cutLabelFile();
-            break;
-          case wikicutPropertyAndEdge:
-            wikidata = new Wikidata(cmd.getOptionValue(homeDir));
-            wikidata.cutPropertyAndEdge();
-            break;
-          case wikicutDescription:
-            wikidata = new Wikidata(cmd.getOptionValue(homeDir));
-            wikidata.cutDescription();
-            break;
-          case wikirecoverSpatialProperty:
-            wikidata = new Wikidata(cmd.getOptionValue(homeDir));
-            wikidata.recoverSpatialProperty();
-            break;
-          case wikirecoverName:
-            wikidata = new Wikidata(cmd.getOptionValue(homeDir));
-            wikidata.recoverName();
-            break;
-          case wikimain:
-            Wikidata.main(null);
-            break;
           default:
-            Util.println(String.format("Function %s does not exist!", functionNameString));
+            logger.info(String.format("Function %s does not exist!", functionNameString));
             break;
         }
       }
