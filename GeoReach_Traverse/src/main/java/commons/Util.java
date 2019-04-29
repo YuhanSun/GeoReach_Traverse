@@ -32,6 +32,11 @@ public class Util {
 
   private static final Logger LOGGER = Logger.getLogger(Util.class.getName());
 
+  public static BufferedReader getReader(String fileName) throws Exception {
+    LOGGER.info("open the reader of " + fileName);
+    return new BufferedReader(new FileReader(fileName));
+  }
+
   public static void close(BufferedReader reader) throws Exception {
     LOGGER.info("close reader...");
     if (reader != null) {
